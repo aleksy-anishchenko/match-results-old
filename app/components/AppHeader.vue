@@ -2,13 +2,14 @@
 import type { CompetitionWithBadge } from '~/types'
 
 const { selectedId } = useCompetition()
-
-const isOpen = ref(false)
 const route = useRoute()
 
-watch(route, () => {
-  isOpen.value = false
-})
+// Страница матча относится к разделу «Результаты», поэтому проверяем по префиксу
+const navItems = [
+  { to: '/', label: 'Результаты', isActive: (path: string) => path === '/' || path.startsWith('/match/') },
+  { to: '/standings', label: 'Таблица', isActive: (path: string) => path.startsWith('/standings') },
+  { to: '/about', label: 'О проекте', isActive: (path: string) => path.startsWith('/about') },
+]
 
 const { data: competitionsData } = await useFetch<{ competitions: CompetitionWithBadge[] }>('/api/competitions')
 
@@ -40,22 +41,51 @@ function badgeUrl(id: string): string {
 </script>
 
 <template>
-  <header class="header container">
-    <NuxtLink
-      to="/"
-      class="logo"
-    >
-      <span class="logo__dot" />
-      <span class="logo__text">MatchResults</span>
-    </NuxtLink>
+  <header class="header">
+    <div class="header__inner container">
+      <NuxtLink
+        to="/"
+        class="logo"
+      >
+        <span
+          class="logo__mark"
+          aria-hidden="true"
+        >
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+          >
+            <circle
+              cx="12"
+              cy="12"
+              r="9"
+            />
+            <path d="M12 7l4 3-1.5 4.5h-5L8 10z" />
+          </svg>
+        </span>
+        <span class="logo__text">MatchResults</span>
+      </NuxtLink>
 
-    <ul class="nav">
-      <li><NuxtLink to="/">Результаты</NuxtLink></li>
-      <li><NuxtLink to="/standings">Таблица</NuxtLink></li>
-      <li><NuxtLink to="/about">О проекте</NuxtLink></li>
-    </ul>
+      <nav
+        class="nav"
+        aria-label="Основная навигация"
+      >
+        <NuxtLink
+          v-for="item in navItems"
+          :key="item.to"
+          :to="item.to"
+          class="nav__link"
+          :class="{ 'nav__link--active': item.isActive(route.path) }"
+          :aria-current="item.isActive(route.path) ? 'page' : undefined"
+        >
+          {{ item.label }}
+        </NuxtLink>
+      </nav>
 
-    <div class="header__select">
       <Select
         v-model="selectedId"
         :options="competitionGroups"
@@ -95,81 +125,155 @@ function badgeUrl(id: string): string {
         </template>
       </Select>
     </div>
-
-    <button
-      class="burger"
-      :class="{ 'burger--open': isOpen }"
-      aria-label="Меню"
-      @click="isOpen = !isOpen"
-    >
-      <span /><span /><span />
-    </button>
-
-    <div
-      v-if="isOpen"
-      class="mobile-nav"
-    >
-      <ul>
-        <li><NuxtLink to="/">Результаты матчей</NuxtLink></li>
-        <li><NuxtLink to="/standings">Турнирная таблица</NuxtLink></li>
-        <li><NuxtLink to="/about">О проекте</NuxtLink></li>
-      </ul>
-    </div>
   </header>
 </template>
 
 <style scoped lang="scss">
 .header {
-  position: relative;
-  display: flex;
+  background: $color-surface;
+  border-bottom: 1px solid $color-border;
+}
+
+// До 640px: логотип и селектор в одной строке, навигация строкой ниже.
+// От 640px: всё в одной строке высотой 64px. Селектор занимает остаток ширины
+// и умеет сжиматься (minmax(0, 1fr)), название турнира обрезается многоточием.
+.header__inner {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas:
+    'logo select'
+    'nav nav';
+  column-gap: 12px;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding-top: 20px;
-  padding-bottom: 20px;
-  margin-bottom: 16px;
+
+  @media (min-width: $breakpoint-desktop) {
+    grid-template-columns: auto auto minmax(0, 1fr);
+    grid-template-areas: 'logo nav select';
+    column-gap: 20px;
+    height: $header-height;
+  }
+
+  // Полная ширина контента: отступы как в макете
+  @media (min-width: $content-width) {
+    column-gap: 32px;
+  }
 }
 
 .logo {
+  grid-area: logo;
   display: flex;
   align-items: center;
   gap: 8px;
-  color: inherit;
-  flex-shrink: 0;
+  height: $header-height-mobile;
+
+  @media (min-width: $breakpoint-desktop) {
+    gap: 10px;
+    height: auto;
+  }
 }
 
-.logo__dot {
-  display: block;
-  width: 10px;
-  height: 10px;
+.logo__mark {
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
-  background-color: #4ade80;
+  background: $color-accent;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
+
+  @media (min-width: $breakpoint-desktop) {
+    width: 28px;
+    height: 28px;
+  }
 }
 
 .logo__text {
-  font-size: 16px;
+  font-family: $font-display;
   font-weight: 700;
-  color: #111827;
+  font-size: 15px;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+
+  @media (min-width: $breakpoint-desktop) {
+    font-size: 17px;
+  }
 }
 
 .nav {
-  display: none;
-  gap: 24px;
+  grid-area: nav;
+  display: flex;
+  // Выходим за поля контейнера, чтобы разделитель шёл от края до края экрана
+  margin: 0 (-$container-padding);
+  border-top: 1px solid $color-border-soft;
+
+  @media (min-width: $breakpoint-desktop) {
+    margin: 0;
+    border-top: none;
+    gap: 20px;
+  }
+
+  @media (min-width: $content-width) {
+    gap: 24px;
+  }
 }
 
-.nav a {
+.nav__link {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: $mobile-nav-height;
+  font-size: 14px;
+  font-weight: 500;
+  color: $color-text-3;
   white-space: nowrap;
+  transition: color 0.15s;
+
+  &:hover {
+    color: $color-text;
+  }
+
+  &--active {
+    font-weight: 600;
+    color: $color-text;
+    box-shadow: inset 0 -2px 0 $color-accent;
+  }
+
+  @media (min-width: $breakpoint-desktop) {
+    flex: none;
+    height: $header-height;
+    font-size: 15px;
+  }
 }
 
-.header__select {
-  margin-left: auto;
-  flex-shrink: 1;
-  min-width: 0;
-}
-
+// Селектор турнира в виде «пилюли». Класс попадает на корневой элемент PrimeVue Select,
+// внутренние части (label, стрелка) достаём через :deep.
 .comp-select {
-  width: 100%;
+  grid-area: select;
+  justify-self: end;
+  width: auto;
+  max-width: 100%;
+  min-width: 0;
+  height: 40px;
+  align-items: center;
+  border-radius: $radius-pill;
+  border-color: $color-border-strong;
+  background: $color-surface;
+  box-shadow: none;
+
+  :deep(.p-select-label) {
+    padding: 0 2px 0 14px;
+    font-size: 14px;
+    font-weight: 500;
+    color: $color-text;
+  }
+
+  :deep(.p-select-dropdown) {
+    width: 32px;
+    color: $color-text;
+  }
 }
 
 .comp-value {
@@ -189,7 +293,7 @@ function badgeUrl(id: string): string {
 
 .comp-country {
   flex-shrink: 0;
-  color: #999;
+  color: $color-text-muted;
   font-size: 12px;
 }
 
@@ -204,75 +308,5 @@ function badgeUrl(id: string): string {
   background: #1f2937;
   padding: 2px;
   border-radius: 4px;
-}
-
-.burger {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 5px;
-  width: 32px;
-  height: 32px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 4px;
-  flex-shrink: 0;
-}
-
-.burger span {
-  display: block;
-  height: 2px;
-  background: #333;
-  border-radius: 2px;
-  transition: transform 0.2s, opacity 0.2s;
-}
-
-.burger--open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
-.burger--open span:nth-child(2) { opacity: 0; }
-.burger--open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
-
-.mobile-nav {
-  position: absolute;
-  top: 100%;
-  left: -16px;
-  right: -16px;
-  background: white;
-  z-index: 50;
-  border-top: 1px solid #eee;
-  border-bottom: 1px solid #eee;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
-
-.mobile-nav ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.mobile-nav a {
-  display: block;
-  padding: 14px 24px;
-  font-size: 16px;
-  color: inherit;
-  border-bottom: 1px solid #e5e5e5;
-}
-
-.mobile-nav a:last-child {
-  border-bottom: none;
-}
-
-@media (min-width: $breakpoint-nav) {
-  .nav { display: flex; }
-  .burger { display: none; }
-  .header__select {
-    width: 195px;
-  }
-}
-
-@media (min-width: $breakpoint-desktop) {
-  .header__select {
-    width: 235px;
-  }
 }
 </style>
