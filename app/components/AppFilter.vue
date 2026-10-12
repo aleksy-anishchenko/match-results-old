@@ -9,6 +9,12 @@ const activeMode = ref<Mode>('today')
 const selectedRange = ref<Date[] | null>(null)
 const popover = ref()
 
+const modeLabels: Record<Exclude<Mode, 'custom'>, string> = {
+  today: 'Сегодня',
+  tomorrow: 'Завтра',
+  yesterday: 'Вчера',
+}
+
 const offsets: Record<Exclude<Mode, 'custom'>, number> = {
   yesterday: -1,
   today: 0,
@@ -56,66 +62,89 @@ watch(selectedRange, (range) => {
 </script>
 
 <template>
-  <div class="filter-wrap">
-    <div
-      class="filter"
-      role="group"
-      aria-label="Выбор дня"
+  <div
+    class="filter"
+    role="group"
+    aria-label="Выбор дня"
+  >
+    <button
+      v-for="mode in (['today', 'tomorrow', 'yesterday'] as const)"
+      :key="mode"
+      type="button"
+      class="filter__pill"
+      :class="{ 'filter__pill--active': activeMode === mode }"
+      @click="selectDay(mode)"
     >
-      <Button
-        class="filter__button"
-        label="Сегодня"
-        :severity="activeMode === 'today' ? 'contrast' : 'secondary'"
-        @click="selectDay('today')"
+      {{ modeLabels[mode] }}
+    </button>
+    <button
+      type="button"
+      class="filter__pill filter__pill--icon"
+      :class="{ 'filter__pill--active': activeMode === 'custom' }"
+      aria-label="Выбрать диапазон дат"
+      @click="toggleCalendar($event)"
+    >
+      <i
+        class="pi pi-calendar"
+        aria-hidden="true"
       />
-      <Button
-        class="filter__button"
-        label="Завтра"
-        :severity="activeMode === 'tomorrow' ? 'contrast' : 'secondary'"
-        @click="selectDay('tomorrow')"
+    </button>
+    <Popover ref="popover">
+      <DatePicker
+        v-model="selectedRange"
+        inline
+        selection-mode="range"
+        :default-date="moscowTodayDate"
       />
-      <Button
-        class="filter__button"
-        label="Вчера"
-        :severity="activeMode === 'yesterday' ? 'contrast' : 'secondary'"
-        @click="selectDay('yesterday')"
-      />
-      <Button
-        icon="pi pi-calendar"
-        :severity="activeMode === 'custom' ? 'contrast' : 'secondary'"
-        aria-label="Выбрать диапазон дат"
-        @click="toggleCalendar($event)"
-      />
-      <Popover ref="popover">
-        <DatePicker
-          v-model="selectedRange"
-          inline
-          selection-mode="range"
-          :default-date="moscowTodayDate"
-        />
-      </Popover>
-    </div>
+    </Popover>
   </div>
 </template>
 
 <style scoped lang="scss">
-.filter-wrap {
+.filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
   margin-bottom: 16px;
 }
 
-.filter {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
+.filter__pill {
+  height: 40px;
+  padding: 0 16px;
+  border-radius: $radius-pill;
+  border: 1px solid $color-border-strong;
+  background: $color-surface;
+  color: $color-text;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.15s, background-color 0.15s, color 0.15s;
 
-.filter__button {
-  min-width: 90px;
+  &:hover {
+    border-color: $color-text-3;
+  }
+
+  &--active {
+    background: $color-accent;
+    border-color: $color-accent;
+    color: #fff;
+    font-weight: 600;
+  }
+
+  &--icon {
+    width: 40px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+  }
 }
 
 @media (min-width: $breakpoint-desktop) {
-  .filter__button {
-    min-width: 80px;
+  .filter {
+    margin-bottom: 24px;
   }
 }
 </style>

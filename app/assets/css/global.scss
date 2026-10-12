@@ -59,7 +59,8 @@ h1 {
 
 // PrimeVue: выпадающий список и календарь в цветах проекта.
 // Эти элементы рендерятся в конец body, scoped-стили компонентов до них не дотягиваются.
-.p-select-overlay {
+.p-select-overlay,
+.p-popover {
   border-radius: 12px;
   border-color: $color-border;
   box-shadow: 0 8px 24px rgba(27, 38, 33, 0.1);

@@ -1,6 +1,17 @@
-import type { BracketMatch } from '~/types'
+import type { BracketMatch, MatchStatusKind } from '~/types'
 
+// Коды strStatus из TheSportsDB. Серия пенальти — PEN (идёт) и AP (завершён по пенальти).
 export const FINISHED_MATCH_STATUSES = new Set(['FT', 'AET', 'AP'])
+export const LIVE_MATCH_STATUSES = new Set(['1H', 'HT', '2H', 'ET', 'BT', 'P', 'PEN', 'LIVE', 'INT'])
+/** Матч не состоится или остановлен: перенесён, отменён, прерван, техническое решение */
+export const INACTIVE_MATCH_STATUSES = new Set(['PST', 'CANC', 'ABD', 'SUSP', 'AWD', 'WO'])
+
+export function getMatchStatusKind(status: string): MatchStatusKind {
+  if (LIVE_MATCH_STATUSES.has(status)) return 'live'
+  if (FINISHED_MATCH_STATUSES.has(status)) return 'finished'
+  if (INACTIVE_MATCH_STATUSES.has(status)) return 'inactive'
+  return 'scheduled'
+}
 
 export function getRoundCounts(matches: Array<{ intRound: string }>): Map<string, number> {
   const counts = new Map<string, number>()

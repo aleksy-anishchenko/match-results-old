@@ -5,45 +5,72 @@ defineProps<{ matches: Record<string, Match[]>, showDate?: boolean }>()
 </script>
 
 <template>
-  <ul class="match-list">
-    <li
+  <div class="days">
+    <section
       v-for="(dayMatches, date) in matches"
       :key="date"
-      class="match-group"
+      class="day"
     >
       <h2
         v-if="showDate"
-        class="match-date"
+        class="day__title"
       >
         {{ formatReadableDate(String(date)) }}
       </h2>
-      <ul class="match-items">
+      <ul class="day__card">
         <li
           v-for="match in dayMatches"
           :key="match.idEvent"
+          class="day__row"
         >
           <MatchItem :match="match" />
         </li>
       </ul>
-    </li>
-  </ul>
+    </section>
+  </div>
 </template>
 
-<style scoped>
-.match-list {
+<style scoped lang="scss">
+.days {
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  max-width: 800px;
+  gap: 16px;
 }
 
-.match-date {
-  margin-bottom: 15px;
-  font-weight: normal;
-  font-size: 22px;
+.day {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.match-items {
-  margin-bottom: 25px;
+.day__title {
+  margin: 4px 0 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: $color-text-2;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.day__card {
+  background: $color-surface;
+  border: 1px solid $color-border;
+  border-radius: $radius-card;
+  overflow: hidden;
+}
+
+.day__row + .day__row {
+  border-top: 1px solid $color-border-soft;
+}
+
+@media (min-width: $breakpoint-desktop) {
+  .days {
+    gap: 24px;
+  }
+
+  .day__title {
+    margin-top: 8px;
+    font-size: 13px;
+  }
 }
 </style>

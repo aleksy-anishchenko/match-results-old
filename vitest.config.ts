@@ -16,6 +16,7 @@ export default defineConfig({
     alias: {
       '~': resolve(import.meta.dirname, 'app'),
       '@': resolve(import.meta.dirname, 'app'),
+      '#shared': resolve(import.meta.dirname, 'shared'),
     },
   },
 })

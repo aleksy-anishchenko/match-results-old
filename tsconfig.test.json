@@ -9,13 +9,15 @@
     "types": ["vitest/globals"],
     "paths": {
       "~": ["./app"],
-      "~/*": ["./app/*"]
+      "~/*": ["./app/*"],
+      "#shared/*": ["./shared/*"]
     }
   },
   "include": [
     "vitest.config.ts",
     "tests/**/*.ts",
     "app/**/*.ts",
-    "app/**/*.vue"
+    "app/**/*.vue",
+    "shared/**/*.ts"
   ]
 }

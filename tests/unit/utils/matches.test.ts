@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { groupMatchesByDate, formatReadableDate } from '~/utils/matches'
+import { getMatchStatusKind } from '#shared/utils/matches'
 import type { Match } from '~/types'
 
 const makeMatch = (overrides: Partial<Match>): Match => ({
@@ -62,14 +63,30 @@ describe('groupMatchesByDate', () => {
 })
 
 describe('formatReadableDate', () => {
-  it('форматирует дату на русском языке', () => {
-    const result = formatReadableDate('2026-06-23')
-    expect(result).toContain('июня')
-    expect(result).toContain('2026')
+  it('форматирует дату на русском языке без года', () => {
+    expect(formatReadableDate('2026-06-23')).toBe('Вторник, 23 июня')
   })
 
   it('первая буква заглавная', () => {
     const result = formatReadableDate('2026-06-23')
     expect(result[0]).toMatch(/[А-ЯЁ]/)
+  })
+})
+
+describe('getMatchStatusKind', () => {
+  it('различает запланированный, идущий, завершённый и несостоявшийся матч', () => {
+    expect(getMatchStatusKind('NS')).toBe('scheduled')
+    expect(getMatchStatusKind('1H')).toBe('live')
+    expect(getMatchStatusKind('HT')).toBe('live')
+    expect(getMatchStatusKind('PEN')).toBe('live')
+    expect(getMatchStatusKind('FT')).toBe('finished')
+    expect(getMatchStatusKind('AET')).toBe('finished')
+    expect(getMatchStatusKind('AP')).toBe('finished')
+    expect(getMatchStatusKind('PST')).toBe('inactive')
+    expect(getMatchStatusKind('CANC')).toBe('inactive')
+  })
+
+  it('неизвестный код считает запланированным', () => {
+    expect(getMatchStatusKind('???')).toBe('scheduled')
   })
 })

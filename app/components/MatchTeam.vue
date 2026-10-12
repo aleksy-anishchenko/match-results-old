@@ -2,7 +2,11 @@
 const props = defineProps<{
   name: string
   badge: string
-  side: 'left' | 'right'
+  side: 'home' | 'away'
+  /** Итог для этой команды в завершённом матче */
+  result?: 'win' | 'lose' | null
+  /** Матч не состоится: название приглушено */
+  muted?: boolean
 }>()
 
 const badgeUrl = computed(() =>
@@ -13,59 +17,118 @@ const localName = computed(() => getTeamName(props.name))
 </script>
 
 <template>
-  <div :class="['team', `team--${side}`]">
+  <div
+    class="team"
+    :class="`team--${side}`"
+  >
     <img
+      v-if="badgeUrl"
       :src="badgeUrl"
-      width="30"
-      height="30"
-      :alt="name"
+      alt=""
+      width="28"
+      height="28"
+      class="team__badge"
     >
-    <div class="team__name">
-      {{ localName }}
-    </div>
+    <span
+      v-else
+      class="team__badge team__badge--empty"
+    />
+    <span
+      class="team__name"
+      :class="{
+        'team__name--win': result === 'win',
+        'team__name--lose': result === 'lose',
+        'team__name--muted': muted,
+      }"
+    >{{ localName }}</span>
   </div>
 </template>
 
 <style scoped lang="scss">
+// На телефоне обёртка растворяется (display: contents), эмблема и название
+// занимают свои ячейки в сетке строки матча. На десктопе это обычный flex.
 .team {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
+  display: contents;
 }
 
-.team img {
-  width: 26px;
-  height: 26px;
+.team__badge {
+  width: 22px;
+  height: 22px;
   flex-shrink: 0;
-}
+  object-fit: contain;
 
-.team--left {
-  flex-direction: row-reverse;
-  justify-content: flex-start;
-  text-align: right;
-  padding-right: 10px;
-}
-
-.team--right {
-  justify-content: flex-start;
-  text-align: left;
-  padding-left: 10px;
+  &--empty {
+    border-radius: 50%;
+    background: $color-badge-bg;
+    border: 1px solid $color-border;
+  }
 }
 
 .team__name {
-  white-space: nowrap;
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
-  min-width: 0;
-  font-size: 13px;
+  white-space: nowrap;
+  font-size: 15px;
+  font-weight: 500;
+
+  &--win {
+    font-weight: 700;
+  }
+
+  &--lose {
+    color: $color-text-3;
+  }
+
+  &--muted {
+    color: $color-text-muted;
+  }
+}
+
+.team--home {
+  .team__badge {
+    grid-area: hbadge;
+  }
+
+  .team__name {
+    grid-area: hname;
+  }
+}
+
+.team--away {
+  .team__badge {
+    grid-area: abadge;
+  }
+
+  .team__name {
+    grid-area: aname;
+  }
 }
 
 @media (min-width: $breakpoint-desktop) {
-  .team img { width: 30px; height: 30px; }
-  .team--left { padding-right: 12px; }
-  .team--right { padding-left: 12px; }
-  .team__name { font-size: 14px; }
+  .team {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+  }
+
+  .team--home {
+    grid-area: home;
+    flex-direction: row-reverse;
+  }
+
+  .team--away {
+    grid-area: away;
+  }
+
+  .team__badge {
+    width: 28px;
+    height: 28px;
+  }
+
+  .team__name {
+    font-size: 16px;
+  }
 }
 </style>

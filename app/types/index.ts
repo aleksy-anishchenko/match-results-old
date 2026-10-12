@@ -1,5 +1,8 @@
 export type CompetitionType = 'league' | 'tournament'
 
+/** Обобщённое состояние матча: ещё не начался, идёт, завершён, не состоится (перенесён/отменён) */
+export type MatchStatusKind = 'scheduled' | 'live' | 'finished' | 'inactive'
+
 export type Competition = {
   id: string
   name: string
