@@ -1,75 +1,28 @@
-# Nuxt Minimal Starter
+# match-results-old
 
-Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+Старая версия сайта с результатами футбольных матчей на Nuxt 4, данные из TheSportsDB. Поддерживается в рабочем состоянии, пока пишется новая версия на React в отдельном проекте `match-results`.
 
-## Setup
+## Требования
 
-Make sure to install dependencies:
+- Node 24.15 или новее. `nvm use` подхватит версию из `.nvmrc`.
+- Ключ TheSportsDB API.
 
-```bash
-# npm
-npm install
-
-# pnpm
-pnpm install
-
-# yarn
-yarn install
-
-# bun
-bun install
-```
-
-## Development Server
-
-Start the development server on `http://localhost:3000`:
+## Запуск
 
 ```bash
-# npm
-npm run dev
-
-# pnpm
-pnpm dev
-
-# yarn
-yarn dev
-
-# bun
-bun run dev
+cp .env.example .env   # вписать ключ в NUXT_THE_SPORTS_DB_API_KEY
+npm ci
+npm run dev            # http://localhost:3000
 ```
 
-## Production
-
-Build the application for production:
+## Проверки и сборка
 
 ```bash
-# npm
-npm run build
-
-# pnpm
-pnpm build
-
-# yarn
-yarn build
-
-# bun
-bun run build
+npm run check    # lint + typecheck + тесты, то же запускает pre-commit хук и CI
+npm run build    # production-сборка в .output
+npm run preview  # локальный просмотр сборки
 ```
 
-Locally preview production build:
+## Деплой
 
-```bash
-# npm
-npm run preview
-
-# pnpm
-pnpm preview
-
-# yarn
-yarn preview
-
-# bun
-bun run preview
-```
-
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+Push в `main` запускает GitHub Actions: проверки, сборка и выкладка `.output` на VPS через rsync с перезапуском через pm2.
