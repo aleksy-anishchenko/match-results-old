@@ -4,11 +4,17 @@
   box-sizing: border-box;
 }
 
+// Фон страницы лежит на body, а html остаётся белым. При «резиновой» прокрутке
+// на macOS над шапкой на миг показывается фон html, и белая полоса сливается
+// с белой шапкой. min-height нужен, чтобы на коротких страницах серый фон
+// доходил до низа окна, а не обрывался там, где кончается контент.
 html {
-  background: $color-bg;
+  background: #fff;
 }
 
 body {
+  min-height: 100vh;
+  background: $color-bg;
   font-family: $font-text;
   color: $color-text;
   line-height: 1.4;
