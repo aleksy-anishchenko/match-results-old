@@ -4,8 +4,15 @@
   box-sizing: border-box;
 }
 
+html {
+  background: $color-bg;
+}
+
 body {
-  font-family: 'IBM Plex Sans', sans-serif;
+  font-family: $font-text;
+  color: $color-text;
+  line-height: 1.4;
+  -webkit-font-smoothing: antialiased;
 }
 
 a {
@@ -18,23 +25,55 @@ ol {
   list-style: none;
 }
 
+button {
+  font: inherit;
+  color: inherit;
+}
+
+h1 {
+  font-family: $font-display;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+
+// Цифры одинаковой ширины: столбцы со счётом и очками не «пляшут»
+.num {
+  font-variant-numeric: tabular-nums;
+}
+
 .container {
   max-width: $container-max;
   margin: 0 auto;
-  padding: 0 16px;
+  padding: 0 $container-padding;
 
   @media (min-width: $breakpoint-desktop) {
-    padding: 0 24px;
+    padding: 0 $container-padding-desktop;
   }
 }
 
+// PrimeVue: выпадающий список и календарь в цветах проекта.
+// Эти элементы рендерятся в конец body, scoped-стили компонентов до них не дотягиваются.
+.p-select-overlay {
+  border-radius: 12px;
+  border-color: $color-border;
+  box-shadow: 0 8px 24px rgba(27, 38, 33, 0.1);
+}
+
+.p-select-option-group {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: $color-text-3;
+}
+
 .p-datepicker-day-selected {
-  background-color: #16a34a;
+  background-color: $color-accent;
   color: #fff;
   font-weight: 700;
 }
 
 .p-datepicker-day-selected-range {
-  background-color: #dcfce7;
-  color: #166534;
+  background-color: $color-accent-soft;
+  color: $color-accent-dark;
 }

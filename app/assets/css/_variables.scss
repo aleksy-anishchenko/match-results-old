@@ -1,3 +1,54 @@
+// Дизайн-токены. Файл автоматически подключается в каждый SCSS (см. nuxt.config.ts),
+// поэтому переменные доступны в любом компоненте без @use.
+
+// Брейкпоинты
 $breakpoint-nav: 480px;
 $breakpoint-desktop: 640px;
-$container-max: 960px;
+
+// Сетка
+$content-width: 800px;
+$container-padding: 16px;
+$container-padding-desktop: 24px;
+$container-max: $content-width + 2 * $container-padding-desktop;
+$header-height: 64px;
+$header-height-mobile: 56px;
+$mobile-nav-height: 44px;
+
+// Шрифты
+$font-text: 'Onest', system-ui, -apple-system, 'Segoe UI', sans-serif;
+$font-display: 'Unbounded', 'Onest', system-ui, sans-serif;
+
+// Цвета: фон и поверхности
+$color-bg: #F3F6F4;
+$color-surface: #FFFFFF;
+$color-border: #DDE5E0;
+$color-border-soft: #EDF2EF;
+$color-border-strong: #C9D4CE;
+$color-badge-bg: #E7EFEA;
+
+// Цвета: текст
+$color-text: #1B2621;
+$color-text-2: #47524C;
+$color-text-3: #5B6660;
+$color-text-muted: #8A948F;
+
+// Цвета: акцент (зелёный)
+$color-accent: #1F7A4D;
+$color-accent-soft: #DDF0E4;
+$color-accent-dark: #13402D;
+$color-accent-muted: #5E8C75;
+$color-accent-pale: #9FC0B0;
+
+// Цвета: лайв (красный)
+$color-live: #C2413A;
+$color-live-soft: #FBEAE9;
+$color-live-pale: #E7A7A3;
+
+// Цвета: прочее
+$color-blue: #3B6FB6;
+
+// Радиусы
+$radius-card: 16px;
+$radius-card-lg: 20px;
+$radius-score: 10px;
+$radius-pill: 999px;

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 useHead({
+  htmlAttrs: { lang: 'ru' },
   titleTemplate: '%s',
   title: 'Результаты матчей',
   link: [

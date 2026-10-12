@@ -1,5 +1,26 @@
 import Aura from '@primeuix/themes/aura'
+import { definePreset } from '@primeuix/themes'
 import { resolve } from 'path'
+
+// Тема PrimeVue с зелёным акцентом проекта вместо изумрудного по умолчанию.
+// Шкала 50–950: от самого светлого оттенка к самому тёмному, 500 — основной цвет.
+const MatchResultsPreset = definePreset(Aura, {
+  semantic: {
+    primary: {
+      50: '#EEF6F1',
+      100: '#DDF0E4',
+      200: '#BFE0CC',
+      300: '#9FC0B0',
+      400: '#5E8C75',
+      500: '#1F7A4D',
+      600: '#1A6A43',
+      700: '#155A39',
+      800: '#13402D',
+      900: '#0E3022',
+      950: '#08201A',
+    },
+  },
+})
 
 export default defineNuxtConfig({
   modules: ['@primevue/nuxt-module', '@nuxt/eslint'],
@@ -29,7 +50,7 @@ export default defineNuxtConfig({
   primevue: {
     options: {
       theme: {
-        preset: Aura,
+        preset: MatchResultsPreset,
         options: { darkModeSelector: false },
       },
       locale: {
