@@ -48,6 +48,18 @@ $color-live-pale: #E7A7A3;
 // Цвета: прочее
 $color-blue: #3B6FB6;
 
+// Цвета зон в таблице (полоска у места и легенда). Три цвета из макета:
+// ЛЧ — акцент, ЛЕ — синий, вылет — лайв. Квалификация и стыки — светлее.
+$color-zone-tier1: $color-accent;
+$color-zone-tier1-qual: #8CC4A6;
+$color-zone-tier2: $color-blue;
+$color-zone-tier2-qual: #9DB7DD;
+$color-zone-tier3: #7A5FB0;
+$color-zone-tier3-qual: #BBA9DC;
+$color-zone-qual: $color-text-muted;
+$color-zone-relegation-playoff: $color-live-pale;
+$color-zone-relegation: $color-live;
+
 // Радиусы
 $radius-card: 16px;
 $radius-card-lg: 20px;

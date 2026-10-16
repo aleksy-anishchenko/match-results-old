@@ -1,4 +1,4 @@
-import type { GroupStanding } from '~/types'
+import type { GroupStanding, StandingsResponse } from '~/types'
 
 type ApiMatch = {
   strHomeTeam: string
@@ -20,6 +20,8 @@ type TableRow = {
   strTeam: string
   strBadge: string | null
   strGroup: string | null
+  strDescription: string | null
+  strSeason: string | null
   intPlayed: string
   intWin: string
   intDraw: string
@@ -47,6 +49,7 @@ function calculateStandings(
       badge: badgeMap[team] ?? '',
       played: 0, won: 0, drawn: 0, lost: 0,
       goalsFor: 0, goalsAgainst: 0, goalDiff: 0, points: 0,
+      zone: null,
     }
   }
 
@@ -97,7 +100,7 @@ function calculateStandings(
     })
 }
 
-export default cachedEventHandler(async (event) => {
+export default cachedEventHandler(async (event): Promise<StandingsResponse> => {
   const config = useRuntimeConfig()
   const query = getQuery(event)
   const leagueId = String(query.leagueId ?? DEFAULT_COMPETITION_ID)
@@ -112,7 +115,7 @@ export default cachedEventHandler(async (event) => {
   if (rows && rows.length) {
     const groups: Record<string, GroupStanding[]> = {}
     for (const row of rows) {
-      const group = row.strGroup ?? 'Таблица'
+      const group = row.strGroup ? formatGroupName(row.strGroup) : 'Таблица'
       if (!groups[group]) groups[group] = []
       groups[group]!.push({
         team: row.strTeam,
@@ -125,9 +128,12 @@ export default cachedEventHandler(async (event) => {
         goalsAgainst: parseInt(row.intGoalsAgainst ?? '0'),
         goalDiff: parseInt(row.intGoalDifference ?? '0'),
         points: parseInt(row.intPoints ?? '0'),
+        // Зоны из API только у лиг: в турнирах описания про сетку («Round of 32»),
+        // а выход из группы считает страница по правилам турнира
+        zone: competition?.type === 'league' ? getStandingZone(row.strDescription, leagueId) : null,
       })
     }
-    return { groups }
+    return { groups: sortGroups(groups), season: rows[0]?.strSeason ?? null }
   }
 
   // Фолбэк: для турниров без таблицы (например, общий этап ЛЧ) считаем сами
@@ -140,7 +146,7 @@ export default cachedEventHandler(async (event) => {
   )
 
   const season = nextData.schedule[0]?.strSeason
-  if (!season) return { groups: {} }
+  if (!season) return { groups: {}, season: null }
 
   const data = await $fetch<ScheduleResponse>(
     `${apiBase}/schedule/league/${leagueId}/${season}`,
@@ -165,7 +171,7 @@ export default cachedEventHandler(async (event) => {
     groupMatches = data.schedule.filter(match => groupRounds.has(match.intRound))
   }
 
-  if (!groupMatches.length) return { groups: {} }
+  if (!groupMatches.length) return { groups: {}, season }
 
   const badgeMap: Record<string, string> = {}
   const teams = new Set<string>()
@@ -179,7 +185,7 @@ export default cachedEventHandler(async (event) => {
   const finishedMatches = groupMatches.filter(match => match.strStatus === 'FT')
   const standings = calculateStandings([...teams], badgeMap, finishedMatches)
 
-  return { groups: { [competition?.name ?? 'Таблица']: standings } }
+  return { groups: { [competition?.name ?? 'Таблица']: standings }, season }
 }, {
   maxAge: 60,
   getKey: event => `standings-${getQuery(event).leagueId ?? DEFAULT_COMPETITION_ID}`,

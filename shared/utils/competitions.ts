@@ -128,6 +128,8 @@ export const COMPETITIONS: Competition[] = [
     category: 'Сборные',
     groupRounds: ['1', '2', '3'],
     whiteBadge: true,
+    groupAdvance: 2,
+    bestThirdsAdvance: true,
   },
   {
     id: '4502',
@@ -136,6 +138,8 @@ export const COMPETITIONS: Competition[] = [
     type: 'tournament',
     category: 'Сборные',
     groupRounds: ['1', '2', '3'],
+    groupAdvance: 2,
+    bestThirdsAdvance: true,
   },
   {
     id: '4490',
@@ -152,6 +156,7 @@ export const COMPETITIONS: Competition[] = [
     type: 'tournament',
     category: 'Сборные',
     groupRounds: ['1', '2', '3'],
+    groupAdvance: 2,
   },
 ]
 

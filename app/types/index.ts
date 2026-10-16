@@ -18,6 +18,10 @@ export type Competition = {
   leaguePhase?: boolean
   /** Логотип преимущественно белый — показывать на тёмной подложке */
   whiteBadge?: boolean
+  /** Для турниров с группами: сколько команд из группы выходят в плей-офф */
+  groupAdvance?: number
+  /** Кроме них в плей-офф выходят лучшие команды с 3-х мест (ЧМ 2026, Евро) */
+  bestThirdsAdvance?: boolean
 }
 
 export type CompetitionWithBadge = Competition & { badge: string | null }
@@ -65,6 +69,31 @@ export type MatchDetails = {
   city: string | null
 }
 
+/**
+ * Вид зоны в таблице. Уровни по силе клубного турнира:
+ * tier1 — ЛЧ, Кубок Либертадорес, ЛЧ АФК, плей-офф МЛС;
+ * tier2 — ЛЕ, Южноамериканский кубок, ЛЧ АФК 2;
+ * tier3 — Лига конференций, Лига чемпионов Залива.
+ * Суффикс -qual — квалификация или плей-офф за этот турнир. qual — квалификация,
+ * когда API не уточняет, в какой турнир.
+ */
+export type StandingZoneKind
+  = | 'tier1'
+    | 'tier1-qual'
+    | 'tier2'
+    | 'tier2-qual'
+    | 'tier3'
+    | 'tier3-qual'
+    | 'qual'
+    | 'relegation-playoff'
+    | 'relegation'
+
+/** Куда попадает команда с этого места по итогам сезона */
+export type StandingZone = {
+  kind: StandingZoneKind
+  label: string
+}
+
 export type GroupStanding = {
   team: string
   badge: string
@@ -76,10 +105,13 @@ export type GroupStanding = {
   goalsAgainst: number
   goalDiff: number
   points: number
+  zone: StandingZone | null
 }
 
 export type StandingsResponse = {
   groups: Record<string, GroupStanding[]>
+  /** Сезон из API: «2026-2027» или «2026» */
+  season: string | null
 }
 
 export type BracketMatch = {

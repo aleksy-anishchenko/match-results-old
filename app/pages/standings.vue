@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { StandingsResponse, BracketResponse } from '~/types'
+import type { StandingsResponse, BracketResponse, GroupStanding } from '~/types'
 
 useHead({ title: 'Турнирная таблица' })
 
@@ -10,11 +10,11 @@ const activeTab = ref<'playoff' | 'groups'>('playoff')
 
 const leagueQuery = computed(() => ({ leagueId: competition.value.id }))
 
-const { data: standingsData } = await useFetch<StandingsResponse>('/api/standings', {
+const { data: standingsData, error: standingsError } = await useFetch<StandingsResponse>('/api/standings', {
   query: leagueQuery,
 })
 
-const { data: bracketData } = await useFetch<BracketResponse>('/api/bracket', {
+const { data: bracketData, error: bracketError } = await useFetch<BracketResponse>('/api/bracket', {
   query: leagueQuery,
 })
 
@@ -37,26 +37,39 @@ const advancedTeams = computed(() => {
   return teams
 })
 
-function isAdvancing(team: string, index: number): boolean {
-  return advancedTeams.value ? advancedTeams.value.has(team) : index < 2
-}
+// Зоны лиг приходят из API. В группах турнира зону считаем сами: кто выходит в плей-офф
+const tables = computed(() => Object.entries(groups.value).map(([name, rows]) => ({
+  name,
+  rows: isGroupStage.value
+    ? rows.map((row, index): GroupStanding => ({
+        ...row,
+        zone: getGroupStageZone(row.team, index, {
+          advancedTeams: advancedTeams.value,
+          groupAdvance: competition.value.groupAdvance,
+          bestThirdsAdvance: competition.value.bestThirdsAdvance,
+        }),
+      }))
+    : rows,
+})))
 
-function isPossiblyAdvancing(index: number): boolean {
-  return !advancedTeams.value && index === 2
-}
+const legend = computed(() => collectLegend(tables.value.flatMap(table => table.rows)))
 
-function goalDiffClass(goalDiff: number): string {
-  if (goalDiff > 0) return 'table__diff--pos'
-  if (goalDiff < 0) return 'table__diff--neg'
-  return ''
-}
+const kicker = computed(() => {
+  const season = standingsData.value?.season
+  return season ? `${competition.value.name} · сезон ${formatSeason(season)}` : competition.value.name
+})
 </script>
 
 <template>
-  <div>
-    <h1 class="page-title">
-      Турнирная таблица
-    </h1>
+  <div class="standings-page">
+    <header class="page-head">
+      <p class="page-head__kicker">
+        {{ kicker }}
+      </p>
+      <h1 class="page-head__title">
+        Таблица
+      </h1>
+    </header>
 
     <div
       v-if="isTournament"
@@ -80,8 +93,14 @@ function goalDiffClass(goalDiff: number): string {
 
     <template v-if="isTournament && activeTab === 'playoff'">
       <p
-        v-if="!rounds.length"
-        class="empty"
+        v-if="bracketError"
+        class="status"
+      >
+        Не удалось загрузить сетку плей-офф. Попробуйте обновить страницу.
+      </p>
+      <p
+        v-else-if="!rounds.length"
+        class="status"
       >
         Плей-офф ещё не начался
       </p>
@@ -92,102 +111,96 @@ function goalDiffClass(goalDiff: number): string {
     </template>
 
     <template v-else>
-      <div class="groups">
-        <div
-          v-for="(standings, groupName) in groups"
-          :key="groupName"
-          class="group"
-        >
-          <h2
-            v-if="isTournament"
-            class="group__title"
-          >
-            {{ groupName }}
-          </h2>
-          <table class="table">
-            <thead>
-              <tr>
-                <th class="table__team-col" />
-                <th title="Игры">
-                  И
-                </th>
-                <th title="Победы">
-                  В
-                </th>
-                <th title="Ничьи">
-                  Н
-                </th>
-                <th title="Поражения">
-                  П
-                </th>
-                <th
-                  class="table__goals-col"
-                  title="Голы забитые : пропущенные"
-                >
-                  Г
-                </th>
-                <th title="Разность голов">
-                  РГ
-                </th>
-                <th title="Очки">
-                  О
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr
-                v-for="(row, index) in standings"
-                :key="row.team"
-                :class="{
-                  'table__row--advance': isGroupStage && isAdvancing(row.team, index),
-                  'table__row--maybe': isGroupStage && isPossiblyAdvancing(index),
-                }"
-              >
-                <td class="table__team">
-                  <span class="table__position">{{ index + 1 }}</span>
-                  <img
-                    :src="`/api/image?url=${encodeURIComponent(row.badge)}`"
-                    width="20"
-                    height="20"
-                    :alt="row.team"
-                    class="table__badge"
-                  >
-                  <span class="table__name">{{ getTeamName(row.team) }}</span>
-                </td>
-                <td>{{ row.played }}</td>
-                <td>{{ row.won }}</td>
-                <td>{{ row.drawn }}</td>
-                <td>{{ row.lost }}</td>
-                <td class="table__goals">
-                  {{ row.goalsFor }}:{{ row.goalsAgainst }}
-                </td>
-                <td :class="goalDiffClass(row.goalDiff)">
-                  {{ row.goalDiff > 0 ? '+' : '' }}{{ row.goalDiff }}
-                </td>
-                <td class="table__points">
-                  {{ row.points }}
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+      <p
+        v-if="standingsError"
+        class="status"
+      >
+        Не удалось загрузить таблицу. Попробуйте обновить страницу.
+      </p>
+      <p
+        v-else-if="!tables.length"
+        class="status"
+      >
+        Таблицы пока нет
+      </p>
+      <div
+        v-else
+        class="groups"
+      >
+        <!-- Заголовок нужен, когда таблиц несколько: группы турнира, конференции МЛС -->
+        <StandingsTable
+          v-for="table in tables"
+          :key="table.name"
+          :rows="table.rows"
+          :title="tables.length > 1 ? table.name : undefined"
+        />
       </div>
+      <ul
+        v-if="legend.length"
+        class="legend"
+      >
+        <li
+          v-for="zone in legend"
+          :key="zone.label"
+          class="legend__item"
+        >
+          <StandingZoneMark
+            :kind="zone.kind"
+            variant="square"
+          />
+          {{ zone.label }}
+        </li>
+      </ul>
     </template>
   </div>
 </template>
 
 <style scoped lang="scss">
-.page-title {
-  font-size: 26px;
-  font-weight: bold;
-  margin-bottom: 20px;
+.standings-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  @media (min-width: $breakpoint-desktop) {
+    gap: 24px;
+  }
+}
+
+.page-head {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  @media (min-width: $breakpoint-desktop) {
+    gap: 6px;
+  }
+}
+
+.page-head__kicker {
+  font-size: 12px;
+  font-weight: 600;
+  color: $color-text-3;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+
+  @media (min-width: $breakpoint-desktop) {
+    font-size: 13px;
+  }
+}
+
+.page-head__title {
+  font-size: 28px;
+  line-height: 1.2;
+
+  @media (min-width: $breakpoint-desktop) {
+    font-size: 40px;
+  }
 }
 
 .tabs {
   display: flex;
   gap: 0;
   border-bottom: 2px solid #eee;
-  margin-bottom: 24px;
 }
 
 .tab {
@@ -212,146 +225,37 @@ function goalDiffClass(goalDiff: number): string {
   }
 }
 
-.empty {
-  color: #aaa;
+.status {
+  padding: 24px 0;
   font-size: 14px;
-  padding: 32px 0;
+  color: $color-text-3;
 }
 
 .groups {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 32px;
-  padding-bottom: 48px;
-}
-
-.group {
-  max-width: 500px;
-  margin: 0 auto;
-  width: 100%;
-}
-
-.group__title {
-  font-size: 16px;
-  font-weight: 600;
-  margin-bottom: 8px;
-  color: #555;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.table {
-  width: 100%;
-  table-layout: fixed;
-  border-collapse: collapse;
-  font-size: 12px;
-}
-
-.table thead th {
-  text-align: center;
-  padding: 4px 4px;
-  color: #999;
-  font-weight: 500;
-  border-bottom: 1px solid #eee;
-}
-
-.table thead th:not(.table__team-col) {
-  width: 26px;
-}
-
-.table__team-col {
-  text-align: left !important;
-}
-
-.table tbody td {
-  padding: 6px 4px;
-  text-align: center;
-  border-bottom: 1px solid #f3f3f3;
-}
-
-.table__row--advance {
-  background-color: #f0faf4;
-}
-
-.table__row--maybe {
-  background-color: #fefce8;
-}
-
-.table__team {
   display: flex;
-  align-items: center;
-  gap: 6px;
-  text-align: left !important;
-  overflow: hidden;
+  flex-direction: column;
+  gap: 16px;
+
+  @media (min-width: $breakpoint-desktop) {
+    gap: 24px;
+  }
 }
 
-.table__position {
-  color: #bbb;
-  font-size: 12px;
-  width: 12px;
-  flex-shrink: 0;
-}
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  font-size: 13px;
+  color: $color-text-2;
 
-.table__badge {
-  flex-shrink: 0;
-  object-fit: contain;
-}
-
-.table__name {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  min-width: 0;
-}
-
-.table__goals-col,
-.table__goals {
-  display: none;
-}
-
-.table__goals {
-  color: #666;
-}
-
-.table__points {
-  font-weight: 700;
-}
-
-.table__diff--pos {
-  color: #16a34a;
-}
-
-.table__diff--neg {
-  color: #dc2626;
-}
-
-@media (min-width: $breakpoint-nav) {
-  .table {
+  @media (min-width: $breakpoint-desktop) {
     font-size: 14px;
   }
-
-  .table thead th:not(.table__team-col) {
-    width: 36px;
-    padding: 4px 6px;
-  }
-
-  .table tbody td {
-    padding: 6px;
-  }
-
-  .table__team {
-    gap: 8px;
-  }
-
-  .table__goals-col,
-  .table__goals {
-    display: table-cell;
-  }
 }
 
-@media (min-width: $breakpoint-desktop) {
-  .groups {
-    grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
-  }
+.legend__item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 </style>
