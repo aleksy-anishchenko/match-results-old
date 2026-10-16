@@ -1,4 +1,5 @@
 import type { Match } from '~/types'
+import { getMoscowDate } from '#shared/utils/matches'
 
 export const MATCH_STATUS_LABELS: Record<string, string> = {
   'NS': 'Не начался',
@@ -36,31 +37,23 @@ export function formatMoscowTime(timestamp: string): string {
   })
 }
 
-export function formatMoscowDate(dateStr: string): string {
-  const date = new Date(`${dateStr}T00:00:00`)
-  const formatted = date.toLocaleDateString('ru-RU', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  })
-  return formatted.charAt(0).toUpperCase() + formatted.slice(1)
-}
-
 export function groupMatchesByDate(matches: Match[]): Record<string, Match[]> {
   return matches.reduce((acc, match) => {
-    const date = new Date(match.timestamp + 'Z').toLocaleDateString('sv-SE', { timeZone: 'Europe/Moscow' })
+    const date = getMoscowDate(match.timestamp)
     if (!acc[date]) acc[date] = []
     acc[date]!.push(match)
     return acc
   }, {} as Record<string, Match[]>)
 }
 
-/** Заголовок дня в списке матчей: «Пятница, 18 сентября», без года */
-export function formatReadableDate(dateStr: string): string {
+/**
+ * Дата без года: «Пятница, 18 сентября» (заголовок дня в списке матчей)
+ * или с коротким днём недели «Пт, 18 сентября» (страница матча)
+ */
+export function formatReadableDate(dateStr: string, weekday: 'long' | 'short' = 'long'): string {
   const date = new Date(dateStr + 'T00:00:00')
   const formatted = date.toLocaleDateString('ru-RU', {
-    weekday: 'long',
+    weekday,
     day: 'numeric',
     month: 'long',
   })

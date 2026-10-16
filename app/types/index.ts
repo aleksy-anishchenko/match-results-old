@@ -57,13 +57,12 @@ export type MatchDetails = {
   status: string
   timestamp: string
   date: string
-  time: string
+  leagueId: string
   league: string
   season: string
   round: string | null
   venue: string | null
   city: string | null
-  country: string | null
 }
 
 export type GroupStanding = {

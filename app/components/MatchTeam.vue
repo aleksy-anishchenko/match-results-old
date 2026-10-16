@@ -10,7 +10,7 @@ const props = defineProps<{
 }>()
 
 const badgeUrl = computed(() =>
-  props.badge ? `/api/image?url=${encodeURIComponent(props.badge)}` : '',
+  props.badge ? getBadgeUrl(props.badge) : '',
 )
 
 const localName = computed(() => getTeamName(props.name))

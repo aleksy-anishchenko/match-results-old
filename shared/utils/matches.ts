@@ -5,6 +5,17 @@ export const FINISHED_MATCH_STATUSES = new Set(['FT', 'AET', 'AP'])
 export const LIVE_MATCH_STATUSES = new Set(['1H', 'HT', '2H', 'ET', 'BT', 'P', 'PEN', 'LIVE', 'INT'])
 /** Матч не состоится или остановлен: перенесён, отменён, прерван, техническое решение */
 export const INACTIVE_MATCH_STATUSES = new Set(['PST', 'CANC', 'ABD', 'SUSP', 'AWD', 'WO'])
+/** Статусы, при которых у матча есть серия пенальти: идёт (P, PEN) или завершён по пенальти (AP) */
+export const PENALTY_MATCH_STATUSES = new Set(['P', 'PEN', 'AP'])
+
+/**
+ * Дата по Москве в виде YYYY-MM-DD. Строка — это timestamp из API: время UTC без смещения
+ * («2026-06-23T22:30:00»). Date — любой момент, например «сейчас».
+ */
+export function getMoscowDate(value: string | Date): string {
+  const date = typeof value === 'string' ? new Date(value + 'Z') : value
+  return date.toLocaleDateString('sv-SE', { timeZone: 'Europe/Moscow' })
+}
 
 export function getMatchStatusKind(status: string): MatchStatusKind {
   if (LIVE_MATCH_STATUSES.has(status)) return 'live'

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { groupMatchesByDate, formatReadableDate } from '~/utils/matches'
-import { getMatchStatusKind } from '#shared/utils/matches'
+import { getMatchStatusKind, getMoscowDate } from '#shared/utils/matches'
 import type { Match } from '~/types'
 
 const makeMatch = (overrides: Partial<Match>): Match => ({
@@ -70,6 +70,22 @@ describe('formatReadableDate', () => {
   it('первая буква заглавная', () => {
     const result = formatReadableDate('2026-06-23')
     expect(result[0]).toMatch(/[А-ЯЁ]/)
+  })
+
+  it('с коротким днём недели', () => {
+    expect(formatReadableDate('2026-06-23', 'short')).toBe('Вт, 23 июня')
+  })
+})
+
+describe('getMoscowDate', () => {
+  it('переводит UTC-время из API в московскую дату', () => {
+    expect(getMoscowDate('2026-06-23T15:00:00')).toBe('2026-06-23')
+    // 22:30 UTC — это уже 01:30 следующего дня по Москве
+    expect(getMoscowDate('2026-06-23T22:30:00')).toBe('2026-06-24')
+  })
+
+  it('принимает и объект Date', () => {
+    expect(getMoscowDate(new Date('2026-06-23T22:30:00Z'))).toBe('2026-06-24')
   })
 })
 

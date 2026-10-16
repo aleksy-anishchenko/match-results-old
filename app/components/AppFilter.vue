@@ -22,8 +22,7 @@ const offsets: Record<Exclude<Mode, 'custom'>, number> = {
 }
 
 function getMoscowDateStr(offset: number): string {
-  const date = new Date(Date.now() + offset * 24 * 60 * 60 * 1000)
-  return date.toLocaleDateString('sv-SE', { timeZone: 'Europe/Moscow' })
+  return getMoscowDate(new Date(Date.now() + offset * 24 * 60 * 60 * 1000))
 }
 
 function toDateStr(date: Date): string {

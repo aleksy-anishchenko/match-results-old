@@ -26,15 +26,12 @@ type V1Response = {
   }> | null
 }
 
-const getMoscowDate = (timestamp: string) =>
-  new Date(timestamp + 'Z').toLocaleDateString('sv-SE', { timeZone: 'Europe/Moscow' })
-
 export default cachedEventHandler(async (event) => {
   const config = useRuntimeConfig()
   const query = getQuery(event)
   const leagueId = String(query.leagueId ?? DEFAULT_COMPETITION_ID)
 
-  const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Moscow' })
+  const today = getMoscowDate(new Date())
   const dateFrom = String(query.dateFrom ?? today)
   const dateTo = String(query.dateTo ?? today)
 

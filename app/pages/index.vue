@@ -3,7 +3,7 @@ import type { MatchesResponse } from '~/types'
 
 const { competition } = useCompetition()
 
-const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Moscow' })
+const today = getMoscowDate(new Date())
 const dateRange = ref({ from: today, to: today })
 
 const { data, pending, error } = await useFetch<MatchesResponse>('/api/matches', {

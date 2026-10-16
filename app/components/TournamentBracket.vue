@@ -93,7 +93,7 @@ function connectorPath(roundIndex: number, nextRoundMatchCount: number): string 
           >
             <img
               v-if="match.homeBadge"
-              :src="`/api/image?url=${encodeURIComponent(match.homeBadge)}`"
+              :src="getBadgeUrl(match.homeBadge)"
               width="16"
               height="16"
               class="mc-badge"
@@ -124,7 +124,7 @@ function connectorPath(roundIndex: number, nextRoundMatchCount: number): string 
           >
             <img
               v-if="match.awayBadge"
-              :src="`/api/image?url=${encodeURIComponent(match.awayBadge)}`"
+              :src="getBadgeUrl(match.awayBadge)"
               width="16"
               height="16"
               class="mc-badge"

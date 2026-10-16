@@ -36,7 +36,7 @@ function isWhiteBadge(id: string): boolean {
 
 function badgeUrl(id: string): string {
   const badge = badgeById.value[id]
-  return badge ? `/api/image?url=${encodeURIComponent(badge)}` : ''
+  return badge ? getBadgeUrl(badge) : ''
 }
 </script>
 
