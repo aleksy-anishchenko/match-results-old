@@ -44,6 +44,21 @@ export type MatchesResponse = {
   matches: Match[]
 }
 
+/** Тур для навигации на главной: «5 тур», «1/8 финала», «Плей-офф» */
+export type SeasonRound = {
+  /** Для лиг и туров общего этапа — номер тура из API, для плей-офф турниров — playoff-<код раунда> */
+  id: string
+  name: string
+}
+
+export type RoundsResponse = {
+  /** Сезон из API: «2026-2027» или «2026» */
+  season: string | null
+  rounds: SeasonRound[]
+  /** Тур матча, ближайшего по времени к сейчас */
+  current: string | null
+}
+
 export type MatchDetails = {
   idEvent: string
   homeTeam: string

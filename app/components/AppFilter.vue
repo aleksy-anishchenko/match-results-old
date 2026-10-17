@@ -1,25 +1,25 @@
 <script setup lang="ts">
-type Mode = 'yesterday' | 'today' | 'tomorrow' | 'custom'
+type DateRange = { from: string, to: string }
 
-const emit = defineEmits<{
-  change: [{ from: string, to: string }]
+// Выбор живёт у страницы (в адресе), фильтр его только показывает и сообщает о нажатиях
+const props = defineProps<{
+  /** Выбранные даты (YYYY-MM-DD); null — выбран тур */
+  range: DateRange | null
 }>()
 
-const activeMode = ref<Mode>('today')
+const emit = defineEmits<{
+  round: []
+  range: [DateRange]
+}>()
+
+const DAYS = [
+  { label: 'Сегодня', offset: 0 },
+  { label: 'Завтра', offset: 1 },
+  { label: 'Вчера', offset: -1 },
+] as const
+
 const selectedRange = ref<Date[] | null>(null)
 const popover = ref()
-
-const modeLabels: Record<Exclude<Mode, 'custom'>, string> = {
-  today: 'Сегодня',
-  tomorrow: 'Завтра',
-  yesterday: 'Вчера',
-}
-
-const offsets: Record<Exclude<Mode, 'custom'>, number> = {
-  yesterday: -1,
-  today: 0,
-  tomorrow: 1,
-}
 
 function getMoscowDateStr(offset: number): string {
   return getMoscowDate(new Date(Date.now() + offset * 24 * 60 * 60 * 1000))
@@ -38,11 +38,22 @@ const moscowTodayDate = computed(() => {
   return new Date(year, month - 1, day)
 })
 
-function selectDay(mode: Exclude<Mode, 'custom'>) {
-  activeMode.value = mode
+function isDay(offset: number): boolean {
+  const date = getMoscowDateStr(offset)
+  return props.range?.from === date && props.range.to === date
+}
+
+const isCustomRange = computed(() => props.range != null && !DAYS.some(day => isDay(day.offset)))
+
+function selectDay(offset: number) {
   selectedRange.value = null
-  const dateStr = getMoscowDateStr(offsets[mode])
-  emit('change', { from: dateStr, to: dateStr })
+  const date = getMoscowDateStr(offset)
+  emit('range', { from: date, to: date })
+}
+
+function selectRound() {
+  selectedRange.value = null
+  emit('round')
 }
 
 function toggleCalendar(event: Event) {
@@ -54,9 +65,8 @@ watch(selectedRange, (range) => {
   const [from, to] = range
   if (!from || !to) return
   const [start, end] = from.getTime() <= to.getTime() ? [from, to] : [to, from]
-  activeMode.value = 'custom'
   popover.value.hide()
-  emit('change', { from: toDateStr(start), to: toDateStr(end) })
+  emit('range', { from: toDateStr(start), to: toDateStr(end) })
 })
 </script>
 
@@ -64,22 +74,33 @@ watch(selectedRange, (range) => {
   <div
     class="filter"
     role="group"
-    aria-label="Выбор дня"
+    aria-label="Тур или дни"
   >
     <button
-      v-for="mode in (['today', 'tomorrow', 'yesterday'] as const)"
-      :key="mode"
       type="button"
       class="filter__pill"
-      :class="{ 'filter__pill--active': activeMode === mode }"
-      @click="selectDay(mode)"
+      :class="{ 'filter__pill--active': !range }"
+      :aria-pressed="!range"
+      @click="selectRound"
     >
-      {{ modeLabels[mode] }}
+      Тур
+    </button>
+    <button
+      v-for="day in DAYS"
+      :key="day.offset"
+      type="button"
+      class="filter__pill"
+      :class="{ 'filter__pill--active': isDay(day.offset) }"
+      :aria-pressed="isDay(day.offset)"
+      @click="selectDay(day.offset)"
+    >
+      {{ day.label }}
     </button>
     <button
       type="button"
       class="filter__pill filter__pill--icon"
-      :class="{ 'filter__pill--active': activeMode === 'custom' }"
+      :class="{ 'filter__pill--active': isCustomRange }"
+      :aria-pressed="isCustomRange"
       aria-label="Выбрать диапазон дат"
       @click="toggleCalendar($event)"
     >
@@ -103,13 +124,23 @@ watch(selectedRange, (range) => {
 .filter {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px;
   align-items: center;
-  margin-bottom: 16px;
+
+  @media (min-width: $breakpoint-desktop) {
+    gap: 8px;
+  }
 }
 
 .filter__pill {
   @include pill-button;
+
+  // На телефоне все пять кнопок должны уместиться в одну строку
+  padding: 0 12px;
+
+  @media (min-width: $breakpoint-desktop) {
+    padding: 0 16px;
+  }
 
   &--active {
     @include pill-button-active;
@@ -122,12 +153,6 @@ watch(selectedRange, (range) => {
     align-items: center;
     justify-content: center;
     font-size: 16px;
-  }
-}
-
-@media (min-width: $breakpoint-desktop) {
-  .filter {
-    margin-bottom: 24px;
   }
 }
 </style>

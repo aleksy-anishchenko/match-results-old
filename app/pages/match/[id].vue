@@ -3,6 +3,14 @@ import type { MatchDetails } from '~/types'
 
 const route = useRoute()
 
+// «Результаты» ведёт туда, откуда пришли: тур или даты главной хранятся в её адресе (/?round=5).
+// Историю читаем после монтирования: пока страница собирается, переход в неё ещё не записан
+const backTo = ref('/')
+onMounted(() => {
+  const previousPath = useRouter().options.history.state.back
+  if (typeof previousPath === 'string' && previousPath.startsWith('/?')) backTo.value = previousPath
+})
+
 const { data: match, pending, error } = await useFetch<MatchDetails>(`/api/match/${route.params.id}`)
 
 useHead({
@@ -15,7 +23,7 @@ useHead({
 <template>
   <div class="match-page">
     <NuxtLink
-      to="/"
+      :to="backTo"
       class="back"
     >
       <svg

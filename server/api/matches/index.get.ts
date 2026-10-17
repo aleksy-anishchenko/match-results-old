@@ -10,6 +10,7 @@ type ApiMatch = {
   intAwayScore: string | null
   strStatus: string
   strTimestamp: string
+  intRound: string
   dateEvent: string
   strGroup: string | null
   strSeason: string
@@ -18,6 +19,9 @@ type ApiMatch = {
 export default cachedEventHandler(async (event) => {
   const query = getQuery(event)
   const leagueId = String(query.leagueId ?? DEFAULT_COMPETITION_ID)
+  const competition = getCompetition(leagueId)
+  // Тур (?round=5) или диапазон дат (?dateFrom=…&dateTo=…): на главной выбирают что-то одно
+  const round = typeof query.round === 'string' && query.round ? query.round : null
 
   const today = getMoscowDate(new Date())
   const dateFrom = String(query.dateFrom ?? today)
@@ -28,8 +32,11 @@ export default cachedEventHandler(async (event) => {
 
   const schedule = await getSeasonSchedule<ApiMatch>(leagueId, season)
 
+  const roundByMatch = round && competition ? getSeasonRounds(schedule, competition).roundByMatch : null
+
   const filtered = schedule
     .filter((match) => {
+      if (round) return roundByMatch?.get(match.idEvent) === round
       const moscowDate = getMoscowDate(match.strTimestamp)
       return moscowDate >= dateFrom && moscowDate <= dateTo
     })
@@ -60,6 +67,6 @@ export default cachedEventHandler(async (event) => {
   maxAge: 60,
   getKey: (event) => {
     const query = getQuery(event)
-    return `matches-${query.leagueId}-${query.dateFrom}-${query.dateTo}`
+    return `matches-${query.leagueId}-${query.round ?? ''}-${query.dateFrom}-${query.dateTo}`
   },
 })

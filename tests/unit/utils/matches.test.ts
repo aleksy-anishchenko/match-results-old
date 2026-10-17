@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { groupMatchesByDate, formatReadableDate } from '~/utils/matches'
+import { groupMatchesByDate, formatDatesTitle, formatReadableDate } from '~/utils/matches'
 import {
   getLeaguePhaseMatches,
   getLeaguePhaseRoundCount,
@@ -202,5 +202,24 @@ describe('getMatchWinnerSide', () => {
   it('незавершённый матч — победителя нет, даже если кто-то ведёт', () => {
     expect(getMatchWinnerSide(matchResult({ homeScore: '2', awayScore: '0', status: '2H' }))).toBeNull()
     expect(getMatchWinnerSide(matchResult({ status: 'NS' }))).toBeNull()
+  })
+})
+
+describe('formatDatesTitle', () => {
+  const today = '2026-10-17'
+
+  it('вчера, сегодня, завтра — словами', () => {
+    expect(formatDatesTitle('2026-10-16', '2026-10-16', today)).toBe('Вчера')
+    expect(formatDatesTitle('2026-10-17', '2026-10-17', today)).toBe('Сегодня')
+    expect(formatDatesTitle('2026-10-18', '2026-10-18', today)).toBe('Завтра')
+  })
+
+  it('другой день — с коротким днём недели', () => {
+    expect(formatDatesTitle('2026-10-20', '2026-10-20', today)).toBe('Вт, 20 октября')
+  })
+
+  it('диапазон в одном месяце и через границу месяцев', () => {
+    expect(formatDatesTitle('2026-10-12', '2026-10-15', today)).toBe('12–15 октября')
+    expect(formatDatesTitle('2026-09-28', '2026-10-03', today)).toBe('28 сентября – 3 октября')
   })
 })
