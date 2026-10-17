@@ -54,8 +54,8 @@ describe('главная', () => {
 
   it('по умолчанию — текущий тур, кнопка «Тур» выбрана', async () => {
     const page = await mountSuspended(IndexPage, { route: '/' })
-    expect(page.find('h1').text()).toBe('7 тур')
-    expect(page.find('.page-head__kicker').text()).toBe('АПЛ · сезон 2026/27')
+    // Перед точкой неразрывный пробел (\u00a0), чтобы точка не переносилась на новую строку
+    expect(page.find('h1').text().replace(/\u00a0/g, ' ')).toBe('АПЛ · сезон 2026/27 · 7 тур')
     expect(page.text()).toContain('Эвертон')
     expect(page.get('button[aria-pressed="true"]').text()).toBe('Тур')
   })
@@ -63,7 +63,7 @@ describe('главная', () => {
   it('стрелка «назад» открывает прошлый тур и запоминает его в адресе', async () => {
     const page = await mountSuspended(IndexPage, { route: '/' })
     await page.get('button[aria-label="Назад: 6 тур"]').trigger('click')
-    await vi.waitFor(() => expect(page.find('h1').text()).toBe('6 тур'))
+    await vi.waitFor(() => expect(page.find('.crumbs__item--current').text()).toBe('6 тур'))
     expect(useRoute().query).toEqual({ round: '6' })
     await vi.waitFor(() => expect(page.text()).toContain('Челси'))
   })
@@ -73,21 +73,28 @@ describe('главная', () => {
     expect(page.get('button[aria-label="Вперёд"]').attributes('disabled')).toBeDefined()
   })
 
-  it('кнопка «Сегодня» сбрасывает тур: даты в адресе, заголовок «Сегодня», стрелок нет', async () => {
+  it('кнопка «Сегодня» сбрасывает тур: даты в адресе, в крошках только турнир и сезон, стрелок нет', async () => {
     const page = await mountSuspended(IndexPage, { route: '/?round=6' })
     await page.findAll('button').find(button => button.text() === 'Сегодня')!.trigger('click')
-    await vi.waitFor(() => expect(page.find('h1').text()).toBe('Сегодня'))
+    await vi.waitFor(() => expect(page.find('.crumbs__item--current').exists()).toBe(false))
+    expect(page.find('h1').text().replace(/\u00a0/g, ' ')).toBe('АПЛ · сезон 2026/27')
     const today = getMoscowDate(new Date())
     expect(useRoute().query).toEqual({ from: today, to: today })
     expect(page.find('.page-head__arrows').exists()).toBe(false)
     await vi.waitFor(() => expect(page.text()).toContain('Фулхэм'))
   })
 
+  // У календаря на кнопке только иконка: какие дни выбраны, видно по крошкам
+  it('даты из календаря — в крошках', async () => {
+    const page = await mountSuspended(IndexPage, { route: '/?from=2026-10-12&to=2026-10-15' })
+    expect(page.find('.crumbs__item--current').text()).toBe('12–15 октября')
+  })
+
   it('кнопка «Тур» возвращает к текущему туру', async () => {
     const today = getMoscowDate(new Date())
     const page = await mountSuspended(IndexPage, { route: `/?from=${today}&to=${today}` })
     await page.findAll('button').find(button => button.text() === 'Тур')!.trigger('click')
-    await vi.waitFor(() => expect(page.find('h1').text()).toBe('7 тур'))
+    await vi.waitFor(() => expect(page.find('.crumbs__item--current').text()).toBe('7 тур'))
     expect(useRoute().query).toEqual({})
   })
 })

@@ -60,17 +60,14 @@ export function formatReadableDate(dateStr: string, weekday: 'long' | 'short' = 
   return formatted.charAt(0).toUpperCase() + formatted.slice(1)
 }
 
-const RELATIVE_DAYS: Record<string, string> = { '-1': 'Вчера', '0': 'Сегодня', '1': 'Завтра' }
+/** Вчера, сегодня или завтра (YYYY-MM-DD): у этих дней на главной свои кнопки */
+export function isNearDay(date: string, today: string): boolean {
+  return Math.abs(Date.parse(date) - Date.parse(today)) <= 86_400_000
+}
 
-/**
- * Заголовок главной для выбранных дат (YYYY-MM-DD, today — сегодня по Москве):
- * «Сегодня», «Пт, 18 сентября», «12–15 октября», «28 сентября – 3 октября»
- */
-export function formatDatesTitle(from: string, to: string, today: string): string {
-  if (from === to) {
-    const offset = Math.round((Date.parse(from) - Date.parse(today)) / 86_400_000)
-    return RELATIVE_DAYS[String(offset)] ?? formatReadableDate(from, 'short')
-  }
+/** Даты из календаря на главной: «Вт, 20 октября», «12–15 октября», «28 сентября – 3 октября» */
+export function formatDatesTitle(from: string, to: string): string {
+  if (from === to) return formatReadableDate(from, 'short')
   const dayMonth = (date: string) => new Date(date + 'T00:00:00').toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' })
   return from.slice(0, 7) === to.slice(0, 7)
     ? `${Number(from.slice(8))}–${dayMonth(to)}`

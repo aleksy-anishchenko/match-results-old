@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { groupMatchesByDate, formatDatesTitle, formatReadableDate } from '~/utils/matches'
+import { groupMatchesByDate, formatDatesTitle, formatReadableDate, isNearDay } from '~/utils/matches'
 import {
   getLeaguePhaseMatches,
   getLeaguePhaseRoundCount,
@@ -205,21 +205,24 @@ describe('getMatchWinnerSide', () => {
   })
 })
 
-describe('formatDatesTitle', () => {
-  const today = '2026-10-17'
-
-  it('вчера, сегодня, завтра — словами', () => {
-    expect(formatDatesTitle('2026-10-16', '2026-10-16', today)).toBe('Вчера')
-    expect(formatDatesTitle('2026-10-17', '2026-10-17', today)).toBe('Сегодня')
-    expect(formatDatesTitle('2026-10-18', '2026-10-18', today)).toBe('Завтра')
+describe('isNearDay', () => {
+  it('вчера, сегодня и завтра — рядом, остальные дни — нет', () => {
+    expect(['2026-10-15', '2026-10-16', '2026-10-17', '2026-10-18', '2026-10-19'].map(date => isNearDay(date, '2026-10-17')))
+      .toEqual([false, true, true, true, false])
   })
 
-  it('другой день — с коротким днём недели', () => {
-    expect(formatDatesTitle('2026-10-20', '2026-10-20', today)).toBe('Вт, 20 октября')
+  it('через границу месяца', () => {
+    expect(isNearDay('2026-11-01', '2026-10-31')).toBe(true)
+  })
+})
+
+describe('formatDatesTitle', () => {
+  it('один день — с коротким днём недели', () => {
+    expect(formatDatesTitle('2026-10-20', '2026-10-20')).toBe('Вт, 20 октября')
   })
 
   it('диапазон в одном месяце и через границу месяцев', () => {
-    expect(formatDatesTitle('2026-10-12', '2026-10-15', today)).toBe('12–15 октября')
-    expect(formatDatesTitle('2026-09-28', '2026-10-03', today)).toBe('28 сентября – 3 октября')
+    expect(formatDatesTitle('2026-10-12', '2026-10-15')).toBe('12–15 октября')
+    expect(formatDatesTitle('2026-09-28', '2026-10-03')).toBe('28 сентября – 3 октября')
   })
 })

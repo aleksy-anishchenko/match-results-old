@@ -37,14 +37,21 @@ const groupedMatches = computed(() =>
   groupMatchesByDate(data.value?.matches ?? []),
 )
 
-const kicker = computed(() => {
-  const season = roundsData.value?.season
-  return season ? `${competition.value.name} · сезон ${formatSeason(season)}` : competition.value.name
+// Что выбрано — последнее звено крошек. У «Вчера», «Сегодня», «Завтра» звена нет: видно по кнопке
+const selection = computed(() => {
+  if (!dateRange.value) return round.value?.name ?? null
+  const { from, to } = dateRange.value
+  return from === to && isNearDay(from, getMoscowDate(new Date())) ? null : formatDatesTitle(from, to)
 })
 
-const title = computed(() => {
-  if (dateRange.value) return formatDatesTitle(dateRange.value.from, dateRange.value.to, getMoscowDate(new Date()))
-  return round.value?.name ?? 'Сегодня'
+// Заголовок — крошки «АПЛ · сезон 2026/27 · 7 тур»
+const crumbs = computed(() => {
+  const season = roundsData.value?.season
+  return [
+    { text: competition.value.name, current: false },
+    ...(season ? [{ text: `сезон ${formatSeason(season)}`, current: false }] : []),
+    ...(selection.value ? [{ text: selection.value, current: true }] : []),
+  ]
 })
 
 // replace, а не push: стрелки и фильтр не засоряют историю, «назад» уводит со страницы
@@ -63,14 +70,19 @@ watch(leagueId, () => showRound())
 <template>
   <div class="home-page">
     <header class="page-head">
-      <div class="page-head__text">
-        <p class="page-head__kicker">
-          {{ kicker }}
-        </p>
-        <h1 class="page-head__title">
-          {{ title }}
-        </h1>
-      </div>
+      <h1 class="crumbs">
+        <template
+          v-for="(crumb, index) in crumbs"
+          :key="index"
+        >
+          <!-- Неразрывный пробел перед точкой: строка переносится только после неё -->
+          <span v-if="index">&nbsp;· </span>
+          <span
+            class="crumbs__item"
+            :class="{ 'crumbs__item--current': crumb.current }"
+          >{{ crumb.text }}</span>
+        </template>
+      </h1>
       <div
         v-if="!dateRange && round"
         class="page-head__arrows"
@@ -159,27 +171,21 @@ watch(leagueId, () => showRound())
   }
 }
 
+// Высота как у стрелок: при переключении на даты стрелки пропадают, а кнопки ниже не прыгают
 .page-head {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: space-between;
   gap: 16px;
+  min-height: 44px;
 }
 
-.page-head__text {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+.crumbs {
   min-width: 0;
-
-  @media (min-width: $breakpoint-desktop) {
-    gap: 6px;
-  }
-}
-
-.page-head__kicker {
+  font-family: $font-text;
   font-size: 12px;
   font-weight: 600;
+  line-height: 1.5;
   color: $color-text-3;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -189,13 +195,14 @@ watch(leagueId, () => showRound())
   }
 }
 
-.page-head__title {
-  font-size: 28px;
-  line-height: 1.2;
+// Переносится строка только между звеньями, а не внутри «сезон 2026/27»
+.crumbs__item {
+  white-space: nowrap;
+}
 
-  @media (min-width: $breakpoint-desktop) {
-    font-size: 40px;
-  }
+.crumbs__item--current {
+  color: $color-text;
+  font-weight: 700;
 }
 
 .page-head__arrows {
