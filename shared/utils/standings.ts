@@ -1,4 +1,5 @@
 import type { GroupStanding, StandingZone, StandingZoneKind } from '~/types'
+import { FINISHED_MATCH_STATUSES } from './matches'
 
 function zone(kind: StandingZoneKind, label: string): StandingZone {
   return { kind, label }
@@ -133,7 +134,8 @@ export type ScheduleMatch = {
 
 /**
  * Таблица по матчам, для турниров без готовой таблицы в API (общий этап ЛЧ и ЛЕ, Лига наций).
- * В неё попадают все команды из расписания, очки — только за сыгранные матчи (статус FT).
+ * В неё попадают все команды из расписания, очки — только за завершённые матчи (FT, AET, AP;
+ * матч, решённый пенальти, по счёту ничейный).
  * Порядок: очки, потом разница мячей, потом забитые.
  */
 export function calculateStandings(matches: ScheduleMatch[]): GroupStanding[] {
@@ -156,7 +158,7 @@ export function calculateStandings(matches: ScheduleMatch[]): GroupStanding[] {
   for (const match of matches) {
     const home = standingOf(match.strHomeTeam, match.strHomeTeamBadge)
     const away = standingOf(match.strAwayTeam, match.strAwayTeamBadge)
-    if (match.strStatus !== 'FT') continue
+    if (!FINISHED_MATCH_STATUSES.has(match.strStatus)) continue
 
     const homeGoals = parseInt(match.intHomeScore ?? '0')
     const awayGoals = parseInt(match.intAwayScore ?? '0')

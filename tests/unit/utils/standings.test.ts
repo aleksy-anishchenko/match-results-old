@@ -144,6 +144,16 @@ describe('calculateStandings', () => {
     expect(table[1]).toMatchObject({ team: 'Liverpool', badge: 'Liverpool.png', played: 0, points: 0 })
   })
 
+  it('матчи после доп. времени и пенальти тоже считаются завершёнными', () => {
+    const [arsenal, chelsea] = calculateStandings([
+      match('Arsenal', 'Chelsea', [2, 1], 'AET'),
+      match('Chelsea', 'Arsenal', [0, 0], 'AP'),
+    ])
+
+    expect(arsenal).toMatchObject({ played: 2, won: 1, drawn: 1, points: 4 })
+    expect(chelsea).toMatchObject({ played: 2, lost: 1, drawn: 1, points: 1 })
+  })
+
   it('идущие и отменённые матчи не считаются', () => {
     const [first] = calculateStandings([
       match('Arsenal', 'Chelsea', [3, 0], '2H'),
