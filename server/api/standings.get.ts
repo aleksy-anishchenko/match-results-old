@@ -82,7 +82,13 @@ export default cachedEventHandler(async (event): Promise<StandingsResponse> => {
 
   if (!groupMatches.length) return { groups: {}, season }
 
-  return { groups: { [competition?.name ?? 'Таблица']: calculateStandings(groupMatches) }, season }
+  // Зоны по месту только у общего этапа ЛЧ/ЛЕ: у Лиги наций все группы в одной таблице
+  const standings = calculateStandings(groupMatches)
+  const table = competition?.leaguePhase
+    ? standings.map((row, index) => ({ ...row, zone: getLeaguePhaseZone(index + 1) }))
+    : standings
+
+  return { groups: { [competition?.name ?? 'Таблица']: table }, season }
 }, {
   maxAge: 60,
   getKey: event => `standings-${getQuery(event).leagueId ?? DEFAULT_COMPETITION_ID}`,

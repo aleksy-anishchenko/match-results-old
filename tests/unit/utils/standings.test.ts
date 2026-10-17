@@ -4,6 +4,7 @@ import {
   collectLegend,
   formatGroupName,
   formatSeason,
+  getLeaguePhaseZone,
   getStandingZone,
   sortGroups,
 } from '#shared/utils/standings'
@@ -65,6 +66,19 @@ describe('getStandingZone', () => {
 
   it('незнакомое описание не превращается в зону', () => {
     expect(getStandingZone('Round of 32')).toBeNull()
+  })
+})
+
+describe('getLeaguePhaseZone', () => {
+  it.each([
+    [1, 'tier1', '1/8 финала'],
+    [8, 'tier1', '1/8 финала'],
+    [9, 'tier1-qual', 'Раунд плей-офф'],
+    [24, 'tier1-qual', 'Раунд плей-офф'],
+    [25, 'relegation', 'Выбывание'],
+    [36, 'relegation', 'Выбывание'],
+  ])('%i место → %s', (position, kind, label) => {
+    expect(getLeaguePhaseZone(position)).toEqual({ kind, label })
   })
 })
 

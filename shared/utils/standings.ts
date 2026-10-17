@@ -89,6 +89,18 @@ export function getStandingZone(description: string | null | undefined, leagueId
   return null
 }
 
+/**
+ * Зона места в таблице общего этапа ЛЧ и ЛЕ (место считается с 1). Готовой таблицы
+ * у этих турниров в API нет, поэтому границы свои, по формату УЕФА с 2024/25 на 36 команд:
+ * 1–8 сразу в 1/8 финала, 9–24 в раунд плей-офф, 25–36 выбывают (в другой еврокубок
+ * не переходят). Когда формат поменяется, проверить.
+ */
+export function getLeaguePhaseZone(position: number): StandingZone {
+  if (position <= 8) return zone('tier1', '1/8 финала')
+  if (position <= 24) return zone('tier1-qual', 'Раунд плей-офф')
+  return zone('relegation', 'Выбывание')
+}
+
 /** Легенда под таблицей: все зоны в порядке сверху вниз, без повторов */
 export function collectLegend(rows: Array<{ zone: StandingZone | null }>): StandingZone[] {
   const zones = new Map<string, StandingZone>()
