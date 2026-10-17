@@ -15,10 +15,6 @@ type ApiMatch = {
   strSeason: string
 }
 
-type ScheduleResponse = {
-  schedule: ApiMatch[]
-}
-
 type V1Response = {
   events: Array<{
     intHomeScoreExtra: string | null
@@ -35,23 +31,12 @@ export default cachedEventHandler(async (event) => {
   const dateFrom = String(query.dateFrom ?? today)
   const dateTo = String(query.dateTo ?? today)
 
-  const apiBase = 'https://www.thesportsdb.com/api/v2/json'
-  const headers = { 'X-API-KEY': config.theSportsDbApiKey }
-
-  const nextData = await $fetch<ScheduleResponse>(
-    `${apiBase}/schedule/next/league/${leagueId}`,
-    { headers },
-  )
-
-  const season = nextData.schedule[0]?.strSeason
+  const season = await getCurrentSeason(leagueId)
   if (!season) return { matches: [] }
 
-  const data = await $fetch<ScheduleResponse>(
-    `${apiBase}/schedule/league/${leagueId}/${season}`,
-    { headers },
-  )
+  const schedule = await getSeasonSchedule<ApiMatch>(leagueId, season)
 
-  const filtered = data.schedule
+  const filtered = schedule
     .filter((match) => {
       const moscowDate = getMoscowDate(match.strTimestamp)
       return moscowDate >= dateFrom && moscowDate <= dateTo

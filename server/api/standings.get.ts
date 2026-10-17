@@ -12,10 +12,6 @@ type ApiMatch = {
   strSeason: string
 }
 
-type ScheduleResponse = {
-  schedule: ApiMatch[]
-}
-
 type TableRow = {
   strTeam: string
   strBadge: string | null
@@ -137,38 +133,27 @@ export default cachedEventHandler(async (event): Promise<StandingsResponse> => {
   }
 
   // Фолбэк: для турниров без таблицы (например, общий этап ЛЧ) считаем сами
-  const headers = { 'X-API-KEY': config.theSportsDbApiKey }
-  const apiBase = 'https://www.thesportsdb.com/api/v2/json'
-
-  const nextData = await $fetch<ScheduleResponse>(
-    `${apiBase}/schedule/next/league/${leagueId}`,
-    { headers },
-  )
-
-  const season = nextData.schedule[0]?.strSeason
+  const season = await getCurrentSeason(leagueId)
   if (!season) return { groups: {}, season: null }
 
-  const data = await $fetch<ScheduleResponse>(
-    `${apiBase}/schedule/league/${leagueId}/${season}`,
-    { headers },
-  )
+  const schedule = await getSeasonSchedule<ApiMatch>(leagueId, season)
 
   // Общий этап (ЛЧ/ЛЕ): определяем раунды таблицы динамически, отсекая квалификацию
   const leaguePhaseRoundCount = competition?.leaguePhase
-    ? getLeaguePhaseRoundCount(getRoundCounts(data.schedule))
+    ? getLeaguePhaseRoundCount(getRoundCounts(schedule))
     : null
 
   let groupMatches: ApiMatch[]
   if (leaguePhaseRoundCount != null) {
-    const roundCounts = getRoundCounts(data.schedule)
+    const roundCounts = getRoundCounts(schedule)
     const leaguePhaseRounds = new Set(
       [...roundCounts.entries()].filter(([, count]) => count === leaguePhaseRoundCount).map(([round]) => round),
     )
-    groupMatches = data.schedule.filter(match => leaguePhaseRounds.has(match.intRound))
+    groupMatches = schedule.filter(match => leaguePhaseRounds.has(match.intRound))
   }
   else {
     const groupRounds = new Set(competition?.groupRounds ?? [])
-    groupMatches = data.schedule.filter(match => groupRounds.has(match.intRound))
+    groupMatches = schedule.filter(match => groupRounds.has(match.intRound))
   }
 
   if (!groupMatches.length) return { groups: {}, season }

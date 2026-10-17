@@ -14,10 +14,6 @@ type ApiMatch = {
   strSeason: string
 }
 
-type ScheduleResponse = {
-  schedule: ApiMatch[]
-}
-
 type V1Response = {
   events: Array<{
     intHomeScoreExtra: string | null
@@ -127,39 +123,29 @@ export default cachedEventHandler(async (event) => {
   const leagueId = String(query.leagueId ?? DEFAULT_COMPETITION_ID)
   const competition = getCompetition(leagueId)
   const groupRounds = new Set(competition?.groupRounds ?? [])
-  const headers = { 'X-API-KEY': config.theSportsDbApiKey }
-  const apiBase = 'https://www.thesportsdb.com/api/v2/json'
   const v1Base = 'https://www.thesportsdb.com/api/v1/json'
 
   // Плей-офф есть только у турниров с групповым этапом или общим этапом
   if (!groupRounds.size && !competition?.leaguePhase) return { rounds: [] }
 
-  const nextData = await $fetch<ScheduleResponse>(
-    `${apiBase}/schedule/next/league/${leagueId}`,
-    { headers },
-  )
-
-  const season = nextData.schedule[0]?.strSeason
+  const season = await getCurrentSeason(leagueId)
   if (!season) return { rounds: [] }
 
-  const data = await $fetch<ScheduleResponse>(
-    `${apiBase}/schedule/league/${leagueId}/${season}`,
-    { headers },
-  )
+  const schedule = await getSeasonSchedule<ApiMatch>(leagueId, season)
 
   // Для турниров с общим этапом (ЛЧ/ЛЕ) в расписании лежат ещё и матчи
   // квалификации — оставляем только раунды плей-офф (степени двойки: 16/8/4/2/1)
   const playoffMatches = competition?.leaguePhase
     ? (() => {
-        const roundCounts = getRoundCounts(data.schedule)
+        const roundCounts = getRoundCounts(schedule)
         const knockoutRounds = new Set(
           [...roundCounts.entries()]
             .filter(([, count]) => isPowerOfTwo(count))
             .map(([round]) => round),
         )
-        return data.schedule.filter(match => knockoutRounds.has(match.intRound))
+        return schedule.filter(match => knockoutRounds.has(match.intRound))
       })()
-    : data.schedule.filter(match => !groupRounds.has(match.intRound))
+    : schedule.filter(match => !groupRounds.has(match.intRound))
 
   if (!playoffMatches.length) return { rounds: [] }
 
@@ -199,8 +185,16 @@ export default cachedEventHandler(async (event) => {
     ladderMatchCounts.add(count)
   }
 
+  // Матч за 3-е место (у Кубка Америки раунд 160) тоже из одного матча, как финал, и цепочка
+  // его не отсекает. В сетку идёт только финал: его играют последним, на следующий день.
+  const finalRound = Object.keys(byRound)
+    .filter(round => matchCountsByRound[round] === 1)
+    .sort((a, b) => byRound[a]![0]!.strTimestamp.localeCompare(byRound[b]![0]!.strTimestamp))
+    .at(-1)
+
   const sortedKeys = Object.keys(byRound)
     .filter(round => ladderMatchCounts.has(matchCountsByRound[round]!))
+    .filter(round => matchCountsByRound[round] !== 1 || round === finalRound)
     .sort((a, b) => matchCountsByRound[b]! - matchCountsByRound[a]!)
   const total = sortedKeys.length
 
