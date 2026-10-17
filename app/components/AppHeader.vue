@@ -46,27 +46,15 @@ function badgeUrl(id: string): string {
       <NuxtLink
         to="/"
         class="logo"
+        aria-label="MatchResults — на главную"
       >
-        <span
+        <img
+          src="/logo.svg"
           class="logo__mark"
-          aria-hidden="true"
+          width="30"
+          height="30"
+          alt=""
         >
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2.5"
-          >
-            <circle
-              cx="12"
-              cy="12"
-              r="9"
-            />
-            <path d="M12 7l4 3-1.5 4.5h-5L8 10z" />
-          </svg>
-        </span>
         <span class="logo__text">MatchResults</span>
       </NuxtLink>
 
@@ -172,20 +160,15 @@ function badgeUrl(id: string): string {
   }
 }
 
+// Зелёный круг уже нарисован в самом logo.svg, фон и скругление не нужны
 .logo__mark {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background: $color-accent;
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  width: 26px;
+  height: 26px;
   flex-shrink: 0;
 
   @media (min-width: $breakpoint-desktop) {
-    width: 28px;
-    height: 28px;
+    width: 30px;
+    height: 30px;
   }
 }
 
