@@ -4,10 +4,11 @@ import {
   getLeaguePhaseMatches,
   getLeaguePhaseRoundCount,
   getMatchStatusKind,
+  getMatchWinnerSide,
   getMoscowDate,
   getRoundCounts,
 } from '#shared/utils/matches'
-import type { Match } from '~/types'
+import type { BracketMatch, Match } from '~/types'
 
 const makeMatch = (overrides: Partial<Match>): Match => ({
   idEvent: '1',
@@ -168,5 +169,44 @@ describe('getLeaguePhaseMatches', () => {
 
   it('пока туров общего этапа нет в расписании — пусто', () => {
     expect(getLeaguePhaseMatches(qualifying)).toEqual([])
+  })
+})
+
+describe('getMatchWinnerSide', () => {
+  const bracketMatch = (overrides: Partial<BracketMatch>): BracketMatch => ({
+    idEvent: '1',
+    homeTeam: 'Spain',
+    awayTeam: 'England',
+    homeBadge: '',
+    awayBadge: '',
+    homeScore: null,
+    awayScore: null,
+    homePenScore: null,
+    awayPenScore: null,
+    status: 'FT',
+    timestamp: '',
+    ...overrides,
+  })
+
+  it('победитель по счёту', () => {
+    expect(getMatchWinnerSide(bracketMatch({ homeScore: '2', awayScore: '1' }))).toBe('home')
+    expect(getMatchWinnerSide(bracketMatch({ homeScore: '0', awayScore: '1', status: 'AET' }))).toBe('away')
+  })
+
+  it('ничья без пенальти — победителя нет', () => {
+    expect(getMatchWinnerSide(bracketMatch({ homeScore: '1', awayScore: '1' }))).toBeNull()
+  })
+
+  it('после пенальти (AP) победитель по серии', () => {
+    expect(getMatchWinnerSide(bracketMatch({ homeScore: '1', awayScore: '1', status: 'AP', homePenScore: 3, awayPenScore: 4 }))).toBe('away')
+  })
+
+  it('AP без счёта серии — победителя не угадываем', () => {
+    expect(getMatchWinnerSide(bracketMatch({ homeScore: '1', awayScore: '1', status: 'AP' }))).toBeNull()
+  })
+
+  it('незавершённый матч — победителя нет, даже если кто-то ведёт', () => {
+    expect(getMatchWinnerSide(bracketMatch({ homeScore: '2', awayScore: '0', status: '2H' }))).toBeNull()
+    expect(getMatchWinnerSide(bracketMatch({ status: 'NS' }))).toBeNull()
   })
 })
