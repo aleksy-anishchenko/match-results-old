@@ -8,7 +8,6 @@ const { competition } = useCompetition()
 type Tab = 'playoff' | 'groups'
 
 const isTournament = computed(() => competition.value.type === 'tournament')
-const activeTab = ref<Tab>('playoff')
 
 const leagueQuery = computed(() => ({ leagueId: competition.value.id }))
 
@@ -22,6 +21,14 @@ const { data: bracketData, error: bracketError } = await useFetch<BracketRespons
 
 const groups = computed(() => standingsData.value?.groups ?? {})
 const rounds = computed(() => bracketData.value?.rounds ?? [])
+
+// Пока сетки нет (идёт групповой или общий этап), сразу открываем таблицу.
+// Выбор пользователя важнее, но при смене турнира он сбрасывается.
+const selectedTab = ref<Tab | null>(null)
+const activeTab = computed<Tab>(() => selectedTab.value ?? (rounds.value.length ? 'playoff' : 'groups'))
+watch(() => competition.value.id, () => {
+  selectedTab.value = null
+})
 
 const isGroupStage = computed(() => isTournament.value && Object.keys(groups.value).length > 1)
 
@@ -47,7 +54,7 @@ function onTabKeydown(event: KeyboardEvent) {
   event.preventDefault()
   const count = tabs.value.length
   const target = tabs.value[(targetIndex + count) % count]!
-  activeTab.value = target.value
+  selectedTab.value = target.value
   document.getElementById(tabId(target.value))?.focus()
 }
 
@@ -114,7 +121,7 @@ const kicker = computed(() => {
         :aria-selected="activeTab === tab.value"
         aria-controls="standings-panel"
         :tabindex="activeTab === tab.value ? 0 : -1"
-        @click="activeTab = tab.value"
+        @click="selectedTab = tab.value"
         @keydown="onTabKeydown"
       >
         {{ tab.label }}
