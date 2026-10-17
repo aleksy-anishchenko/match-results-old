@@ -46,10 +46,13 @@ useHead({
       {{ error.statusCode === 404 ? 'Матч не найден' : 'Не удалось загрузить матч. Попробуйте обновить страницу.' }}
     </p>
 
-    <MatchHeader
-      v-else-if="match"
-      :match="match"
-    />
+    <template v-else-if="match">
+      <MatchHeader :match="match" />
+      <MatchGoals
+        v-if="match.goals.length"
+        :goals="match.goals"
+      />
+    </template>
   </div>
 </template>
 

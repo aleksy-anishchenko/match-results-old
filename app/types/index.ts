@@ -63,6 +63,18 @@ export type MatchDetails = {
   round: string | null
   venue: string | null
   city: string | null
+  /** Голы по минутам; пусто, если ленты событий нет или она не сходится со счётом */
+  goals: MatchGoal[]
+}
+
+/** Гол матча из ленты событий TheSportsDB */
+export type MatchGoal = {
+  minute: number
+  /** Имя игрока латиницей, как в API */
+  player: string
+  /** Кому засчитан гол. Автогол засчитан сопернику команды того, кто его забил */
+  side: 'home' | 'away'
+  kind: 'goal' | 'penalty' | 'own-goal'
 }
 
 /**
