@@ -6,6 +6,12 @@ export function useCompetition() {
     maxAge: 60 * 60 * 24 * 365,
   })
 
+  // В cookie может остаться турнир, которого больше нет в списке (например, убранный ЧМ):
+  // иначе страница покажет турнир по умолчанию, а выбор в шапке будет пустым
+  if (!getCompetition(selectedId.value)) {
+    selectedId.value = DEFAULT_COMPETITION_ID
+  }
+
   const competition = computed<Competition>(() =>
     getCompetition(selectedId.value) ?? COMPETITIONS[0]!,
   )

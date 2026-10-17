@@ -88,29 +88,6 @@ export function getStandingZone(description: string | null | undefined, leagueId
   return null
 }
 
-type GroupStageRules = {
-  /** Команды, которые уже попали в сетку плей-офф; null — сетки ещё нет */
-  advancedTeams: Set<string> | null
-  /** Сколько команд из группы выходят в плей-офф */
-  groupAdvance?: number
-  /** Проходят ли ещё лучшие команды с 3-х мест */
-  bestThirdsAdvance?: boolean
-}
-
-/**
- * Зона в группе турнира. Когда сетка плей-офф уже есть, отмечаем тех, кто в неё попал.
- * Пока сетки нет — первые места по правилам турнира, а 3-е место как «может выйти»,
- * если в турнире проходят лучшие третьи.
- */
-export function getGroupStageZone(team: string, index: number, rules: GroupStageRules): StandingZone | null {
-  if (rules.advancedTeams) {
-    return rules.advancedTeams.has(team) ? zone('tier1', 'Выход в плей-офф') : null
-  }
-  if (rules.groupAdvance != null && index < rules.groupAdvance) return zone('tier1', 'Выход в плей-офф')
-  if (rules.bestThirdsAdvance && index === 2) return zone('tier1-qual', 'Может выйти в плей-офф')
-  return null
-}
-
 /** Легенда под таблицей: все зоны в порядке сверху вниз, без повторов */
 export function collectLegend(rows: Array<{ zone: StandingZone | null }>): StandingZone[] {
   const zones = new Map<string, StandingZone>()

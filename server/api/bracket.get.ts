@@ -21,12 +21,7 @@ type V1Response = {
   }> | null
 }
 
-// FIFA 2026 official bracket display order for Round of 32 (intRound = '32')
-// Maps from timestamp-sorted index to bracket seeding position so that
-// sequential pairing produces correct Round of 16 matchups.
-const FIFA2026_R32_ORDER = [0, 3, 2, 5, 8, 9, 10, 11, 1, 4, 6, 7, 12, 15, 13, 14]
-
-// For rounds after R32: sort matches by bracket position derived from prev round.
+// For rounds after the first one: sort matches by bracket position derived from prev round.
 // Also detects when home/away are reversed vs bracket seeding and flags for swap.
 // Even-indexed prev match winner → home (top); odd-indexed → away (bottom).
 function sortByBracketPosition(
@@ -185,8 +180,8 @@ export default cachedEventHandler(async (event) => {
     ladderMatchCounts.add(count)
   }
 
-  // Матч за 3-е место (у Кубка Америки раунд 160) тоже из одного матча, как финал, и цепочка
-  // его не отсекает. В сетку идёт только финал: его играют последним, на следующий день.
+  // Матч за 3-е место (раунд 160, например в финале Лиги наций) тоже из одного матча, как финал,
+  // и цепочка его не отсекает. В сетку идёт только финал: его играют последним (бывает, в тот же день).
   const finalRound = Object.keys(byRound)
     .filter(round => matchCountsByRound[round] === 1)
     .sort((a, b) => byRound[a]![0]!.strTimestamp.localeCompare(byRound[b]![0]!.strTimestamp))
@@ -207,11 +202,7 @@ export default cachedEventHandler(async (event) => {
     type Ordered = { match: ApiMatch, swapped: boolean }
     let ordered: Ordered[]
 
-    if (round === '32' && sorted.length === 16) {
-      // R32: hardcoded FIFA 2026 seeding order (no previous round to reference)
-      ordered = FIFA2026_R32_ORDER.map(i => ({ match: sorted[i]!, swapped: false }))
-    }
-    else if (rounds.length > 0) {
+    if (rounds.length > 0) {
       // All subsequent rounds: derive position and home/away order from previous round
       ordered = sortByBracketPosition(sorted, rounds[rounds.length - 1]!.matches)
     }

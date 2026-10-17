@@ -36,11 +36,11 @@ describe('getCurrentSeason', () => {
 
   it('без ближайших матчей берёт сезон у последнего сыгранного (турнир закончился)', async () => {
     mockApi({
-      [`${API}/next/league/4502`]: NO_DATA,
-      [`${API}/previous/league/4502`]: { schedule: [{ strSeason: '2024' }] },
+      [`${API}/next/league/4490`]: NO_DATA,
+      [`${API}/previous/league/4490`]: { schedule: [{ strSeason: '2024-2025' }] },
     })
 
-    expect(await getCurrentSeason('4502')).toBe('2024')
+    expect(await getCurrentSeason('4490')).toBe('2024-2025')
   })
 
   it('возвращает null, если матчей нет совсем', async () => {
@@ -56,14 +56,14 @@ describe('getCurrentSeason', () => {
 describe('getSeasonSchedule', () => {
   it('возвращает матчи сезона', async () => {
     const matches = [{ idEvent: '1' }, { idEvent: '2' }]
-    mockApi({ [`${API}/league/4429/2026`]: { schedule: matches } })
+    mockApi({ [`${API}/league/4328/2026-2027`]: { schedule: matches } })
 
-    expect(await getSeasonSchedule('4429', '2026')).toEqual(matches)
+    expect(await getSeasonSchedule('4328', '2026-2027')).toEqual(matches)
   })
 
   it('возвращает пустой список, если поля schedule нет', async () => {
-    mockApi({ [`${API}/league/4429/2030`]: NO_DATA })
+    mockApi({ [`${API}/league/4328/2030-2031`]: NO_DATA })
 
-    expect(await getSeasonSchedule('4429', '2030')).toEqual([])
+    expect(await getSeasonSchedule('4328', '2030-2031')).toEqual([])
   })
 })

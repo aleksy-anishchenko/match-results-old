@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import type { StandingsResponse, BracketResponse, GroupStanding } from '~/types'
+import type { StandingsResponse, BracketResponse } from '~/types'
 
 useHead({ title: 'Турнирная таблица' })
 
 const { competition } = useCompetition()
 
-type Tab = 'playoff' | 'groups'
+type Tab = 'playoff' | 'table'
 
 const isTournament = computed(() => competition.value.type === 'tournament')
 
@@ -22,19 +22,17 @@ const { data: bracketData, error: bracketError } = await useFetch<BracketRespons
 const groups = computed(() => standingsData.value?.groups ?? {})
 const rounds = computed(() => bracketData.value?.rounds ?? [])
 
-// Пока сетки нет (идёт групповой или общий этап), сразу открываем таблицу.
+// Пока сетки нет (идёт общий или групповой этап), сразу открываем таблицу.
 // Выбор пользователя важнее, но при смене турнира он сбрасывается.
 const selectedTab = ref<Tab | null>(null)
-const activeTab = computed<Tab>(() => selectedTab.value ?? (rounds.value.length ? 'playoff' : 'groups'))
+const activeTab = computed<Tab>(() => selectedTab.value ?? (rounds.value.length ? 'playoff' : 'table'))
 watch(() => competition.value.id, () => {
   selectedTab.value = null
 })
 
-const isGroupStage = computed(() => isTournament.value && Object.keys(groups.value).length > 1)
-
 const tabs = computed<Array<{ value: Tab, label: string }>>(() => [
   { value: 'playoff', label: 'Плей-офф' },
-  { value: 'groups', label: isGroupStage.value ? 'Группы' : 'Таблица' },
+  { value: 'table', label: 'Таблица' },
 ])
 
 const tabId = (tab: Tab) => `standings-tab-${tab}`
@@ -58,32 +56,8 @@ function onTabKeydown(event: KeyboardEvent) {
   document.getElementById(tabId(target.value))?.focus()
 }
 
-const advancedTeams = computed(() => {
-  if (!isGroupStage.value) return null
-  const roundOf32 = bracketData.value?.rounds.find(round => !round.projected)
-  if (!roundOf32) return null
-  const teams = new Set<string>()
-  for (const match of roundOf32.matches) {
-    if (match.homeTeam) teams.add(match.homeTeam)
-    if (match.awayTeam) teams.add(match.awayTeam)
-  }
-  return teams
-})
-
-// Зоны лиг приходят из API. В группах турнира зону считаем сами: кто выходит в плей-офф
-const tables = computed(() => Object.entries(groups.value).map(([name, rows]) => ({
-  name,
-  rows: isGroupStage.value
-    ? rows.map((row, index): GroupStanding => ({
-        ...row,
-        zone: getGroupStageZone(row.team, index, {
-          advancedTeams: advancedTeams.value,
-          groupAdvance: competition.value.groupAdvance,
-          bestThirdsAdvance: competition.value.bestThirdsAdvance,
-        }),
-      }))
-    : rows,
-})))
+// Зоны (еврокубки, вылет) приходят из API вместе с таблицей, только у лиг
+const tables = computed(() => Object.entries(groups.value).map(([name, rows]) => ({ name, rows })))
 
 const legend = computed(() => collectLegend(tables.value.flatMap(table => table.rows)))
 

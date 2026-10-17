@@ -3,7 +3,6 @@ import {
   collectLegend,
   formatGroupName,
   formatSeason,
-  getGroupStageZone,
   getStandingZone,
   sortGroups,
 } from '#shared/utils/standings'
@@ -65,34 +64,6 @@ describe('getStandingZone', () => {
 
   it('незнакомое описание не превращается в зону', () => {
     expect(getStandingZone('Round of 32')).toBeNull()
-  })
-})
-
-describe('getGroupStageZone', () => {
-  const advance = { kind: 'tier1', label: 'Выход в плей-офф' }
-  const maybe = { kind: 'tier1-qual', label: 'Может выйти в плей-офф' }
-
-  it('когда сетка есть, отмечает только попавших в неё', () => {
-    const rules = { advancedTeams: new Set(['Spain', 'Uruguay']) }
-    expect(getGroupStageZone('Spain', 0, rules)).toEqual(advance)
-    expect(getGroupStageZone('Cape Verde', 1, rules)).toBeNull()
-    expect(getGroupStageZone('Uruguay', 2, rules)).toEqual(advance)
-  })
-
-  it('пока сетки нет, ЧМ: двое проходят, третий может пройти', () => {
-    const rules = { advancedTeams: null, groupAdvance: 2, bestThirdsAdvance: true }
-    expect(getGroupStageZone('A', 1, rules)).toEqual(advance)
-    expect(getGroupStageZone('B', 2, rules)).toEqual(maybe)
-    expect(getGroupStageZone('C', 3, rules)).toBeNull()
-  })
-
-  it('Кубок Америки: третьи места не проходят', () => {
-    const rules = { advancedTeams: null, groupAdvance: 2 }
-    expect(getGroupStageZone('B', 2, rules)).toBeNull()
-  })
-
-  it('без правил турнира (Лига наций) зон до сетки нет', () => {
-    expect(getGroupStageZone('A', 0, { advancedTeams: null })).toBeNull()
   })
 })
 

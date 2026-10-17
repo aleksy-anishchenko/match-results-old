@@ -18,10 +18,6 @@ export type Competition = {
   leaguePhase?: boolean
   /** Логотип преимущественно белый — показывать на тёмной подложке */
   whiteBadge?: boolean
-  /** Для турниров с группами: сколько команд из группы выходят в плей-офф */
-  groupAdvance?: number
-  /** Кроме них в плей-офф выходят лучшие команды с 3-х мест (ЧМ 2026, Евро) */
-  bestThirdsAdvance?: boolean
 }
 
 export type CompetitionWithBadge = Competition & { badge: string | null }
