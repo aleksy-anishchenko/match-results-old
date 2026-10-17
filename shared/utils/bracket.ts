@@ -1,5 +1,5 @@
-import type { BracketMatch, BracketRound, Competition } from '~/types'
-import { getMatchWinnerSide, getRoundCounts, isPowerOfTwo } from './matches'
+import type { BracketRound, BracketTeam, BracketTie, Competition } from '~/types'
+import { FINISHED_MATCH_STATUSES, getRoundCounts, isPowerOfTwo } from './matches'
 
 /** Матч из расписания TheSportsDB: поля, нужные для сетки плей-офф */
 export type BracketScheduleMatch = {
@@ -40,40 +40,125 @@ export function getPlayoffMatches<T extends BracketScheduleMatch>(
   return schedule.filter(match => !groupRounds.has(match.intRound))
 }
 
-// For rounds after the first one: sort matches by bracket position derived from prev round.
-// Also detects when home/away are reversed vs bracket seeding and flags for swap.
-// Even-indexed prev match winner → home (top); odd-indexed → away (bottom).
-function sortByBracketPosition(
-  matches: BracketScheduleMatch[],
-  prevMatches: BracketMatch[],
-): Array<{ match: BracketScheduleMatch, swapped: boolean }> {
-  const slotCount = Math.floor(prevMatches.length / 2)
-  const result: ({ match: BracketScheduleMatch, swapped: boolean } | null)[] = new Array(slotCount).fill(null)
+/** Сумма голов команды за сыгранные матчи пары; null — ни один матч ещё не завершён */
+export function getTieTotal(team: BracketTeam): number | null {
+  const played = team.goals.filter(goals => goals != null)
+  return played.length ? played.reduce((sum, goals) => sum + goals, 0) : null
+}
+
+const byTimestamp = (a: BracketScheduleMatch, b: BracketScheduleMatch) => a.strTimestamp.localeCompare(b.strTimestamp)
+
+const playsIn = (match: BracketScheduleMatch, team: string) => match.strHomeTeam === team || match.strAwayTeam === team
+
+function teamOfTie(legs: BracketScheduleMatch[], name: string, badge: string, penScoreMap: BracketPenaltyScores): BracketTeam {
+  const goals = legs.map((leg) => {
+    if (!FINISHED_MATCH_STATUSES.has(leg.strStatus)) return null
+    const score = leg.strHomeTeam === name ? leg.intHomeScore : leg.intAwayScore
+    return score == null ? null : Number(score)
+  })
+  // Серия пенальти бывает только в последнем матче пары
+  const lastLeg = legs.at(-1)!
+  const penalties = penScoreMap[lastLeg.idEvent]
+  return {
+    name,
+    badge,
+    goals,
+    penalties: (lastLeg.strHomeTeam === name ? penalties?.home : penalties?.away) ?? null,
+  }
+}
+
+/**
+ * Кто прошёл дальше. Сначала смотрим, кто из двоих играл после пары: это надёжнее счёта,
+ * потому что в ЛЧ 2024/25 у пар, решённых серией пенальти, статус FT и счёта серии нет.
+ * Если после пары играли обе команды (полуфинал, потом финал и матч за 3-е место),
+ * решает счёт: сумма, потом пенальти. Пока не все матчи пары завершены, победителя нет.
+ */
+function tieWinner(
+  teams: [BracketTeam, BracketTeam],
+  legs: BracketScheduleMatch[],
+  playoffMatches: BracketScheduleMatch[],
+): 0 | 1 | null {
+  const [first, second] = teams
+  const lastTimestamp = legs.at(-1)!.strTimestamp
+  const playedLater = (team: BracketTeam) => team.name !== ''
+    && playoffMatches.some(match => match.strTimestamp > lastTimestamp && playsIn(match, team.name))
+  if (playedLater(first) !== playedLater(second)) return playedLater(first) ? 0 : 1
+
+  if (teams.some(team => team.goals.includes(null))) return null
+  const firstTotal = getTieTotal(first) ?? 0
+  const secondTotal = getTieTotal(second) ?? 0
+  if (firstTotal !== secondTotal) return firstTotal > secondTotal ? 0 : 1
+
+  if (first.penalties == null || second.penalties == null || first.penalties === second.penalties) return null
+  return first.penalties > second.penalties ? 0 : 1
+}
+
+/**
+ * Пары раунда: матчи одних и тех же двух команд — одна пара, один матч или два. Порядок пар —
+ * по первому матчу, команды — как в первом матче (хозяин сверху). Матчи, где соперник ещё
+ * не определён, не склеиваем: таких в раунде может быть несколько.
+ */
+export function buildTies(
+  roundMatches: BracketScheduleMatch[],
+  playoffMatches: BracketScheduleMatch[],
+  penScoreMap: BracketPenaltyScores,
+): BracketTie[] {
+  const legsByTie = new Map<string, BracketScheduleMatch[]>()
+  for (const match of [...roundMatches].sort(byTimestamp)) {
+    const key = match.strHomeTeam && match.strAwayTeam
+      ? [match.strHomeTeam, match.strAwayTeam].sort().join('\n')
+      : match.idEvent
+    legsByTie.set(key, [...(legsByTie.get(key) ?? []), match])
+  }
+
+  return [...legsByTie.values()].map((legs) => {
+    const first = legs[0]!
+    const teams: [BracketTeam, BracketTeam] = [
+      teamOfTie(legs, first.strHomeTeam, first.strHomeTeamBadge, penScoreMap),
+      teamOfTie(legs, first.strAwayTeam, first.strAwayTeamBadge, penScoreMap),
+    ]
+    return { id: first.idEvent, teams, winner: tieWinner(teams, legs, playoffMatches) }
+  })
+}
+
+function swapTeams(tie: BracketTie): BracketTie {
+  return {
+    ...tie,
+    teams: [tie.teams[1], tie.teams[0]],
+    winner: tie.winner == null ? null : tie.winner === 0 ? 1 : 0,
+  }
+}
+
+// For rounds after the first one: sort ties by bracket position derived from prev round.
+// Also detects when the teams are reversed vs bracket seeding and swaps them.
+// Even-indexed prev tie winner → top; odd-indexed → bottom.
+function sortByBracketPosition(ties: BracketTie[], prevTies: BracketTie[]): BracketTie[] {
+  const slotCount = Math.floor(prevTies.length / 2)
+  const result: (BracketTie | null)[] = new Array(slotCount).fill(null)
   const placedIds = new Set<string>()
 
-  for (const match of matches) {
-    for (let i = 0; i < prevMatches.length; i++) {
-      const prev = prevMatches[i]!
-      const prevTeams = [prev.homeTeam, prev.awayTeam]
-      const homeInPrev = prevTeams.includes(match.strHomeTeam)
-      const awayInPrev = prevTeams.includes(match.strAwayTeam)
-      if (!homeInPrev && !awayInPrev) continue
+  for (const tie of ties) {
+    for (let i = 0; i < prevTies.length; i++) {
+      const prevTeams = prevTies[i]!.teams.map(team => team.name)
+      const topInPrev = prevTeams.includes(tie.teams[0].name)
+      const bottomInPrev = prevTeams.includes(tie.teams[1].name)
+      if (!topInPrev && !bottomInPrev) continue
 
       const slot = Math.floor(i / 2)
       if (!result[slot]) {
-        // Even prev index → winner should be home (top in bracket)
+        // Even prev index → winner should be on top
         const isEven = i % 2 === 0
-        const swapped = homeInPrev ? !isEven : isEven
-        result[slot] = { match, swapped }
-        placedIds.add(match.idEvent)
+        const swapped = topInPrev ? !isEven : isEven
+        result[slot] = swapped ? swapTeams(tie) : tie
+        placedIds.add(tie.id)
       }
       break
     }
   }
 
-  const remaining = matches.filter(match => !placedIds.has(match.idEvent))
+  const remaining = ties.filter(tie => !placedIds.has(tie.id))
   let remainingIndex = 0
-  return result.map(slot => slot ?? { match: remaining[remainingIndex++] ?? matches[0]!, swapped: false })
+  return result.map(slot => slot ?? remaining[remainingIndex++] ?? ties[0]!)
 }
 
 function getRoundName(count: number, isLast: boolean, isSecondToLast: boolean): string {
@@ -86,46 +171,33 @@ function getRoundName(count: number, isLast: boolean, isSecondToLast: boolean): 
   return 'Раунд'
 }
 
-function matchWinner(match: BracketMatch): { team: string, badge: string } | null {
-  const winnerSide = getMatchWinnerSide(match)
-  if (winnerSide === 'home') return { team: match.homeTeam, badge: match.homeBadge }
-  if (winnerSide === 'away') return { team: match.awayTeam, badge: match.awayBadge }
-  return null
+/** Команда будущей пары: победитель пары прошлого раунда или пустое место, пока он не известен */
+function winnerOf(tie: BracketTie | undefined): BracketTeam {
+  const winner = tie?.winner == null ? null : tie.teams[tie.winner]
+  return { name: winner?.name ?? '', badge: winner?.badge ?? '', goals: [], penalties: null }
 }
 
 function buildProjectedRounds(seed: BracketRound): BracketRound[] {
   const result: BracketRound[] = []
-  let prev = seed.matches
+  let prev = seed.ties
 
   while (prev.length > 1) {
-    const next: BracketMatch[] = []
+    const next: BracketTie[] = []
     for (let i = 0; i < prev.length; i += 2) {
-      const topMatch = prev[i]!
-      const bottomMatch = prev[i + 1]
-      const topWinner = matchWinner(topMatch)
-      const bottomWinner = bottomMatch ? matchWinner(bottomMatch) : null
       next.push({
-        idEvent: `proj-${result.length}-${i}`,
-        homeTeam: topWinner?.team ?? '',
-        awayTeam: bottomWinner?.team ?? '',
-        homeBadge: topWinner?.badge ?? '',
-        awayBadge: bottomWinner?.badge ?? '',
-        homeScore: null,
-        awayScore: null,
-        homePenScore: null,
-        awayPenScore: null,
-        status: 'NS',
-        timestamp: '',
+        id: `proj-${result.length}-${i}`,
+        teams: [winnerOf(prev[i]), winnerOf(prev[i + 1])],
+        winner: null,
       })
     }
-    result.push({ round: `proj-${result.length + 1}`, name: '', matches: next, projected: true })
+    result.push({ round: `proj-${result.length + 1}`, name: '', ties: next, projected: true })
     prev = next
     if (next.length === 1) break
   }
 
   const total = result.length
   result.forEach((r, idx) => {
-    r.name = getRoundName(r.matches.length, idx === total - 1, idx === total - 2)
+    r.name = getRoundName(r.ties.length, idx === total - 1, idx === total - 2)
   })
 
   return result
@@ -143,79 +215,56 @@ export function buildBracket(
     if (!byRound[match.intRound]) byRound[match.intRound] = []
     byRound[match.intRound]!.push(match)
   }
+  const tiesByRound = Object.fromEntries(
+    Object.entries(byRound).map(([round, matches]) => [round, buildTies(matches, playoffMatches, penScoreMap)]),
+  )
 
-  // A real knockout ladder halves in size each round (16 matches, then 8, then 4...).
+  // A real knockout ladder halves in size each round (16 ties, then 8, then 4...).
   // The provider occasionally adds an extra fixture under an unrelated round id
   // (e.g. a third-place playoff) that breaks that sequence — walking the chain from
   // the biggest round and stopping at the first gap keeps only rounds that actually
   // belong to the ladder, so a stray fixture can't corrupt the bracket layout.
-  const matchCountsByRound = Object.fromEntries(
-    Object.entries(byRound).map(([round, matches]) => [round, matches.length]),
+  const tieCountsByRound = Object.fromEntries(
+    Object.entries(tiesByRound).map(([round, ties]) => [round, ties.length]),
   )
-  const maxMatchCount = Math.max(...Object.values(matchCountsByRound))
-  const ladderMatchCounts = new Set<number>()
-  for (let count = maxMatchCount; Object.values(matchCountsByRound).includes(count); count /= 2) {
-    ladderMatchCounts.add(count)
+  const maxTieCount = Math.max(...Object.values(tieCountsByRound))
+  const ladderTieCounts = new Set<number>()
+  for (let count = maxTieCount; Object.values(tieCountsByRound).includes(count); count /= 2) {
+    ladderTieCounts.add(count)
   }
 
-  // Матч за 3-е место (раунд 160, например в финале Лиги наций) тоже из одного матча, как финал,
+  // Матч за 3-е место (например, в финале Лиги наций) тоже из одного матча, как финал,
   // и цепочка его не отсекает. В сетку идёт только финал: его играют последним (бывает, в тот же день).
   const finalRound = Object.keys(byRound)
-    .filter(round => matchCountsByRound[round] === 1)
+    .filter(round => tieCountsByRound[round] === 1)
     .sort((a, b) => byRound[a]![0]!.strTimestamp.localeCompare(byRound[b]![0]!.strTimestamp))
     .at(-1)
 
   const sortedKeys = Object.keys(byRound)
-    .filter(round => ladderMatchCounts.has(matchCountsByRound[round]!))
-    .filter(round => matchCountsByRound[round] !== 1 || round === finalRound)
-    .sort((a, b) => matchCountsByRound[b]! - matchCountsByRound[a]!)
+    .filter(round => ladderTieCounts.has(tieCountsByRound[round]!))
+    .filter(round => tieCountsByRound[round] !== 1 || round === finalRound)
+    .sort((a, b) => tieCountsByRound[b]! - tieCountsByRound[a]!)
   const total = sortedKeys.length
 
   const rounds: BracketRound[] = []
 
   for (let index = 0; index < sortedKeys.length; index++) {
     const round = sortedKeys[index]!
-    const sorted = byRound[round]!.sort((a, b) => a.strTimestamp.localeCompare(b.strTimestamp))
-
-    type Ordered = { match: BracketScheduleMatch, swapped: boolean }
-    let ordered: Ordered[]
-
-    if (rounds.length > 0) {
-      // All subsequent rounds: derive position and home/away order from previous round
-      ordered = sortByBracketPosition(sorted, rounds[rounds.length - 1]!.matches)
-    }
-    else {
-      ordered = sorted.map(match => ({ match, swapped: false }))
-    }
-
-    const bracketMatches: BracketMatch[] = ordered.map(({ match, swapped }) => {
-      const pen = penScoreMap[match.idEvent]
-      return {
-        idEvent: match.idEvent,
-        homeTeam: swapped ? match.strAwayTeam : match.strHomeTeam,
-        awayTeam: swapped ? match.strHomeTeam : match.strAwayTeam,
-        homeBadge: swapped ? match.strAwayTeamBadge : match.strHomeTeamBadge,
-        awayBadge: swapped ? match.strHomeTeamBadge : match.strAwayTeamBadge,
-        homeScore: swapped ? match.intAwayScore : match.intHomeScore,
-        awayScore: swapped ? match.intHomeScore : match.intAwayScore,
-        homePenScore: swapped ? (pen?.away ?? null) : (pen?.home ?? null),
-        awayPenScore: swapped ? (pen?.home ?? null) : (pen?.away ?? null),
-        status: match.strStatus,
-        timestamp: match.strTimestamp,
-      }
-    })
+    const ties = tiesByRound[round]!
+    // All subsequent rounds: derive position and top/bottom order from previous round
+    const ordered = rounds.length > 0 ? sortByBracketPosition(ties, rounds[rounds.length - 1]!.ties) : ties
 
     rounds.push({
       round,
-      name: getRoundName(bracketMatches.length, index === total - 1, index === total - 2),
+      name: getRoundName(ordered.length, index === total - 1, index === total - 2),
       projected: false,
-      matches: bracketMatches,
+      ties: ordered,
     })
   }
 
-  // Build projected rounds from the last actual round if it has multiple matches
+  // Build projected rounds from the last actual round if it has multiple ties
   const lastRound = rounds[rounds.length - 1]
-  if (lastRound && lastRound.matches.length > 1) {
+  if (lastRound && lastRound.ties.length > 1) {
     rounds.push(...buildProjectedRounds(lastRound))
   }
 

@@ -110,24 +110,30 @@ export type StandingsResponse = {
   season: string | null
 }
 
-export type BracketMatch = {
-  idEvent: string
-  homeTeam: string
-  awayTeam: string
-  homeBadge: string
-  awayBadge: string
-  homeScore: string | null
-  awayScore: string | null
-  homePenScore: number | null
-  awayPenScore: number | null
-  status: string
-  timestamp: string
+/** Команда в паре плей-офф: строка карточки сетки */
+export type BracketTeam = {
+  /** Название из API; пустая строка — соперник ещё не определён */
+  name: string
+  badge: string
+  /** Голы в каждом матче пары по порядку; null — матч ещё не завершён */
+  goals: Array<number | null>
+  /** Счёт серии пенальти, если пара решилась пенальти и API его отдал */
+  penalties: number | null
+}
+
+/** Пара плей-офф: один матч или два (дома и в гостях) */
+export type BracketTie = {
+  /** idEvent первого матча пары */
+  id: string
+  teams: [BracketTeam, BracketTeam]
+  /** Кто прошёл дальше: индекс в teams */
+  winner: 0 | 1 | null
 }
 
 export type BracketRound = {
   round: string
   name: string
-  matches: BracketMatch[]
+  ties: BracketTie[]
   projected?: boolean
 }
 

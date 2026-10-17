@@ -3,35 +3,41 @@ import type { BracketRound } from '~/types'
 
 const props = defineProps<{ rounds: BracketRound[] }>()
 
-// Размеры сетки в пикселях. Пять раундов (1/16 … финал) ровно занимают ширину контента: 5 × 144 + 4 × 20 = 800
+// Размеры сетки в пикселях. Пять раундов из одиночных матчей (1/16 … финал) ровно занимают ширину
+// контента: 5 × 144 + 4 × 20 = 800. В парах из двух матчей есть ещё счёт каждого матча: карточки шире,
+// чтобы влезали названия, и сетка ЛЧ (5 × 176 + 4 × 20 = 960) прокручивается вбок и на компьютере
 const CARD_HEIGHT = 56
 const CARD_WIDTH = 144
+const TWO_LEGGED_CARD_WIDTH = 176
 const CARD_GAP = 8 // между карточками первого раунда
 const CONNECTOR_WIDTH = 20 // колонка с линиями между раундами
 const ROW_HEIGHT = CARD_HEIGHT + CARD_GAP
 
-const firstRoundMatchCount = computed(() => props.rounds[0]?.matches.length ?? 0)
-const totalHeight = computed(() => firstRoundMatchCount.value * ROW_HEIGHT - CARD_GAP)
-const totalWidth = computed(() => props.rounds.length * CARD_WIDTH + Math.max(0, props.rounds.length - 1) * CONNECTOR_WIDTH)
+const firstRoundTieCount = computed(() => props.rounds[0]?.ties.length ?? 0)
+const totalHeight = computed(() => firstRoundTieCount.value * ROW_HEIGHT - CARD_GAP)
+const cardWidth = computed(() => props.rounds.some(round => round.ties.some(tie => tie.teams[0].goals.length > 1))
+  ? TWO_LEGGED_CARD_WIDTH
+  : CARD_WIDTH)
+const totalWidth = computed(() => props.rounds.length * cardWidth.value + Math.max(0, props.rounds.length - 1) * CONNECTOR_WIDTH)
 
 // Каждый следующий раунд занимает по высоте вдвое больше строк, чем предыдущий:
-// в матч приходят победители двух матчей прошлого раунда, карточка встаёт посередине между ними.
-function matchTopOffset(roundIndex: number, matchIndex: number): number {
-  const rowsPerMatch = 2 ** roundIndex
-  return ((rowsPerMatch - 1) / 2 + matchIndex * rowsPerMatch) * ROW_HEIGHT
+// в пару приходят победители двух пар прошлого раунда, карточка встаёт посередине между ними.
+function tieTopOffset(roundIndex: number, tieIndex: number): number {
+  const rowsPerTie = 2 ** roundIndex
+  return ((rowsPerTie - 1) / 2 + tieIndex * rowsPerTie) * ROW_HEIGHT
 }
 
 function columnLeft(roundIndex: number): number {
-  return roundIndex * (CARD_WIDTH + CONNECTOR_WIDTH)
+  return roundIndex * (cardWidth.value + CONNECTOR_WIDTH)
 }
 
-function connectorPath(roundIndex: number, nextRoundMatchCount: number): string {
+function connectorPath(roundIndex: number, nextRoundTieCount: number): string {
   const centerX = CONNECTOR_WIDTH / 2
-  return Array.from({ length: nextRoundMatchCount }, (_, pairIndex) => {
-    const topMatchCenterY = matchTopOffset(roundIndex, 2 * pairIndex) + CARD_HEIGHT / 2
-    const bottomMatchCenterY = matchTopOffset(roundIndex, 2 * pairIndex + 1) + CARD_HEIGHT / 2
-    const midpointY = (topMatchCenterY + bottomMatchCenterY) / 2
-    return `M0,${topMatchCenterY}H${centerX}V${bottomMatchCenterY}H0M${centerX},${midpointY}H${CONNECTOR_WIDTH}`
+  return Array.from({ length: nextRoundTieCount }, (_, pairIndex) => {
+    const topTieCenterY = tieTopOffset(roundIndex, 2 * pairIndex) + CARD_HEIGHT / 2
+    const bottomTieCenterY = tieTopOffset(roundIndex, 2 * pairIndex + 1) + CARD_HEIGHT / 2
+    const midpointY = (topTieCenterY + bottomTieCenterY) / 2
+    return `M0,${topTieCenterY}H${centerX}V${bottomTieCenterY}H0M${centerX},${midpointY}H${CONNECTOR_WIDTH}`
   }).join(' ')
 }
 </script>
@@ -49,7 +55,7 @@ function connectorPath(roundIndex: number, nextRoundMatchCount: number): string 
         v-for="(round, roundIndex) in rounds"
         :key="roundIndex"
         class="bracket__title"
-        :style="{ width: CARD_WIDTH + 'px' }"
+        :style="{ width: cardWidth + 'px' }"
       >
         {{ round.name }}
       </div>
@@ -63,26 +69,28 @@ function connectorPath(roundIndex: number, nextRoundMatchCount: number): string 
         v-for="(round, roundIndex) in rounds"
         :key="'col-' + roundIndex"
         class="bracket__column"
-        :style="{ left: columnLeft(roundIndex) + 'px', width: CARD_WIDTH + 'px' }"
+        :style="{ left: columnLeft(roundIndex) + 'px', width: cardWidth + 'px' }"
       >
         <div
-          v-for="(match, matchIndex) in round.matches"
-          :key="match.idEvent"
+          v-for="(tie, tieIndex) in round.ties"
+          :key="tie.id"
           class="bracket-match"
           :class="{ 'bracket-match--projected': round.projected }"
-          :style="{ top: matchTopOffset(roundIndex, matchIndex) + 'px', height: CARD_HEIGHT + 'px' }"
+          :style="{ top: tieTopOffset(roundIndex, tieIndex) + 'px', height: CARD_HEIGHT + 'px' }"
         >
           <div
+            v-for="(team, side) in tie.teams"
+            :key="side"
             class="bracket-match__team"
             :class="{
-              'bracket-match__team--win': getMatchWinnerSide(match) === 'home',
-              'bracket-match__team--lose': getMatchWinnerSide(match) === 'away',
-              'bracket-match__team--tbd': !match.homeTeam,
+              'bracket-match__team--win': tie.winner === side,
+              'bracket-match__team--lose': tie.winner != null && tie.winner !== side,
+              'bracket-match__team--tbd': !team.name,
             }"
           >
             <img
-              v-if="match.homeBadge"
-              :src="getBadgeUrl(match.homeBadge)"
+              v-if="team.badge"
+              :src="getBadgeUrl(team.badge)"
               alt=""
               width="18"
               height="18"
@@ -92,53 +100,33 @@ function connectorPath(roundIndex: number, nextRoundMatchCount: number): string 
               v-else
               class="bracket-match__badge bracket-match__badge--empty"
             />
-            <span class="bracket-match__name">{{ getTeamName(match.homeTeam) || 'Не определен' }}</span>
+            <span class="bracket-match__name">{{ getTeamName(team.name) || 'Не определен' }}</span>
+            <!-- В паре из двух матчей: мелко голы в каждом сыгранном матче, крупно сумма -->
             <span
-              v-if="FINISHED_MATCH_STATUSES.has(match.status) && match.homeScore !== null"
-              class="bracket-match__score"
+              v-if="team.goals.length > 1"
+              class="bracket-match__legs"
             >
-              {{ match.homeScore }}<sup
-                v-if="match.homePenScore != null"
-                class="bracket-match__pen"
-              >{{ match.homePenScore }}</sup>
+              <span
+                v-for="(goals, leg) in team.goals"
+                v-show="goals != null"
+                :key="leg"
+                class="bracket-match__leg"
+              >{{ goals }}</span>
             </span>
-          </div>
-
-          <div
-            class="bracket-match__team"
-            :class="{
-              'bracket-match__team--win': getMatchWinnerSide(match) === 'away',
-              'bracket-match__team--lose': getMatchWinnerSide(match) === 'home',
-              'bracket-match__team--tbd': !match.awayTeam,
-            }"
-          >
-            <img
-              v-if="match.awayBadge"
-              :src="getBadgeUrl(match.awayBadge)"
-              alt=""
-              width="18"
-              height="18"
-              class="bracket-match__badge"
-            >
             <span
-              v-else
-              class="bracket-match__badge bracket-match__badge--empty"
-            />
-            <span class="bracket-match__name">{{ getTeamName(match.awayTeam) || 'Не определен' }}</span>
-            <span
-              v-if="FINISHED_MATCH_STATUSES.has(match.status) && match.awayScore !== null"
+              v-if="getTieTotal(team) != null"
               class="bracket-match__score"
             >
-              {{ match.awayScore }}<sup
-                v-if="match.awayPenScore != null"
+              {{ getTieTotal(team) }}<sup
+                v-if="team.penalties != null"
                 class="bracket-match__pen"
-              >{{ match.awayPenScore }}</sup>
+              >{{ team.penalties }}</sup>
             </span>
           </div>
         </div>
       </div>
 
-      <!-- Линии от пары матчей к матчу следующего раунда -->
+      <!-- Линии от двух пар к паре следующего раунда -->
       <template
         v-for="(_, roundIndex) in rounds"
         :key="'conn-' + roundIndex"
@@ -146,13 +134,13 @@ function connectorPath(roundIndex: number, nextRoundMatchCount: number): string 
         <svg
           v-if="roundIndex < rounds.length - 1"
           class="bracket__connector"
-          :style="{ left: columnLeft(roundIndex) + CARD_WIDTH + 'px' }"
+          :style="{ left: columnLeft(roundIndex) + cardWidth + 'px' }"
           :width="CONNECTOR_WIDTH"
           :height="totalHeight"
           aria-hidden="true"
           xmlns="http://www.w3.org/2000/svg"
         >
-          <path :d="connectorPath(roundIndex, rounds[roundIndex + 1]!.matches.length)" />
+          <path :d="connectorPath(roundIndex, rounds[roundIndex + 1]!.ties.length)" />
         </svg>
       </template>
     </div>
@@ -279,6 +267,21 @@ function connectorPath(roundIndex: number, nextRoundMatchCount: number): string 
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.bracket-match__legs {
+  display: flex;
+  flex-shrink: 0;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  color: $color-text-3;
+  font-variant-numeric: tabular-nums;
+}
+
+.bracket-match__leg {
+  min-width: 7px;
+  text-align: center;
 }
 
 .bracket-match__score {

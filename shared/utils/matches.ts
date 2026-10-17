@@ -1,4 +1,4 @@
-import type { BracketMatch, MatchStatusKind } from '~/types'
+import type { Match, MatchStatusKind } from '~/types'
 
 // Коды strStatus из TheSportsDB. Серия пенальти — PEN (идёт) и AP (завершён по пенальти).
 export const FINISHED_MATCH_STATUSES = new Set(['FT', 'AET', 'AP'])
@@ -85,7 +85,9 @@ export function getLeaguePhaseMatches<T extends RoundMatch>(schedule: T[]): T[] 
   })
 }
 
-export function getMatchWinnerSide(match: BracketMatch): 'home' | 'away' | null {
+export function getMatchWinnerSide(
+  match: Pick<Match, 'homeScore' | 'awayScore' | 'homePenScore' | 'awayPenScore' | 'status'>,
+): 'home' | 'away' | null {
   if (!FINISHED_MATCH_STATUSES.has(match.status)) return null
   const homeScore = Number(match.homeScore ?? 0)
   const awayScore = Number(match.awayScore ?? 0)

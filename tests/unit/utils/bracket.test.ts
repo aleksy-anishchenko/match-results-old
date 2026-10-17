@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import type { BracketRound, Competition } from '~/types'
-import { buildBracket, getPlayoffMatches, type BracketPenaltyScores, type BracketScheduleMatch } from '#shared/utils/bracket'
+import { buildBracket, buildTies, getPlayoffMatches, getTieTotal, type BracketPenaltyScores, type BracketScheduleMatch } from '#shared/utils/bracket'
 // Настоящие расписания сезонов из TheSportsDB (v2 schedule/league), только поля для сетки, без эмблем
 import championsLeague2425 from '../../fixtures/bracket/champions-league-2024-25.json'
 import championsLeague2526 from '../../fixtures/bracket/champions-league-2025-26.json'
@@ -41,6 +41,88 @@ describe('getPlayoffMatches', () => {
   })
 })
 
+describe('buildTies', () => {
+  const roundOf = (season: Season, round: string) => season.schedule.filter(match => match.intRound === round)
+  const tieOf = (ties: ReturnType<typeof buildTies>, team: string) =>
+    ties.find(tie => tie.teams.some(side => side.name === team))!
+
+  it('два матча одних команд — одна пара, команды как в первом матче, голы по матчам', () => {
+    const ties = buildTies(roundOf(championsLeague2526, '16'), championsLeague2526.schedule, {})
+    expect(ties).toHaveLength(8)
+    // Бодё-Глимт – Спортинг 3:0, ответный 0:5 в доп. время
+    expect(tieOf(ties, 'Sporting CP')).toMatchObject({
+      teams: [{ name: 'Bodø/Glimt', goals: [3, 0] }, { name: 'Sporting CP', goals: [0, 5] }],
+      winner: 1,
+    })
+  })
+
+  // В ЛЧ 2024/25 пары, решённые серией пенальти, в API со статусом FT и без счёта серии:
+  // ПСЖ – Ливерпуль 0:1 и 1:0, дальше прошёл ПСЖ
+  it('ничья по сумме без пенальти: прошёл тот, кто играл в следующем раунде', () => {
+    const ties = buildTies(roundOf(championsLeague2425, '16'), championsLeague2425.schedule, {})
+    const tie = tieOf(ties, 'Paris SG')
+    expect(tie.teams.map(team => [team.name, getTieTotal(team)])).toEqual([['Paris SG', 1], ['Liverpool', 1]])
+    expect(tie.winner).toBe(0)
+  })
+
+  it('один матч с пенальти: счёт серии и победитель по ней', () => {
+    const ties = buildTies(roundOf(championsLeague2526, '200'), championsLeague2526.schedule, championsLeague2526.penalties)
+    expect(ties).toEqual([{
+      id: '2470477',
+      teams: [
+        { name: 'Paris SG', badge: '', goals: [1], penalties: 4 },
+        { name: 'Arsenal', badge: '', goals: [1], penalties: 3 },
+      ],
+      winner: 0,
+    }])
+  })
+
+  // Полуфиналисты Лиги наций играют потом оба: кто в финале, кто в матче за 3-е место
+  it('если дальше играли обе команды, победитель по счёту', () => {
+    const ties = buildTies(roundOf(nationsLeague2425, '150'), nationsLeague2425.schedule, {})
+    expect(tieOf(ties, 'Portugal').winner).toBe(1)
+    expect(tieOf(ties, 'Spain').winner).toBe(0)
+  })
+
+  // Финал Лиги наций 2025 Португалия – Испания 2:2 выиграла Португалия по пенальти,
+  // но в API статус FT и счёта серии нет — победителя по данным не узнать
+  it('ничья в последнем матче без счёта серии — победителя нет', () => {
+    const [final] = buildTies(roundOf(nationsLeague2425, '200'), nationsLeague2425.schedule, {})
+    expect(final!.teams.map(getTieTotal)).toEqual([2, 2])
+    expect(final!.winner).toBeNull()
+  })
+
+  const leg = (overrides: Partial<BracketScheduleMatch>): BracketScheduleMatch => ({
+    idEvent: '1',
+    strHomeTeam: 'Benfica',
+    strAwayTeam: 'Porto',
+    strHomeTeamBadge: '',
+    strAwayTeamBadge: '',
+    intHomeScore: null,
+    intAwayScore: null,
+    strStatus: 'NS',
+    strTimestamp: '2027-02-17T20:00:00',
+    intRound: '32',
+    ...overrides,
+  })
+
+  it('пока ответный матч не сыгран, победителя нет, а сумма — по первому матчу', () => {
+    const matches = [
+      leg({ idEvent: '1', intHomeScore: '2', intAwayScore: '0', strStatus: 'FT' }),
+      leg({ idEvent: '2', strHomeTeam: 'Porto', strAwayTeam: 'Benfica', strTimestamp: '2027-02-25T20:00:00' }),
+    ]
+    const [tie] = buildTies(matches, matches, {})
+    expect(tie!.teams.map(team => team.goals)).toEqual([[2, null], [0, null]])
+    expect(tie!.teams.map(getTieTotal)).toEqual([2, 0])
+    expect(tie!.winner).toBeNull()
+  })
+
+  it('матчи с неизвестным соперником не склеиваются', () => {
+    const matches = [leg({ idEvent: '1', strAwayTeam: '' }), leg({ idEvent: '2', strAwayTeam: '' })]
+    expect(buildTies(matches, matches, {})).toHaveLength(2)
+  })
+})
+
 describe('buildBracket', () => {
   it('без матчей сетки нет', () => {
     expect(buildBracket([], {})).toEqual([])
@@ -58,7 +140,7 @@ describe('buildBracket', () => {
     })
 
     it.fails('пара из двух матчей — одна карточка', () => {
-      expect(playedRounds(bracketOf(season, LEAGUE_PHASE)).map(round => round.matches.length))
+      expect(playedRounds(bracketOf(season, LEAGUE_PHASE)).map(round => round.ties.length))
         .toEqual([8, 8, 4, 2, 1])
     })
 
@@ -67,16 +149,13 @@ describe('buildBracket', () => {
     // из победителей пар 2i и 2i + 1
     it.fails('линии ведут к правильным парам', () => {
       const [playoff, ...knockout] = playedRounds(bracketOf(season, LEAGUE_PHASE))
-      const teamsOf = (round: BracketRound, index: number) => {
-        const match = round.matches[index]
-        return match ? [match.homeTeam, match.awayTeam] : []
-      }
+      const teamsOf = (round: BracketRound, index: number) => round.ties[index]?.teams.map(team => team.name) ?? []
 
-      knockout[0]!.matches.forEach((_, index) => {
+      knockout[0]!.ties.forEach((_, index) => {
         expect(teamsOf(knockout[0]!, index).some(team => teamsOf(playoff!, index).includes(team))).toBe(true)
       })
       for (let k = 1; k < knockout.length; k++) {
-        knockout[k]!.matches.forEach((_, index) => {
+        knockout[k]!.ties.forEach((_, index) => {
           const feeders = [...teamsOf(knockout[k - 1]!, 2 * index), ...teamsOf(knockout[k - 1]!, 2 * index + 1)]
           expect(feeders).toEqual(expect.arrayContaining(teamsOf(knockout[k]!, index)))
         })
@@ -84,23 +163,19 @@ describe('buildBracket', () => {
     })
   })
 
-  it.fails('ЛЧ 2025/26: финал ПСЖ – Арсенал, ПСЖ выиграл по пенальти 4:3', () => {
+  it('ЛЧ 2025/26: финал ПСЖ – Арсенал, ПСЖ выиграл по пенальти 4:3', () => {
     const final = playedRounds(bracketOf(championsLeague2526, LEAGUE_PHASE)).at(-1)!
     expect(final.name).toBe('Финал')
-    expect(final.matches[0]).toMatchObject({
-      homeTeam: 'Paris SG',
-      awayTeam: 'Arsenal',
-      homeScore: '1',
-      awayScore: '1',
-      homePenScore: 4,
-      awayPenScore: 3,
+    expect(final.ties[0]).toMatchObject({
+      teams: [{ name: 'Paris SG', goals: [1], penalties: 4 }, { name: 'Arsenal', goals: [1], penalties: 3 }],
+      winner: 0,
     })
   })
 
   it.fails('Лига наций 2024/25: четвертьфиналы без стыковых матчей, потом полуфиналы и финал', () => {
     const rounds = playedRounds(bracketOf(nationsLeague2425, NATIONS_LEAGUE))
     expect(rounds.map(round => round.name)).toEqual(['Четвертьфинал', 'Полуфинал', 'Финал'])
-    expect(rounds[0]!.matches.flatMap(match => [match.homeTeam, match.awayTeam]).sort()).toEqual([
+    expect(rounds[0]!.ties.flatMap(tie => tie.teams.map(team => team.name)).sort()).toEqual([
       'Croatia', 'Denmark', 'France', 'Germany', 'Italy', 'Netherlands', 'Portugal', 'Spain',
     ])
   })
