@@ -15,15 +15,7 @@ type ApiMatch = {
   strSeason: string
 }
 
-type V1Response = {
-  events: Array<{
-    intHomeScoreExtra: string | null
-    intAwayScoreExtra: string | null
-  }> | null
-}
-
 export default cachedEventHandler(async (event) => {
-  const config = useRuntimeConfig()
   const query = getQuery(event)
   const leagueId = String(query.leagueId ?? DEFAULT_COMPETITION_ID)
 
@@ -43,23 +35,7 @@ export default cachedEventHandler(async (event) => {
     })
     .sort((a, b) => a.strTimestamp.localeCompare(b.strTimestamp))
 
-  // For AP (after penalties) matches, look up penalty scores from v1 API
-  const v1Base = 'https://www.thesportsdb.com/api/v1/json'
-  const apMatchIds = filtered.filter(match => match.strStatus === 'AP').map(match => match.idEvent)
-  const penScoreMap: Record<string, { home: number | null, away: number | null }> = {}
-
-  if (apMatchIds.length) {
-    await Promise.all(apMatchIds.map(async (id) => {
-      const v1 = await $fetch<V1Response>(
-        `${v1Base}/${config.theSportsDbApiKey}/lookupevent.php?id=${id}`,
-      ).catch(() => null)
-      const eventDetails = v1?.events?.[0]
-      penScoreMap[id] = {
-        home: eventDetails?.intHomeScoreExtra != null ? Number(eventDetails.intHomeScoreExtra) : null,
-        away: eventDetails?.intAwayScoreExtra != null ? Number(eventDetails.intAwayScoreExtra) : null,
-      }
-    }))
-  }
+  const penScoreMap = await getPenaltyScores(filtered)
 
   const matches: Match[] = filtered.map(match => ({
     idEvent: match.idEvent,

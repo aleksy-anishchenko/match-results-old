@@ -14,13 +14,6 @@ type ApiMatch = {
   strSeason: string
 }
 
-type V1Response = {
-  events: Array<{
-    intHomeScoreExtra: string | null
-    intAwayScoreExtra: string | null
-  }> | null
-}
-
 // For rounds after the first one: sort matches by bracket position derived from prev round.
 // Also detects when home/away are reversed vs bracket seeding and flags for swap.
 // Even-indexed prev match winner → home (top); odd-indexed → away (bottom).
@@ -113,12 +106,10 @@ function buildProjectedRounds(seed: BracketRound): BracketRound[] {
 }
 
 export default cachedEventHandler(async (event) => {
-  const config = useRuntimeConfig()
   const query = getQuery(event)
   const leagueId = String(query.leagueId ?? DEFAULT_COMPETITION_ID)
   const competition = getCompetition(leagueId)
   const groupRounds = new Set(competition?.groupRounds ?? [])
-  const v1Base = 'https://www.thesportsdb.com/api/v1/json'
 
   // Плей-офф есть только у турниров с групповым этапом или общим этапом
   if (!groupRounds.size && !competition?.leaguePhase) return { rounds: [] }
@@ -144,21 +135,7 @@ export default cachedEventHandler(async (event) => {
 
   if (!playoffMatches.length) return { rounds: [] }
 
-  // Fetch penalty scores for AP matches from v1 API
-  const apMatches = playoffMatches.filter(match => match.strStatus === 'AP')
-  const penScoreMap: Record<string, { home: number | null, away: number | null }> = {}
-  if (apMatches.length) {
-    await Promise.all(apMatches.map(async (match) => {
-      const v1 = await $fetch<V1Response>(
-        `${v1Base}/${config.theSportsDbApiKey}/lookupevent.php?id=${match.idEvent}`,
-      ).catch(() => null)
-      const eventDetails = v1?.events?.[0]
-      penScoreMap[match.idEvent] = {
-        home: eventDetails?.intHomeScoreExtra != null ? Number(eventDetails.intHomeScoreExtra) : null,
-        away: eventDetails?.intAwayScoreExtra != null ? Number(eventDetails.intAwayScoreExtra) : null,
-      }
-    }))
-  }
+  const penScoreMap = await getPenaltyScores(playoffMatches)
 
   const byRound: Record<string, ApiMatch[]> = {}
   for (const match of playoffMatches) {

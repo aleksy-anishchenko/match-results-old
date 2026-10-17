@@ -1,5 +1,6 @@
-// Общие запросы к расписанию TheSportsDB (API v2). Nitro авто-импортирует файлы из server/utils.
+// Общие запросы к TheSportsDB. Nitro авто-импортирует файлы из server/utils.
 
+const API_V1 = 'https://www.thesportsdb.com/api/v1/json'
 const API_V2 = 'https://www.thesportsdb.com/api/v2/json'
 
 /**
@@ -34,4 +35,33 @@ export async function getCurrentSeason(leagueId: string): Promise<string | null>
 export async function getSeasonSchedule<T>(leagueId: string, season: string): Promise<T[]> {
   const data = await fetchSchedule<T>(`league/${leagueId}/${season}`)
   return data.schedule ?? []
+}
+
+export type PenaltyScore = { home: number | null, away: number | null }
+
+type LookupEventResponse = {
+  events: Array<{
+    intHomeScoreExtra: string | null
+    intAwayScoreExtra: string | null
+  }> | null
+}
+
+const toScore = (value: string | null | undefined) => value != null ? Number(value) : null
+
+/**
+ * Счёт серии пенальти для матчей, завершённых по пенальти (статус AP). Расписание его не отдаёт,
+ * поэтому за каждым таким матчем ходим в v1 lookupevent. Ключ — idEvent. Если запрос не удался,
+ * счёт null: матч всё равно покажется, просто без «пен. 4:3».
+ */
+export async function getPenaltyScores(
+  matches: Array<{ idEvent: string, strStatus: string }>,
+): Promise<Record<string, PenaltyScore>> {
+  const scores: Record<string, PenaltyScore> = {}
+  const apiKey = useRuntimeConfig().theSportsDbApiKey
+  await Promise.all(matches.filter(match => match.strStatus === 'AP').map(async ({ idEvent }) => {
+    const data = await $fetch<LookupEventResponse>(`${API_V1}/${apiKey}/lookupevent.php?id=${idEvent}`).catch(() => null)
+    const details = data?.events?.[0]
+    scores[idEvent] = { home: toScore(details?.intHomeScoreExtra), away: toScore(details?.intAwayScoreExtra) }
+  }))
+  return scores
 }
