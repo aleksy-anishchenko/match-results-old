@@ -139,4 +139,6 @@ export type BracketRound = {
 
 export type BracketResponse = {
   rounds: BracketRound[]
+  /** Матч за 3-е место: не в сетке, а отдельной карточкой под финалом */
+  thirdPlace: BracketTie | null
 }

@@ -1,7 +1,11 @@
 <script setup lang="ts">
-import type { BracketRound } from '~/types'
+import type { BracketRound, BracketTie } from '~/types'
 
-const props = defineProps<{ rounds: BracketRound[] }>()
+const props = defineProps<{
+  rounds: BracketRound[]
+  /** Матч за 3-е место: отдельной карточкой под финалом */
+  thirdPlace?: BracketTie | null
+}>()
 
 // Размеры сетки в пикселях. Пять раундов из одиночных матчей (1/16 … финал) ровно занимают ширину
 // контента: 5 × 144 + 4 × 20 = 800. В парах из двух матчей есть ещё счёт каждого матча: карточки шире,
@@ -12,18 +16,24 @@ const TWO_LEGGED_CARD_WIDTH = 176
 const CARD_GAP = 8 // между карточками первого раунда
 const CONNECTOR_WIDTH = 20 // колонка с линиями между раундами
 const ROW_HEIGHT = CARD_HEIGHT + CARD_GAP
+const THIRD_PLACE_GAP = 40 // от финала до матча за 3-е место; подпись в 12px под финалом
 
 const firstRoundTieCount = computed(() => props.rounds[0]?.ties.length ?? 0)
-const totalHeight = computed(() => firstRoundTieCount.value * ROW_HEIGHT - CARD_GAP)
 const cardWidth = computed(() => props.rounds.some(round => round.ties.some(tie => tie.teams[0].goals.length > 1))
   ? TWO_LEGGED_CARD_WIDTH
   : CARD_WIDTH)
 const totalWidth = computed(() => props.rounds.length * cardWidth.value + Math.max(0, props.rounds.length - 1) * CONNECTOR_WIDTH)
+const thirdPlaceTop = computed(() => tieTopOffset(props.rounds.length - 1, 0) + CARD_HEIGHT + THIRD_PLACE_GAP)
+const totalHeight = computed(() => Math.max(
+  firstRoundTieCount.value * ROW_HEIGHT - CARD_GAP,
+  props.thirdPlace ? thirdPlaceTop.value + CARD_HEIGHT : 0,
+))
 
-// Каждый следующий раунд занимает по высоте вдвое больше строк, чем предыдущий:
-// в пару приходят победители двух пар прошлого раунда, карточка встаёт посередине между ними.
+// Карточка встаёт посередине между парами, откуда в неё приходят победители: в раунде, где пар вдвое
+// меньше, чем в первом, на пару приходится две строки первого раунда, где вчетверо меньше — четыре.
+// После раунда плей-офф ЛЧ/ЛЕ в 1/8 пар столько же, и карточки стоят друг напротив друга.
 function tieTopOffset(roundIndex: number, tieIndex: number): number {
-  const rowsPerTie = 2 ** roundIndex
+  const rowsPerTie = firstRoundTieCount.value / (props.rounds[roundIndex]?.ties.length || 1)
   return ((rowsPerTie - 1) / 2 + tieIndex * rowsPerTie) * ROW_HEIGHT
 }
 
@@ -31,13 +41,21 @@ function columnLeft(roundIndex: number): number {
   return roundIndex * (cardWidth.value + CONNECTOR_WIDTH)
 }
 
-function connectorPath(roundIndex: number, nextRoundTieCount: number): string {
+function connectorPath(roundIndex: number): string {
+  const tieCount = props.rounds[roundIndex]!.ties.length
+  const nextTieCount = props.rounds[roundIndex + 1]!.ties.length
+  const centerY = (tieIndex: number) => tieTopOffset(roundIndex, tieIndex) + CARD_HEIGHT / 2
+
+  // Пар столько же: прямая линия к паре напротив
+  if (nextTieCount === tieCount) {
+    return Array.from({ length: tieCount }, (_, tieIndex) => `M0,${centerY(tieIndex)}H${CONNECTOR_WIDTH}`).join(' ')
+  }
+
   const centerX = CONNECTOR_WIDTH / 2
-  return Array.from({ length: nextRoundTieCount }, (_, pairIndex) => {
-    const topTieCenterY = tieTopOffset(roundIndex, 2 * pairIndex) + CARD_HEIGHT / 2
-    const bottomTieCenterY = tieTopOffset(roundIndex, 2 * pairIndex + 1) + CARD_HEIGHT / 2
-    const midpointY = (topTieCenterY + bottomTieCenterY) / 2
-    return `M0,${topTieCenterY}H${centerX}V${bottomTieCenterY}H0M${centerX},${midpointY}H${CONNECTOR_WIDTH}`
+  return Array.from({ length: nextTieCount }, (_, pairIndex) => {
+    const topY = centerY(2 * pairIndex)
+    const bottomY = centerY(2 * pairIndex + 1)
+    return `M0,${topY}H${centerX}V${bottomY}H0M${centerX},${(topY + bottomY) / 2}H${CONNECTOR_WIDTH}`
   }).join(' ')
 }
 </script>
@@ -71,62 +89,31 @@ function connectorPath(roundIndex: number, nextRoundTieCount: number): string {
         class="bracket__column"
         :style="{ left: columnLeft(roundIndex) + 'px', width: cardWidth + 'px' }"
       >
-        <div
+        <BracketTieCard
           v-for="(tie, tieIndex) in round.ties"
           :key="tie.id"
-          class="bracket-match"
-          :class="{ 'bracket-match--projected': round.projected }"
+          :tie="tie"
+          :projected="round.projected"
+          class="bracket__tie"
           :style="{ top: tieTopOffset(roundIndex, tieIndex) + 'px', height: CARD_HEIGHT + 'px' }"
-        >
-          <div
-            v-for="(team, side) in tie.teams"
-            :key="side"
-            class="bracket-match__team"
-            :class="{
-              'bracket-match__team--win': tie.winner === side,
-              'bracket-match__team--lose': tie.winner != null && tie.winner !== side,
-              'bracket-match__team--tbd': !team.name,
-            }"
+        />
+
+        <template v-if="thirdPlace && roundIndex === rounds.length - 1">
+          <p
+            class="bracket__title bracket__title--third-place"
+            :style="{ top: thirdPlaceTop - THIRD_PLACE_GAP + 12 + 'px' }"
           >
-            <img
-              v-if="team.badge"
-              :src="getBadgeUrl(team.badge)"
-              alt=""
-              width="18"
-              height="18"
-              class="bracket-match__badge"
-            >
-            <span
-              v-else
-              class="bracket-match__badge bracket-match__badge--empty"
-            />
-            <span class="bracket-match__name">{{ getTeamName(team.name) || 'Не определен' }}</span>
-            <!-- В паре из двух матчей: мелко голы в каждом сыгранном матче, крупно сумма -->
-            <span
-              v-if="team.goals.length > 1"
-              class="bracket-match__legs"
-            >
-              <span
-                v-for="(goals, leg) in team.goals"
-                v-show="goals != null"
-                :key="leg"
-                class="bracket-match__leg"
-              >{{ goals }}</span>
-            </span>
-            <span
-              v-if="getTieTotal(team) != null"
-              class="bracket-match__score"
-            >
-              {{ getTieTotal(team) }}<sup
-                v-if="team.penalties != null"
-                class="bracket-match__pen"
-              >{{ team.penalties }}</sup>
-            </span>
-          </div>
-        </div>
+            Матч за 3-е место
+          </p>
+          <BracketTieCard
+            :tie="thirdPlace"
+            class="bracket__tie"
+            :style="{ top: thirdPlaceTop + 'px', height: CARD_HEIGHT + 'px' }"
+          />
+        </template>
       </div>
 
-      <!-- Линии от двух пар к паре следующего раунда -->
+      <!-- Линии от пар к паре следующего раунда -->
       <template
         v-for="(_, roundIndex) in rounds"
         :key="'conn-' + roundIndex"
@@ -140,7 +127,7 @@ function connectorPath(roundIndex: number, nextRoundTieCount: number): string {
           aria-hidden="true"
           xmlns="http://www.w3.org/2000/svg"
         >
-          <path :d="connectorPath(roundIndex, rounds[roundIndex + 1]!.ties.length)" />
+          <path :d="connectorPath(roundIndex)" />
         </svg>
       </template>
     </div>
@@ -197,107 +184,14 @@ function connectorPath(roundIndex: number, nextRoundTieCount: number): string {
   }
 }
 
-.bracket-match {
+.bracket__tie {
   position: absolute;
   width: 100%;
-  display: flex;
-  flex-direction: column;
-  background: $color-surface;
-  border: 1px solid $color-border;
-  border-radius: $radius-card-sm;
-  overflow: hidden;
 }
 
-// Будущий матч, пары ещё нет
-.bracket-match--projected {
-  background: transparent;
-  border-style: dashed;
-  border-color: $color-border-strong;
-}
-
-.bracket-match__team {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  min-width: 0;
-  padding: 0 10px;
-  font-size: 13px;
-  font-weight: 500;
-  color: $color-text;
-
-  & + & {
-    border-top: 1px solid $color-border-soft;
-  }
-
-  &--win {
-    font-weight: 700;
-  }
-
-  &--lose {
-    color: $color-text-3;
-  }
-
-  &--tbd {
-    color: $color-text-muted;
-  }
-}
-
-.bracket-match--projected .bracket-match__team + .bracket-match__team {
-  border-top-style: dashed;
-  border-top-color: $color-border;
-}
-
-.bracket-match__badge {
-  width: 18px;
-  height: 18px;
-  flex-shrink: 0;
-  object-fit: contain;
-
-  &--empty {
-    border-radius: 50%;
-    background: $color-badge-bg;
-    border: 1px solid $color-border;
-  }
-}
-
-.bracket-match__name {
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.bracket-match__legs {
-  display: flex;
-  flex-shrink: 0;
-  gap: 4px;
-  font-size: 11px;
-  font-weight: 500;
-  color: $color-text-3;
-  font-variant-numeric: tabular-nums;
-}
-
-.bracket-match__leg {
-  min-width: 7px;
-  text-align: center;
-}
-
-.bracket-match__score {
-  flex-shrink: 0;
-  font-family: $font-display;
-  font-size: 13px;
-  font-weight: 700;
-  color: $color-accent-dark;
-  font-variant-numeric: tabular-nums;
-}
-
-.bracket-match__pen {
-  margin-left: 1px;
-  font-family: $font-text;
-  font-size: 10px;
-  font-weight: 600;
-  color: $color-text-3;
+.bracket__title--third-place {
+  position: absolute;
+  width: 100%;
+  margin: 0;
 }
 </style>

@@ -125,6 +125,7 @@ const kicker = computed(() => {
         <TournamentBracket
           v-else
           :rounds="rounds"
+          :third-place="bracketData?.thirdPlace"
         />
       </template>
 
