@@ -19,6 +19,27 @@ const MatchResultsPreset = definePreset(Aura, {
       900: '#0E3022',
       950: '#08201A',
     },
+    // Нейтральные цвета (текст, рамки, фоны списков и календаря). У Aura они сине-серые (slate),
+    // меняем на зеленовато-серые из макета: 0–700 совпадают с токенами в _variables.scss
+    // (surface, surface-hover, border-soft, border, border-strong, text-muted, text-3, text-2, text).
+    colorScheme: {
+      light: {
+        surface: {
+          0: '#FFFFFF',
+          50: '#F7FAF8',
+          100: '#EDF2EF',
+          200: '#DDE5E0',
+          300: '#C9D4CE',
+          400: '#8A948F',
+          500: '#5B6660',
+          600: '#47524C',
+          700: '#1B2621',
+          800: '#141C18',
+          900: '#0E1411',
+          950: '#080B09',
+        },
+      },
+    },
   },
 })
 

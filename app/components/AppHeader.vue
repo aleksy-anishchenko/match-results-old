@@ -304,8 +304,9 @@ function badgeUrl(id: string): string {
   flex-shrink: 0;
 }
 
+// Белые логотипы (ЛЧ, ЛЕ) на белом не видны, подкладываем самый тёмный цвет палитры
 .comp-ico--bg {
-  background: #1f2937;
+  background: $color-text;
   padding: 2px;
   border-radius: 4px;
 }
