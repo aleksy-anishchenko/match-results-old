@@ -212,20 +212,33 @@ describe('buildBracket', () => {
     expect(rounds.slice(2).flatMap(round => round.ties.flatMap(tie => tie.teams.map(team => team.name)))).toEqual(Array(14).fill(''))
   })
 
-  it('Лига наций 2024/25: полуфиналы и финал, матч за 3-е место отдельно', () => {
-    const { rounds, thirdPlace } = bracketOf(nationsLeague2425, NATIONS_LEAGUE)
-    expect(rounds.map(round => round.name)).toEqual(['Полуфинал', 'Финал'])
-    expectLinesMatch(rounds)
-    // Германия – Франция 0:2
-    expect(thirdPlace).toMatchObject({ teams: [{ name: 'Germany', goals: [0] }, { name: 'France', goals: [2] }], winner: 1 })
-  })
-
-  // Известная ошибка (it.fails: тест проходит, пока проверка падает). Когда починим, убрать .fails
-  it.fails('Лига наций 2024/25: четвертьфиналы без стыковых матчей, потом полуфиналы и финал', () => {
+  // Четвертьфиналы лежат в раунде 0 вместе со стыковыми матчами между дивизионами (4 пары из 14):
+  // четвертьфиналы — те пары, чьи команды играют в полуфиналах
+  it('Лига наций 2024/25: четвертьфиналы без стыковых матчей, потом полуфиналы и финал', () => {
     const { rounds } = bracketOf(nationsLeague2425, NATIONS_LEAGUE)
     expect(rounds.map(round => round.name)).toEqual(['Четвертьфинал', 'Полуфинал', 'Финал'])
     expect(rounds[0]!.ties.flatMap(tie => tie.teams.map(team => team.name)).sort()).toEqual([
       'Croatia', 'Denmark', 'France', 'Germany', 'Italy', 'Netherlands', 'Portugal', 'Spain',
     ])
+    expectLinesMatch(rounds)
+  })
+
+  it('Лига наций 2024/25: четвертьфинал из двух матчей, ничья по сумме — прошла Испания, она играла дальше', () => {
+    const [quarterFinals] = bracketOf(nationsLeague2425, NATIONS_LEAGUE).rounds
+    const tie = quarterFinals!.ties.find(tie => tie.teams.some(team => team.name === 'Spain'))!
+    // Нидерланды – Испания 2:2 и 3:3
+    expect(tie).toMatchObject({ teams: [{ name: 'Netherlands', goals: [2, 3] }, { name: 'Spain', goals: [2, 3] }], winner: 1 })
+  })
+
+  it('Лига наций 2024/25: матч за 3-е место отдельно', () => {
+    // Германия – Франция 0:2
+    expect(bracketOf(nationsLeague2425, NATIONS_LEAGUE).thirdPlace)
+      .toMatchObject({ teams: [{ name: 'Germany', goals: [0] }, { name: 'France', goals: [2] }], winner: 1 })
+  })
+
+  // Март 2025: четвертьфиналы и стыковые матчи сыграны, полуфиналов в API ещё нет — четвертьфиналы
+  // от стыков не отличить, и сетки пока нет
+  it('Лига наций 2024/25 до полуфиналов: сетки нет', () => {
+    expect(bracketOf(nationsLeague2425, NATIONS_LEAGUE, '2025-04-01')).toEqual({ rounds: [], thirdPlace: null })
   })
 })

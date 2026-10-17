@@ -190,6 +190,25 @@ function chainRounds(rounds: DataRound[]): DataRound[] {
 }
 
 /**
+ * Чужие пары в раунде. В Лиге наций у четвертьфиналов нет своего кода: они лежат в одном раунде
+ * со стыковыми матчами между дивизионами (в 2024/25 — 4 пары из 14), и никакое поле их не отличает.
+ * Отличить можно по следующему раунду: в нём играют победители четвертьфиналов. Поэтому если пар
+ * в раунде больше, чем вдвое против следующего, остаются только те, чьи команды играют дальше.
+ * Пока следующего раунда нет в API, такой раунд в сетку не попадает: число пар не степень двойки.
+ */
+function withoutForeignTies(rounds: DataRound[]): DataRound[] {
+  return rounds.map((round) => {
+    const next = rounds
+      .filter(other => other.start > round.start)
+      .sort((a, b) => a.start.localeCompare(b.start))[0]
+    if (!next || round.ties.length <= next.ties.length * 2) return round
+
+    const nextTeams = next.ties.flatMap(tie => tie.teams.map(team => team.name))
+    return { ...round, ties: round.ties.filter(tie => tie.teams.some(team => team.name && nextTeams.includes(team.name))) }
+  })
+}
+
+/**
  * Будущие раунды после последнего известного, до финала. Соперников в них не угадываем: кто с кем
  * сыграет, известно только по жеребьёвке, а её в API нет, пока не появятся сами матчи. Соседние
  * по дате пары в следующем раунде обычно не встречаются (в ЛЧ 2025/26 вышло бы «Ливерпуль – Барселона»
@@ -229,11 +248,11 @@ export function buildBracket(
   for (const match of playoffMatches) {
     byRound.set(match.intRound, [...(byRound.get(match.intRound) ?? []), match])
   }
-  const dataRounds: DataRound[] = [...byRound].map(([round, matches]) => ({
+  const dataRounds: DataRound[] = withoutForeignTies([...byRound].map(([round, matches]) => ({
     round,
     start: matches.map(match => match.strTimestamp).sort()[0]!,
     ties: buildTies(matches, playoffMatches, penScoreMap),
-  })).filter(round => isPowerOfTwo(round.ties.length))
+  }))).filter(round => isPowerOfTwo(round.ties.length))
 
   // Финал и матч за 3-е место — по одной паре; финал играют последним (бывает, в тот же день)
   const singles = dataRounds.filter(round => round.ties.length === 1).sort((a, b) => a.start.localeCompare(b.start))
