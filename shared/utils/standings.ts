@@ -1,4 +1,4 @@
-import type { StandingZone, StandingZoneKind } from '~/types'
+import type { GroupStanding, StandingZone, StandingZoneKind } from '~/types'
 
 function zone(kind: StandingZoneKind, label: string): StandingZone {
   return { kind, label }
@@ -118,4 +118,80 @@ export function sortGroups<T>(groups: Record<string, T>): Record<string, T> {
   return Object.fromEntries(
     Object.entries(groups).sort(([a], [b]) => a.localeCompare(b, 'ru', { numeric: true })),
   )
+}
+
+/** Матч из расписания TheSportsDB: поля, нужные для подсчёта таблицы */
+export type ScheduleMatch = {
+  strHomeTeam: string
+  strAwayTeam: string
+  strHomeTeamBadge: string
+  strAwayTeamBadge: string
+  intHomeScore: string | null
+  intAwayScore: string | null
+  strStatus: string
+}
+
+/**
+ * Таблица по матчам, для турниров без готовой таблицы в API (общий этап ЛЧ и ЛЕ, Лига наций).
+ * В неё попадают все команды из расписания, очки — только за сыгранные матчи (статус FT).
+ * Порядок: очки, потом разница мячей, потом забитые.
+ */
+export function calculateStandings(matches: ScheduleMatch[]): GroupStanding[] {
+  const stats = new Map<string, GroupStanding>()
+  const standingOf = (team: string, badge: string): GroupStanding => {
+    let standing = stats.get(team)
+    if (!standing) {
+      standing = {
+        team,
+        badge,
+        played: 0, won: 0, drawn: 0, lost: 0,
+        goalsFor: 0, goalsAgainst: 0, goalDiff: 0, points: 0,
+        zone: null,
+      }
+      stats.set(team, standing)
+    }
+    return standing
+  }
+
+  for (const match of matches) {
+    const home = standingOf(match.strHomeTeam, match.strHomeTeamBadge)
+    const away = standingOf(match.strAwayTeam, match.strAwayTeamBadge)
+    if (match.strStatus !== 'FT') continue
+
+    const homeGoals = parseInt(match.intHomeScore ?? '0')
+    const awayGoals = parseInt(match.intAwayScore ?? '0')
+
+    home.played++
+    home.goalsFor += homeGoals
+    home.goalsAgainst += awayGoals
+
+    away.played++
+    away.goalsFor += awayGoals
+    away.goalsAgainst += homeGoals
+
+    if (homeGoals > awayGoals) {
+      home.won++
+      home.points += 3
+      away.lost++
+    }
+    else if (homeGoals === awayGoals) {
+      home.drawn++
+      home.points++
+      away.drawn++
+      away.points++
+    }
+    else {
+      away.won++
+      away.points += 3
+      home.lost++
+    }
+  }
+
+  return [...stats.values()]
+    .map(standing => ({ ...standing, goalDiff: standing.goalsFor - standing.goalsAgainst }))
+    .sort((a, b) => {
+      if (b.points !== a.points) return b.points - a.points
+      if (b.goalDiff !== a.goalDiff) return b.goalDiff - a.goalDiff
+      return b.goalsFor - a.goalsFor
+    })
 }

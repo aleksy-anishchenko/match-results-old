@@ -32,70 +32,6 @@ type TableResponse = {
   table: TableRow[] | null
 }
 
-function calculateStandings(
-  groupTeams: string[],
-  badgeMap: Record<string, string>,
-  finishedMatches: ApiMatch[],
-): GroupStanding[] {
-  const stats: Record<string, GroupStanding> = {}
-
-  for (const team of groupTeams) {
-    stats[team] = {
-      team,
-      badge: badgeMap[team] ?? '',
-      played: 0, won: 0, drawn: 0, lost: 0,
-      goalsFor: 0, goalsAgainst: 0, goalDiff: 0, points: 0,
-      zone: null,
-    }
-  }
-
-  for (const match of finishedMatches) {
-    const {
-      strHomeTeam: home,
-      strAwayTeam: away,
-      intHomeScore,
-      intAwayScore,
-    } = match
-    if (!stats[home] || !stats[away]) continue
-
-    const homeGoals = parseInt(intHomeScore ?? '0')
-    const awayGoals = parseInt(intAwayScore ?? '0')
-
-    stats[home].played++
-    stats[home].goalsFor += homeGoals
-    stats[home].goalsAgainst += awayGoals
-
-    stats[away].played++
-    stats[away].goalsFor += awayGoals
-    stats[away].goalsAgainst += homeGoals
-
-    if (homeGoals > awayGoals) {
-      stats[home].won++
-      stats[home].points += 3
-      stats[away].lost++
-    }
-    else if (homeGoals === awayGoals) {
-      stats[home].drawn++
-      stats[home].points++
-      stats[away].drawn++
-      stats[away].points++
-    }
-    else {
-      stats[away].won++
-      stats[away].points += 3
-      stats[home].lost++
-    }
-  }
-
-  return Object.values(stats)
-    .map(standing => ({ ...standing, goalDiff: standing.goalsFor - standing.goalsAgainst }))
-    .sort((a, b) => {
-      if (b.points !== a.points) return b.points - a.points
-      if (b.goalDiff !== a.goalDiff) return b.goalDiff - a.goalDiff
-      return b.goalsFor - a.goalsFor
-    })
-}
-
 export default cachedEventHandler(async (event): Promise<StandingsResponse> => {
   const config = useRuntimeConfig()
   const query = getQuery(event)
@@ -158,19 +94,7 @@ export default cachedEventHandler(async (event): Promise<StandingsResponse> => {
 
   if (!groupMatches.length) return { groups: {}, season }
 
-  const badgeMap: Record<string, string> = {}
-  const teams = new Set<string>()
-  for (const match of groupMatches) {
-    badgeMap[match.strHomeTeam] = match.strHomeTeamBadge
-    badgeMap[match.strAwayTeam] = match.strAwayTeamBadge
-    teams.add(match.strHomeTeam)
-    teams.add(match.strAwayTeam)
-  }
-
-  const finishedMatches = groupMatches.filter(match => match.strStatus === 'FT')
-  const standings = calculateStandings([...teams], badgeMap, finishedMatches)
-
-  return { groups: { [competition?.name ?? 'Таблица']: standings }, season }
+  return { groups: { [competition?.name ?? 'Таблица']: calculateStandings(groupMatches) }, season }
 }, {
   maxAge: 60,
   getKey: event => `standings-${getQuery(event).leagueId ?? DEFAULT_COMPETITION_ID}`,
