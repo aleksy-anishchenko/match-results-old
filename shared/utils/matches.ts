@@ -59,6 +59,32 @@ export function getLeaguePhaseRoundCount(counts: Map<string, number>): number | 
   return bestFrequency >= 3 ? best : null
 }
 
+type RoundMatch = { intRound: string, strHomeTeam: string, strAwayTeam: string }
+
+/**
+ * Матчи общего этапа ЛЧ/ЛЕ из расписания сезона. Брать просто раунды с нужным числом матчей нельзя:
+ * в 2026/27 TheSportsDB сложил летнюю квалификацию в те же раунды 1–3, что и первые туры, и сыгранные
+ * туры терялись (в таблице у всех было 0 игр). Поэтому отбираем по командам: участники общего этапа —
+ * команды из «чистых» раундов, а в матче квалификации их двое быть не может (проигравший в турнир
+ * не попадает). Раунды плей-офф (16, 32, 125…) отсекаются по номеру: они больше последнего тура.
+ */
+export function getLeaguePhaseMatches<T extends RoundMatch>(schedule: T[]): T[] {
+  const counts = getRoundCounts(schedule)
+  const roundSize = getLeaguePhaseRoundCount(counts)
+  if (roundSize == null) return []
+
+  const pureRounds = new Set([...counts].filter(([, count]) => count === roundSize).map(([round]) => round))
+  const teams = new Set(schedule
+    .filter(match => pureRounds.has(match.intRound))
+    .flatMap(match => [match.strHomeTeam, match.strAwayTeam]))
+  const lastRound = Math.max(...[...pureRounds].map(Number))
+
+  return schedule.filter((match) => {
+    const round = Number(match.intRound)
+    return round >= 1 && round <= lastRound && teams.has(match.strHomeTeam) && teams.has(match.strAwayTeam)
+  })
+}
+
 export function getMatchWinnerSide(match: BracketMatch): 'home' | 'away' | null {
   if (!FINISHED_MATCH_STATUSES.has(match.status)) return null
   const homeScore = Number(match.homeScore ?? 0)

@@ -74,23 +74,11 @@ export default cachedEventHandler(async (event): Promise<StandingsResponse> => {
 
   const schedule = await getSeasonSchedule<ApiMatch>(leagueId, season)
 
-  // Общий этап (ЛЧ/ЛЕ): определяем раунды таблицы динамически, отсекая квалификацию
-  const leaguePhaseRoundCount = competition?.leaguePhase
-    ? getLeaguePhaseRoundCount(getRoundCounts(schedule))
-    : null
-
-  let groupMatches: ApiMatch[]
-  if (leaguePhaseRoundCount != null) {
-    const roundCounts = getRoundCounts(schedule)
-    const leaguePhaseRounds = new Set(
-      [...roundCounts.entries()].filter(([, count]) => count === leaguePhaseRoundCount).map(([round]) => round),
-    )
-    groupMatches = schedule.filter(match => leaguePhaseRounds.has(match.intRound))
-  }
-  else {
-    const groupRounds = new Set(competition?.groupRounds ?? [])
-    groupMatches = schedule.filter(match => groupRounds.has(match.intRound))
-  }
+  // Общий этап (ЛЧ/ЛЕ) отбираем без квалификации, групповой этап — по номерам раундов из конфига (Лига наций)
+  const groupRounds = new Set(competition?.groupRounds ?? [])
+  const groupMatches = competition?.leaguePhase
+    ? getLeaguePhaseMatches(schedule)
+    : schedule.filter(match => groupRounds.has(match.intRound))
 
   if (!groupMatches.length) return { groups: {}, season }
 

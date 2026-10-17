@@ -1,6 +1,12 @@
 import { describe, it, expect } from 'vitest'
 import { groupMatchesByDate, formatReadableDate } from '~/utils/matches'
-import { getMatchStatusKind, getMoscowDate } from '#shared/utils/matches'
+import {
+  getLeaguePhaseMatches,
+  getLeaguePhaseRoundCount,
+  getMatchStatusKind,
+  getMoscowDate,
+  getRoundCounts,
+} from '#shared/utils/matches'
 import type { Match } from '~/types'
 
 const makeMatch = (overrides: Partial<Match>): Match => ({
@@ -104,5 +110,63 @@ describe('getMatchStatusKind', () => {
 
   it('неизвестный код считает запланированным', () => {
     expect(getMatchStatusKind('???')).toBe('scheduled')
+  })
+})
+
+describe('getLeaguePhaseRoundCount', () => {
+  const counts = (entries: Record<string, number>) => new Map(Object.entries(entries))
+
+  it('число матчей, которое повторяется в трёх и больше раундах', () => {
+    expect(getLeaguePhaseRoundCount(counts({ 0: 14, 1: 46, 2: 46, 3: 38, 4: 18, 5: 18, 6: 18 }))).toBe(18)
+  })
+
+  it('раунды плей-офф (степени двойки) не считаются', () => {
+    expect(getLeaguePhaseRoundCount(counts({ 16: 16, 32: 16, 125: 8, 150: 4, 200: 1, 4: 18, 5: 18, 6: 18 }))).toBe(18)
+  })
+
+  it('меньше трёх одинаковых раундов — общего этапа нет', () => {
+    expect(getLeaguePhaseRoundCount(counts({ 1: 18, 2: 18, 3: 30 }))).toBeNull()
+  })
+})
+
+describe('getLeaguePhaseMatches', () => {
+  const match = (intRound: string, strHomeTeam: string, strAwayTeam: string) => ({ intRound, strHomeTeam, strAwayTeam })
+
+  // Мини-турнир по образцу ЛЧ 2026/27: шесть команд A–F, туры по 3 матча, а в раунды 1 и 2
+  // TheSportsDB подмешал квалификацию (Q — команды, которые в общий этап не попали)
+  const leaguePhase = [
+    match('1', 'A', 'B'), match('1', 'C', 'D'), match('1', 'E', 'F'),
+    match('2', 'A', 'C'), match('2', 'B', 'E'), match('2', 'D', 'F'),
+    match('3', 'A', 'D'), match('3', 'B', 'F'), match('3', 'C', 'E'),
+    match('4', 'A', 'E'), match('4', 'B', 'D'), match('4', 'C', 'F'),
+    match('5', 'A', 'F'), match('5', 'B', 'C'), match('5', 'D', 'E'),
+  ]
+  const qualifying = [
+    match('0', 'Q3', 'C'),
+    match('1', 'Q1', 'A'), match('1', 'Q2', 'Q3'),
+    match('2', 'A', 'Q1'),
+  ]
+  const playoff = [match('125', 'A', 'B'), match('125', 'B', 'A')]
+  const schedule = [...qualifying, ...leaguePhase, ...playoff]
+
+  it('оставляет все туры общего этапа, даже смешанные с квалификацией', () => {
+    expect(getRoundCounts(schedule).get('1')).toBe(5) // раунд 1 «грязный»: 3 тура + 2 квалификации
+
+    const result = getLeaguePhaseMatches(schedule)
+
+    expect(result).toHaveLength(leaguePhase.length)
+    expect(result).toEqual(expect.arrayContaining(leaguePhase))
+  })
+
+  it('без квалификации и плей-офф', () => {
+    const result = getLeaguePhaseMatches(schedule)
+
+    for (const excluded of [...qualifying, ...playoff]) {
+      expect(result).not.toContainEqual(excluded)
+    }
+  })
+
+  it('пока туров общего этапа нет в расписании — пусто', () => {
+    expect(getLeaguePhaseMatches(qualifying)).toEqual([])
   })
 })
