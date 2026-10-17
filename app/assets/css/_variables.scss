@@ -63,5 +63,32 @@ $color-zone-relegation: $color-live;
 // Радиусы
 $radius-card: 16px;
 $radius-card-lg: 20px;
+$radius-card-sm: 10px;
 $radius-score: 10px;
 $radius-pill: 999px;
+
+// Кнопка-пилюля: фильтр дат на главной, вкладки на странице таблицы.
+// Выбранная залита акцентом, модификатор задаётся снаружи: &--active { @include pill-button-active; }
+@mixin pill-button {
+  height: 40px;
+  padding: 0 16px;
+  border-radius: $radius-pill;
+  border: 1px solid $color-border-strong;
+  background: $color-surface;
+  color: $color-text;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.15s, background-color 0.15s, color 0.15s;
+
+  &:hover {
+    border-color: $color-text-3;
+  }
+}
+
+@mixin pill-button-active {
+  background: $color-accent;
+  border-color: $color-accent;
+  color: #fff;
+  font-weight: 600;
+}

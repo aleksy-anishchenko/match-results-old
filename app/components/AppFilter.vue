@@ -109,26 +109,10 @@ watch(selectedRange, (range) => {
 }
 
 .filter__pill {
-  height: 40px;
-  padding: 0 16px;
-  border-radius: $radius-pill;
-  border: 1px solid $color-border-strong;
-  background: $color-surface;
-  color: $color-text;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: border-color 0.15s, background-color 0.15s, color 0.15s;
-
-  &:hover {
-    border-color: $color-text-3;
-  }
+  @include pill-button;
 
   &--active {
-    background: $color-accent;
-    border-color: $color-accent;
-    color: #fff;
-    font-weight: 600;
+    @include pill-button-active;
   }
 
   &--icon {

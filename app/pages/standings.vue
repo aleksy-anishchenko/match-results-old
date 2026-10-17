@@ -5,8 +5,10 @@ useHead({ title: 'Турнирная таблица' })
 
 const { competition } = useCompetition()
 
+type Tab = 'playoff' | 'groups'
+
 const isTournament = computed(() => competition.value.type === 'tournament')
-const activeTab = ref<'playoff' | 'groups'>('playoff')
+const activeTab = ref<Tab>('playoff')
 
 const leagueQuery = computed(() => ({ leagueId: competition.value.id }))
 
@@ -23,7 +25,31 @@ const rounds = computed(() => bracketData.value?.rounds ?? [])
 
 const isGroupStage = computed(() => isTournament.value && Object.keys(groups.value).length > 1)
 
-const secondTabLabel = computed(() => isGroupStage.value ? 'Группы' : 'Таблица')
+const tabs = computed<Array<{ value: Tab, label: string }>>(() => [
+  { value: 'playoff', label: 'Плей-офф' },
+  { value: 'groups', label: isGroupStage.value ? 'Группы' : 'Таблица' },
+])
+
+const tabId = (tab: Tab) => `standings-tab-${tab}`
+
+// Клавиатура как у обычных вкладок (role="tablist"): Tab попадает только на выбранную,
+// стрелки и Home/End переключают вкладку и переносят на неё фокус
+function onTabKeydown(event: KeyboardEvent) {
+  const currentIndex = tabs.value.findIndex(tab => tab.value === activeTab.value)
+  const targets: Record<string, number> = {
+    ArrowLeft: currentIndex - 1,
+    ArrowRight: currentIndex + 1,
+    Home: 0,
+    End: tabs.value.length - 1,
+  }
+  const targetIndex = targets[event.key]
+  if (targetIndex === undefined) return
+  event.preventDefault()
+  const count = tabs.value.length
+  const target = tabs.value[(targetIndex + count) % count]!
+  activeTab.value = target.value
+  document.getElementById(tabId(target.value))?.focus()
+}
 
 const advancedTeams = computed(() => {
   if (!isGroupStage.value) return null
@@ -74,84 +100,96 @@ const kicker = computed(() => {
     <div
       v-if="isTournament"
       class="tabs"
+      role="tablist"
+      aria-label="Раздел таблицы"
     >
       <button
-        class="tab"
-        :class="{ 'tab--active': activeTab === 'playoff' }"
-        @click="activeTab = 'playoff'"
+        v-for="tab in tabs"
+        :id="tabId(tab.value)"
+        :key="tab.value"
+        type="button"
+        role="tab"
+        class="tabs__pill"
+        :class="{ 'tabs__pill--active': activeTab === tab.value }"
+        :aria-selected="activeTab === tab.value"
+        aria-controls="standings-panel"
+        :tabindex="activeTab === tab.value ? 0 : -1"
+        @click="activeTab = tab.value"
+        @keydown="onTabKeydown"
       >
-        Плей-офф
-      </button>
-      <button
-        class="tab"
-        :class="{ 'tab--active': activeTab === 'groups' }"
-        @click="activeTab = 'groups'"
-      >
-        {{ secondTabLabel }}
+        {{ tab.label }}
       </button>
     </div>
 
-    <template v-if="isTournament && activeTab === 'playoff'">
-      <p
-        v-if="bracketError"
-        class="status"
-      >
-        Не удалось загрузить сетку плей-офф. Попробуйте обновить страницу.
-      </p>
-      <p
-        v-else-if="!rounds.length"
-        class="status"
-      >
-        Плей-офф ещё не начался
-      </p>
-      <TournamentBracket
-        v-else
-        :rounds="rounds"
-      />
-    </template>
-
-    <template v-else>
-      <p
-        v-if="standingsError"
-        class="status"
-      >
-        Не удалось загрузить таблицу. Попробуйте обновить страницу.
-      </p>
-      <p
-        v-else-if="!tables.length"
-        class="status"
-      >
-        Таблицы пока нет
-      </p>
-      <div
-        v-else
-        class="groups"
-      >
-        <!-- Заголовок нужен, когда таблиц несколько: группы турнира, конференции МЛС -->
-        <StandingsTable
-          v-for="table in tables"
-          :key="table.name"
-          :rows="table.rows"
-          :title="tables.length > 1 ? table.name : undefined"
-        />
-      </div>
-      <ul
-        v-if="legend.length"
-        class="legend"
-      >
-        <li
-          v-for="zone in legend"
-          :key="zone.label"
-          class="legend__item"
+    <!-- У турнира содержимое показывается под вкладками и подписано выбранной вкладкой -->
+    <div
+      id="standings-panel"
+      class="panel"
+      :role="isTournament ? 'tabpanel' : undefined"
+      :aria-labelledby="isTournament ? tabId(activeTab) : undefined"
+    >
+      <template v-if="isTournament && activeTab === 'playoff'">
+        <p
+          v-if="bracketError"
+          class="status"
         >
-          <StandingZoneMark
-            :kind="zone.kind"
-            variant="square"
+          Не удалось загрузить сетку плей-офф. Попробуйте обновить страницу.
+        </p>
+        <p
+          v-else-if="!rounds.length"
+          class="status"
+        >
+          Плей-офф ещё не начался
+        </p>
+        <TournamentBracket
+          v-else
+          :rounds="rounds"
+        />
+      </template>
+
+      <template v-else>
+        <p
+          v-if="standingsError"
+          class="status"
+        >
+          Не удалось загрузить таблицу. Попробуйте обновить страницу.
+        </p>
+        <p
+          v-else-if="!tables.length"
+          class="status"
+        >
+          Таблицы пока нет
+        </p>
+        <div
+          v-else
+          class="groups"
+        >
+          <!-- Заголовок нужен, когда таблиц несколько: группы турнира, конференции МЛС -->
+          <StandingsTable
+            v-for="table in tables"
+            :key="table.name"
+            :rows="table.rows"
+            :title="tables.length > 1 ? table.name : undefined"
           />
-          {{ zone.label }}
-        </li>
-      </ul>
-    </template>
+        </div>
+        <ul
+          v-if="legend.length"
+          class="legend"
+        >
+          <li
+            v-for="zone in legend"
+            :key="zone.label"
+            class="legend__item"
+          >
+            <StandingZoneMark
+              :kind="zone.kind"
+              variant="square"
+            />
+            {{ zone.label }}
+          </li>
+        </ul>
+      </template>
+    </div>
   </div>
 </template>
 
@@ -199,30 +237,22 @@ const kicker = computed(() => {
 
 .tabs {
   display: flex;
-  gap: 0;
-  border-bottom: 2px solid #eee;
+  gap: 8px;
 }
 
-.tab {
-  padding: 8px 20px;
-  font-size: 14px;
-  font-weight: 500;
-  color: #888;
-  background: none;
-  border: none;
-  cursor: pointer;
-  border-bottom: 2px solid transparent;
-  margin-bottom: -2px;
-  transition: color 0.15s, border-color 0.15s;
-
-  &:hover {
-    color: #333;
-  }
+.tabs__pill {
+  @include pill-button;
 
   &--active {
-    color: #111;
-    border-bottom-color: #111;
+    @include pill-button-active;
   }
+}
+
+// Таблицы и легенда внутри панели стоят с тем же шагом, что и блоки страницы
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: inherit;
 }
 
 .status {

@@ -3,19 +3,19 @@ import type { BracketRound } from '~/types'
 
 const props = defineProps<{ rounds: BracketRound[] }>()
 
-// Layout constants — CARD_HEIGHT must match the CSS height value
-const CARD_HEIGHT = 50
-const CARD_WIDTH = 148
-const CARD_GAP = 6 // gap between first-round cards
-const CONNECTOR_WIDTH = 16 // width of connector column between rounds
+// Размеры сетки в пикселях. Пять раундов (1/16 … финал) ровно занимают ширину контента: 5 × 144 + 4 × 20 = 800
+const CARD_HEIGHT = 56
+const CARD_WIDTH = 144
+const CARD_GAP = 8 // между карточками первого раунда
+const CONNECTOR_WIDTH = 20 // колонка с линиями между раундами
 const ROW_HEIGHT = CARD_HEIGHT + CARD_GAP
 
 const firstRoundMatchCount = computed(() => props.rounds[0]?.matches.length ?? 0)
 const totalHeight = computed(() => firstRoundMatchCount.value * ROW_HEIGHT - CARD_GAP)
 const totalWidth = computed(() => props.rounds.length * CARD_WIDTH + Math.max(0, props.rounds.length - 1) * CONNECTOR_WIDTH)
 
-// Each round's matches span twice as many rows as the previous round's,
-// since every match here is fed by two matches from the round before it.
+// Каждый следующий раунд занимает по высоте вдвое больше строк, чем предыдущий:
+// в матч приходят победители двух матчей прошлого раунда, карточка встаёт посередине между ними.
 function matchTopOffset(roundIndex: number, matchIndex: number): number {
   const rowsPerMatch = 2 ** roundIndex
   return ((rowsPerMatch - 1) / 2 + matchIndex * rowsPerMatch) * ROW_HEIGHT
@@ -39,130 +39,120 @@ function connectorPath(roundIndex: number, nextRoundMatchCount: number): string 
 <template>
   <div
     v-if="rounds.length"
-    class="bs"
+    class="bracket"
   >
-    <!-- Round name headers -->
     <div
-      class="bs-header"
-      :style="{ width: totalWidth + 'px' }"
+      class="bracket__header"
+      :style="{ width: totalWidth + 'px', gap: CONNECTOR_WIDTH + 'px' }"
     >
-      <template
+      <div
         v-for="(round, roundIndex) in rounds"
         :key="roundIndex"
+        class="bracket__title"
+        :style="{ width: CARD_WIDTH + 'px' }"
       >
-        <div
-          class="bs-title"
-          :style="{ width: CARD_WIDTH + 'px' }"
-        >
-          {{ round.name }}
-        </div>
-        <div
-          v-if="roundIndex < rounds.length - 1"
-          :style="{ width: CONNECTOR_WIDTH + 'px', flexShrink: 0 }"
-        />
-      </template>
+        {{ round.name }}
+      </div>
     </div>
 
-    <!-- Bracket body -->
     <div
-      class="bs-body"
+      class="bracket__body"
       :style="{ width: totalWidth + 'px', height: totalHeight + 'px' }"
     >
-      <!-- Match card columns -->
       <div
         v-for="(round, roundIndex) in rounds"
         :key="'col-' + roundIndex"
-        class="bs-col"
+        class="bracket__column"
         :style="{ left: columnLeft(roundIndex) + 'px', width: CARD_WIDTH + 'px' }"
       >
         <div
           v-for="(match, matchIndex) in round.matches"
           :key="match.idEvent"
-          class="mc"
-          :class="{ 'mc--proj': round.projected, 'mc--done': FINISHED_MATCH_STATUSES.has(match.status) }"
-          :style="{ top: matchTopOffset(roundIndex, matchIndex) + 'px' }"
+          class="bracket-match"
+          :class="{ 'bracket-match--projected': round.projected }"
+          :style="{ top: matchTopOffset(roundIndex, matchIndex) + 'px', height: CARD_HEIGHT + 'px' }"
         >
-          <!-- Home team row -->
           <div
-            class="mc-team"
+            class="bracket-match__team"
             :class="{
-              'mc-team--win': getMatchWinnerSide(match) === 'home',
-              'mc-team--lose': getMatchWinnerSide(match) === 'away',
-              'mc-team--tbd': !match.homeTeam,
+              'bracket-match__team--win': getMatchWinnerSide(match) === 'home',
+              'bracket-match__team--lose': getMatchWinnerSide(match) === 'away',
+              'bracket-match__team--tbd': !match.homeTeam,
             }"
           >
             <img
               v-if="match.homeBadge"
               :src="getBadgeUrl(match.homeBadge)"
-              width="16"
-              height="16"
-              class="mc-badge"
-              :alt="match.homeTeam"
+              alt=""
+              width="18"
+              height="18"
+              class="bracket-match__badge"
             >
-            <span class="mc-name">{{ getTeamName(match.homeTeam) || 'Не определен' }}</span>
+            <span
+              v-else
+              class="bracket-match__badge bracket-match__badge--empty"
+            />
+            <span class="bracket-match__name">{{ getTeamName(match.homeTeam) || 'Не определен' }}</span>
             <span
               v-if="FINISHED_MATCH_STATUSES.has(match.status) && match.homeScore !== null"
-              class="mc-score"
+              class="bracket-match__score"
             >
               {{ match.homeScore }}<sup
                 v-if="match.homePenScore != null"
-                class="mc-pen"
+                class="bracket-match__pen"
               >{{ match.homePenScore }}</sup>
             </span>
           </div>
 
-          <div class="mc-sep" />
-
-          <!-- Away team row -->
           <div
-            class="mc-team"
+            class="bracket-match__team"
             :class="{
-              'mc-team--win': getMatchWinnerSide(match) === 'away',
-              'mc-team--lose': getMatchWinnerSide(match) === 'home',
-              'mc-team--tbd': !match.awayTeam,
+              'bracket-match__team--win': getMatchWinnerSide(match) === 'away',
+              'bracket-match__team--lose': getMatchWinnerSide(match) === 'home',
+              'bracket-match__team--tbd': !match.awayTeam,
             }"
           >
             <img
               v-if="match.awayBadge"
               :src="getBadgeUrl(match.awayBadge)"
-              width="16"
-              height="16"
-              class="mc-badge"
-              :alt="match.awayTeam"
+              alt=""
+              width="18"
+              height="18"
+              class="bracket-match__badge"
             >
-            <span class="mc-name">{{ getTeamName(match.awayTeam) || 'Не определен' }}</span>
+            <span
+              v-else
+              class="bracket-match__badge bracket-match__badge--empty"
+            />
+            <span class="bracket-match__name">{{ getTeamName(match.awayTeam) || 'Не определен' }}</span>
             <span
               v-if="FINISHED_MATCH_STATUSES.has(match.status) && match.awayScore !== null"
-              class="mc-score"
+              class="bracket-match__score"
             >
               {{ match.awayScore }}<sup
                 v-if="match.awayPenScore != null"
-                class="mc-pen"
+                class="bracket-match__pen"
               >{{ match.awayPenScore }}</sup>
             </span>
           </div>
         </div>
       </div>
 
-      <!-- SVG connectors between rounds -->
+      <!-- Линии от пары матчей к матчу следующего раунда -->
       <template
         v-for="(_, roundIndex) in rounds"
         :key="'conn-' + roundIndex"
       >
         <svg
           v-if="roundIndex < rounds.length - 1"
-          class="bs-conn"
+          class="bracket__connector"
           :style="{ left: columnLeft(roundIndex) + CARD_WIDTH + 'px' }"
           :width="CONNECTOR_WIDTH"
           :height="totalHeight"
+          aria-hidden="true"
           xmlns="http://www.w3.org/2000/svg"
         >
-          <path
-            :d="connectorPath(roundIndex, rounds[roundIndex + 1]!.matches.length)"
-            stroke="#c8c8c8"
-            stroke-width="1.5"
-            fill="none"
-          />
+          <path :d="connectorPath(roundIndex, rounds[roundIndex + 1]!.matches.length)" />
         </svg>
       </template>
     </div>
@@ -170,123 +160,141 @@ function connectorPath(roundIndex: number, nextRoundMatchCount: number): string 
 </template>
 
 <style scoped lang="scss">
-.bs {
+// Сетка бывает шире экрана и прокручивается вбок. Область прокрутки выходит под боковые
+// отступы страницы (.container), чтобы карточки уезжали за край экрана, а не обрезались в 16px от него.
+.bracket {
+  margin: 0 (-$container-padding);
+  padding: 0 $container-padding 24px;
   overflow-x: auto;
-  overflow-y: auto;
-  padding-bottom: 40px;
-  -webkit-overflow-scrolling: touch;
+
+  @media (min-width: $breakpoint-desktop) {
+    margin: 0 (-$container-padding-desktop);
+    padding: 0 $container-padding-desktop 24px;
+  }
 }
 
-.bs-header {
+.bracket__header {
   display: flex;
-  padding-bottom: 10px;
+  padding-bottom: 12px;
 }
 
-.bs-title {
-  text-align: center;
-  font-size: 12px;
-  font-weight: 600;
-  color: #888;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+.bracket__title {
   flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
+  font-size: 12px;
+  font-weight: 700;
+  color: $color-text-2;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 
-.bs-body {
+.bracket__body {
   position: relative;
 }
 
-.bs-col {
+.bracket__column {
   position: absolute;
   top: 0;
 }
 
-.bs-conn {
+.bracket__connector {
   position: absolute;
   top: 0;
   overflow: visible;
+
+  path {
+    fill: none;
+    stroke: $color-border-strong;
+    stroke-width: 1.5;
+  }
 }
 
-.mc {
+.bracket-match {
   position: absolute;
   width: 100%;
-  height: 50px; /* must match CARD_HEIGHT constant in script */
-  border: 1px solid #e5e5e5;
-  border-radius: 6px;
-  background: #fff;
-  padding: 5px 8px;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  box-sizing: border-box;
+  background: $color-surface;
+  border: 1px solid $color-border;
+  border-radius: $radius-card-sm;
+  overflow: hidden;
 }
 
-.mc--proj {
+// Будущий матч, пары ещё нет
+.bracket-match--projected {
+  background: transparent;
   border-style: dashed;
-  border-color: #e0e0e0;
-  background: #fafafa;
+  border-color: $color-border-strong;
 }
 
-.mc--done {
-  background: #f9f9f9;
-}
-
-.mc-team {
+.bracket-match__team {
+  flex: 1;
   display: flex;
   align-items: center;
-  gap: 5px;
-  font-size: 12px;
+  gap: 6px;
   min-width: 0;
+  padding: 0 10px;
+  font-size: 13px;
+  font-weight: 500;
+  color: $color-text;
+
+  & + & {
+    border-top: 1px solid $color-border-soft;
+  }
+
+  &--win {
+    font-weight: 700;
+  }
+
+  &--lose {
+    color: $color-text-3;
+  }
+
+  &--tbd {
+    color: $color-text-muted;
+  }
 }
 
-.mc-team--win .mc-name {
-  font-weight: 700;
+.bracket-match--projected .bracket-match__team + .bracket-match__team {
+  border-top-style: dashed;
+  border-top-color: $color-border;
 }
 
-.mc-team--lose {
-  opacity: 0.38;
-}
-
-.mc-team--tbd .mc-name {
-  color: #ccc;
-  font-style: italic;
-}
-
-.mc-badge {
+.bracket-match__badge {
+  width: 18px;
+  height: 18px;
   flex-shrink: 0;
   object-fit: contain;
+
+  &--empty {
+    border-radius: 50%;
+    background: $color-badge-bg;
+    border: 1px solid $color-border;
+  }
 }
 
-.mc-name {
+.bracket-match__name {
   flex: 1;
-  white-space: nowrap;
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
-  min-width: 0;
+  white-space: nowrap;
 }
 
-.mc-score {
-  font-weight: 700;
-  font-size: 13px;
-  min-width: 12px;
-  text-align: right;
+.bracket-match__score {
   flex-shrink: 0;
+  font-family: $font-display;
+  font-size: 13px;
+  font-weight: 700;
+  color: $color-accent-dark;
+  font-variant-numeric: tabular-nums;
 }
 
-.mc-pen {
-  font-size: 9px;
-  font-weight: 500;
-  color: #888;
-  vertical-align: super;
-}
-
-.mc-sep {
-  height: 1px;
-  background: #f0f0f0;
-  margin: 0 -8px;
+.bracket-match__pen {
+  margin-left: 1px;
+  font-family: $font-text;
+  font-size: 10px;
+  font-weight: 600;
+  color: $color-text-3;
 }
 </style>
