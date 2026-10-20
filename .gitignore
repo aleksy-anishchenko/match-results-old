@@ -23,6 +23,6 @@ logs
 .env.*
 !.env.example
 
-# Local notes
-REFACTORING.md
+# Local notes: personal Claude instructions and unpacked mockups
+CLAUDE.local.md
 design/
