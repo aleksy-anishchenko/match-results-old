@@ -35,15 +35,22 @@ const MATCH: MatchDetails = {
   round: '12',
   venue: null,
   city: null,
-  goals: [],
+  events: [
+    { minute: 18, side: 'home', kind: 'goal', player: 'Pablo Solari', assist: null, playerOut: null },
+  ],
+  stats: [
+    { label: 'Владение мячом', home: 66, away: 34, format: 'percent' },
+  ],
 }
 
 registerEndpoint('/api/rounds', () => ROUNDS)
 registerEndpoint('/api/match/1', () => MATCH)
+// Матч без ленты событий и статистики
+registerEndpoint('/api/match/2', () => ({ ...MATCH, idEvent: '2', events: [], stats: [] }))
 
 const mountedPages: VueWrapper[] = []
-async function mountPage() {
-  const page = await mountSuspended(MatchPage, { route: '/match/1' })
+async function mountPage(route = '/match/1') {
+  const page = await mountSuspended(MatchPage, { route })
   mountedPages.push(page)
   return page
 }
@@ -72,5 +79,24 @@ describe('страница матча: ссылка назад', () => {
     expect(page.get('a.back').attributes('href')).toBe('/')
     await page.get('a.back').trigger('click')
     expect(useCompetition().selectedId.value).toBe('4355')
+  })
+})
+
+describe('страница матча: хроника и статистика', () => {
+  afterEach(() => {
+    mountedPages.splice(0).forEach(page => page.unmount())
+  })
+
+  it('есть данные — оба блока', async () => {
+    const page = await mountPage()
+    expect(page.find('.event__player').text()).toBe('Pablo Solari')
+    expect(page.find('.stat__label').text()).toBe('Владение мячом')
+  })
+
+  it('нет данных — блоков нет', async () => {
+    const page = await mountPage('/match/2')
+    expect(page.find('.header').exists()).toBe(true)
+    expect(page.find('.timeline').exists()).toBe(false)
+    expect(page.find('.stats').exists()).toBe(false)
   })
 })

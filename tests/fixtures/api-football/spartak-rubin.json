@@ -32,6 +32,9 @@
       "player": {
         "name": "Jakhongir Urozov"
       },
+      "assist": {
+        "name": null
+      },
       "type": "Card",
       "detail": "Yellow Card",
       "comments": "Foul"
@@ -47,6 +50,9 @@
       },
       "player": {
         "name": "Manfred Ugalde"
+      },
+      "assist": {
+        "name": null
       },
       "type": "Card",
       "detail": "Yellow Card",
@@ -64,6 +70,9 @@
       "player": {
         "name": "Pablo Solari"
       },
+      "assist": {
+        "name": null
+      },
       "type": "Goal",
       "detail": "Normal Goal",
       "comments": null
@@ -79,6 +88,9 @@
       },
       "player": {
         "name": "Victor Parada"
+      },
+      "assist": {
+        "name": null
       },
       "type": "Card",
       "detail": "Yellow Card",
@@ -96,6 +108,9 @@
       "player": {
         "name": "Manfred Ugalde"
       },
+      "assist": {
+        "name": "Ruslan Litvinov"
+      },
       "type": "Goal",
       "detail": "Normal Goal",
       "comments": null
@@ -111,6 +126,9 @@
       },
       "player": {
         "name": "Ulvi Babaev"
+      },
+      "assist": {
+        "name": "Nazmi Gripshi"
       },
       "type": "subst",
       "detail": "Substitution 1",
@@ -128,6 +146,9 @@
       "player": {
         "name": "Victor Parada"
       },
+      "assist": {
+        "name": "Igor Dmitriev"
+      },
       "type": "subst",
       "detail": "Substitution 1",
       "comments": null
@@ -143,6 +164,9 @@
       },
       "player": {
         "name": "Marquinhos"
+      },
+      "assist": {
+        "name": "Daniil Denisov"
       },
       "type": "subst",
       "detail": "Substitution 2",
@@ -160,6 +184,9 @@
       "player": {
         "name": "Manfred Ugalde"
       },
+      "assist": {
+        "name": "Mirlind Daku"
+      },
       "type": "subst",
       "detail": "Substitution 3",
       "comments": null
@@ -175,6 +202,9 @@
       },
       "player": {
         "name": "Mirlind Daku"
+      },
+      "assist": {
+        "name": "Pablo Solari"
       },
       "type": "Goal",
       "detail": "Normal Goal",
@@ -192,6 +222,9 @@
       "player": {
         "name": "Jakhongir Urozov"
       },
+      "assist": {
+        "name": "Egor Teslenko"
+      },
       "type": "subst",
       "detail": "Substitution 2",
       "comments": null
@@ -207,6 +240,9 @@
       },
       "player": {
         "name": "Veldin Hodza"
+      },
+      "assist": {
+        "name": "Ignacio Saavedra"
       },
       "type": "subst",
       "detail": "Substitution 3",
@@ -224,6 +260,9 @@
       "player": {
         "name": "Jacques Siwe"
       },
+      "assist": {
+        "name": "Ruslan Bezrukov"
+      },
       "type": "subst",
       "detail": "Substitution 4",
       "comments": null
@@ -239,6 +278,9 @@
       },
       "player": {
         "name": "Pablo Solari"
+      },
+      "assist": {
+        "name": "Nikita Massalyga"
       },
       "type": "subst",
       "detail": "Substitution 4",
@@ -256,6 +298,9 @@
       "player": {
         "name": "Eddie Salcedo"
       },
+      "assist": {
+        "name": "Daniil Motorin"
+      },
       "type": "subst",
       "detail": "Substitution 5",
       "comments": null
@@ -271,6 +316,9 @@
       },
       "player": {
         "name": "Esequiel Barco"
+      },
+      "assist": {
+        "name": "Ivan Sorokin"
       },
       "type": "subst",
       "detail": "Substitution 5",
@@ -288,6 +336,9 @@
       "player": {
         "name": "Ivan Sorokin"
       },
+      "assist": {
+        "name": null
+      },
       "type": "Card",
       "detail": "Yellow Card",
       "comments": "Foul"
@@ -304,9 +355,166 @@
       "player": {
         "name": "Mirlind Daku"
       },
+      "assist": {
+        "name": null
+      },
       "type": "Goal",
       "detail": "Normal Goal",
       "comments": null
+    }
+  ],
+  "statistics": [
+    {
+      "team": {
+        "id": 558,
+        "name": "Spartak Moscow"
+      },
+      "statistics": [
+        {
+          "type": "expected_goals",
+          "value": "3.39"
+        },
+        {
+          "type": "Passes accurate",
+          "value": 482
+        },
+        {
+          "type": "Shots insidebox",
+          "value": 19
+        },
+        {
+          "type": "Shots outsidebox",
+          "value": 3
+        },
+        {
+          "type": "Blocked Shots",
+          "value": 4
+        },
+        {
+          "type": "Free Kicks",
+          "value": 17
+        },
+        {
+          "type": "Shots on Goal",
+          "value": 10
+        },
+        {
+          "type": "Goalkeeper Saves",
+          "value": 1
+        },
+        {
+          "type": "Shots off Goal",
+          "value": 8
+        },
+        {
+          "type": "Offsides",
+          "value": 2
+        },
+        {
+          "type": "Total passes",
+          "value": 570
+        },
+        {
+          "type": "Total Shots",
+          "value": 22
+        },
+        {
+          "type": "Yellow Cards",
+          "value": 3
+        },
+        {
+          "type": "Corner Kicks",
+          "value": 8
+        },
+        {
+          "type": "Fouls",
+          "value": 20
+        },
+        {
+          "type": "Red Cards",
+          "value": 0
+        },
+        {
+          "type": "Ball Possession",
+          "value": "66%"
+        }
+      ]
+    },
+    {
+      "team": {
+        "id": 1083,
+        "name": "Rubin"
+      },
+      "statistics": [
+        {
+          "type": "expected_goals",
+          "value": "0.32"
+        },
+        {
+          "type": "Passes accurate",
+          "value": 208
+        },
+        {
+          "type": "Shots insidebox",
+          "value": 2
+        },
+        {
+          "type": "Shots outsidebox",
+          "value": 7
+        },
+        {
+          "type": "Blocked Shots",
+          "value": 5
+        },
+        {
+          "type": "Free Kicks",
+          "value": 20
+        },
+        {
+          "type": "Shots on Goal",
+          "value": 1
+        },
+        {
+          "type": "Goalkeeper Saves",
+          "value": 6
+        },
+        {
+          "type": "Shots off Goal",
+          "value": 3
+        },
+        {
+          "type": "Offsides",
+          "value": 1
+        },
+        {
+          "type": "Total passes",
+          "value": 288
+        },
+        {
+          "type": "Total Shots",
+          "value": 9
+        },
+        {
+          "type": "Yellow Cards",
+          "value": 1
+        },
+        {
+          "type": "Corner Kicks",
+          "value": 1
+        },
+        {
+          "type": "Fouls",
+          "value": 17
+        },
+        {
+          "type": "Red Cards",
+          "value": 0
+        },
+        {
+          "type": "Ball Possession",
+          "value": "34%"
+        }
+      ]
     }
   ]
 }

@@ -91,18 +91,33 @@ export type MatchDetails = {
   round: string | null
   venue: string | null
   city: string | null
-  /** Голы по минутам из TheSportsDB или, если там их нет, из API-Football; пусто, если ни там, ни там список не сходится со счётом */
-  goals: MatchGoal[]
+  /** Хроника по минутам из TheSportsDB или, если там её нет, из API-Football; пусто, если ни там, ни там голы не сходятся со счётом */
+  events: MatchEvent[]
+  /** Статистика из того же источника, что и хроника; пусто, если её нет */
+  stats: MatchStat[]
 }
 
-/** Гол матча из ленты событий TheSportsDB */
-export type MatchGoal = {
+/** Событие хроники матча: гол, карточка или замена */
+export type MatchEvent = {
   minute: number
-  /** Имя игрока латиницей, как в API */
-  player: string
-  /** Кому засчитан гол. Автогол засчитан сопернику команды того, кто его забил */
+  /** Чьё событие. Автогол засчитан сопернику команды того, кто его забил */
   side: 'home' | 'away'
-  kind: 'goal' | 'penalty' | 'own-goal'
+  kind: 'goal' | 'penalty' | 'own-goal' | 'yellow-card' | 'red-card' | 'substitution'
+  /** Автор гола, игрок с карточкой или вышедший на замену. Латиницей, как в API */
+  player: string
+  /** Автор голевого паса; null — паса нет или это не гол */
+  assist: string | null
+  /** Кого заменили; null — это не замена */
+  playerOut: string | null
+}
+
+/** Показатель статистики матча: «Удары», 22 у хозяев, 9 у гостей */
+export type MatchStat = {
+  label: string
+  home: number
+  away: number
+  /** percent — владение («66%»), decimal — xG («3.39») */
+  format: 'number' | 'percent' | 'decimal'
 }
 
 /**

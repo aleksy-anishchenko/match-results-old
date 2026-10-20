@@ -32,6 +32,9 @@
       "player": {
         "name": "Kai Havertz"
       },
+      "assist": {
+        "name": "Leandro Trossard"
+      },
       "type": "Goal",
       "detail": "Normal Goal",
       "comments": null
@@ -47,6 +50,9 @@
       },
       "player": {
         "name": "Cristhian Mosquera"
+      },
+      "assist": {
+        "name": null
       },
       "type": "Card",
       "detail": "Yellow Card",
@@ -64,6 +70,9 @@
       "player": {
         "name": "Bukayo Saka"
       },
+      "assist": {
+        "name": null
+      },
       "type": "Card",
       "detail": "Yellow Card",
       "comments": "Foul"
@@ -79,6 +88,9 @@
       },
       "player": {
         "name": "Ousmane Dembélé"
+      },
+      "assist": {
+        "name": null
       },
       "type": "Goal",
       "detail": "Penalty",
@@ -96,6 +108,9 @@
       "player": {
         "name": "Martin Ødegaard"
       },
+      "assist": {
+        "name": "Viktor Gyökeres"
+      },
       "type": "subst",
       "detail": "Substitution 1",
       "comments": null
@@ -111,6 +126,9 @@
       },
       "player": {
         "name": "Cristhian Mosquera"
+      },
+      "assist": {
+        "name": "Jurriën Timber"
       },
       "type": "subst",
       "detail": "Substitution 2",
@@ -128,6 +146,9 @@
       "player": {
         "name": "Khvicha Kvaratskhelia"
       },
+      "assist": {
+        "name": "Bradley Barcola"
+      },
       "type": "subst",
       "detail": "Substitution 1",
       "comments": null
@@ -143,6 +164,9 @@
       },
       "player": {
         "name": "Bukayo Saka"
+      },
+      "assist": {
+        "name": "Noni Madueke"
       },
       "type": "subst",
       "detail": "Substitution 3",
@@ -160,6 +184,9 @@
       "player": {
         "name": "Leandro Trossard"
       },
+      "assist": {
+        "name": "Gabriel Martinelli"
+      },
       "type": "subst",
       "detail": "Substitution 4",
       "comments": null
@@ -175,6 +202,9 @@
       },
       "player": {
         "name": "João Neves"
+      },
+      "assist": {
+        "name": null
       },
       "type": "Card",
       "detail": "Yellow Card",
@@ -192,6 +222,9 @@
       "player": {
         "name": "Ousmane Dembélé"
       },
+      "assist": {
+        "name": "Gonçalo Ramos"
+      },
       "type": "subst",
       "detail": "Substitution 2",
       "comments": null
@@ -207,6 +240,9 @@
       },
       "player": {
         "name": "Kai Havertz"
+      },
+      "assist": {
+        "name": "Eberechi Eze"
       },
       "type": "subst",
       "detail": "Substitution 5",
@@ -224,6 +260,9 @@
       "player": {
         "name": "Myles Lewis-Skelly"
       },
+      "assist": {
+        "name": "Martín Zubimendi"
+      },
       "type": "subst",
       "detail": "Substitution 6",
       "comments": null
@@ -239,6 +278,9 @@
       },
       "player": {
         "name": "Fabián Ruiz"
+      },
+      "assist": {
+        "name": "Warren Zaïre-Emery"
       },
       "type": "subst",
       "detail": "Substitution 3",
@@ -256,6 +298,9 @@
       "player": {
         "name": "Viktor Gyökeres"
       },
+      "assist": {
+        "name": null
+      },
       "type": "Card",
       "detail": "Yellow Card",
       "comments": "Foul"
@@ -271,6 +316,9 @@
       },
       "player": {
         "name": "Declan Rice"
+      },
+      "assist": {
+        "name": null
       },
       "type": "Card",
       "detail": "Yellow Card",
@@ -288,6 +336,9 @@
       "player": {
         "name": "Marquinhos"
       },
+      "assist": {
+        "name": "Ilya Zabarnyi"
+      },
       "type": "subst",
       "detail": "Substitution 4",
       "comments": null
@@ -303,6 +354,9 @@
       },
       "player": {
         "name": "Vitinha"
+      },
+      "assist": {
+        "name": "Lucas Beraldo"
       },
       "type": "subst",
       "detail": "Substitution 5",
@@ -320,9 +374,174 @@
       "player": {
         "name": "Nuno Mendes"
       },
+      "assist": {
+        "name": null
+      },
       "type": "Card",
       "detail": "Yellow Card",
       "comments": "Foul"
+    }
+  ],
+  "statistics": [
+    {
+      "team": {
+        "id": 85,
+        "name": "Paris Saint Germain"
+      },
+      "statistics": [
+        {
+          "type": "Shots on Goal",
+          "value": 4
+        },
+        {
+          "type": "Shots off Goal",
+          "value": 12
+        },
+        {
+          "type": "Total Shots",
+          "value": 21
+        },
+        {
+          "type": "Blocked Shots",
+          "value": 5
+        },
+        {
+          "type": "Shots insidebox",
+          "value": 12
+        },
+        {
+          "type": "Shots outsidebox",
+          "value": 9
+        },
+        {
+          "type": "Fouls",
+          "value": 11
+        },
+        {
+          "type": "Corner Kicks",
+          "value": 11
+        },
+        {
+          "type": "Offsides",
+          "value": 0
+        },
+        {
+          "type": "Ball Possession",
+          "value": "75%"
+        },
+        {
+          "type": "Yellow Cards",
+          "value": 2
+        },
+        {
+          "type": "Red Cards",
+          "value": null
+        },
+        {
+          "type": "Goalkeeper Saves",
+          "value": 0
+        },
+        {
+          "type": "Total passes",
+          "value": 889
+        },
+        {
+          "type": "Passes accurate",
+          "value": 809
+        },
+        {
+          "type": "Passes %",
+          "value": "91%"
+        },
+        {
+          "type": "expected_goals",
+          "value": "1.72"
+        },
+        {
+          "type": "goals_prevented",
+          "value": "0.68"
+        }
+      ]
+    },
+    {
+      "team": {
+        "id": 42,
+        "name": "Arsenal"
+      },
+      "statistics": [
+        {
+          "type": "Shots on Goal",
+          "value": 1
+        },
+        {
+          "type": "Shots off Goal",
+          "value": 1
+        },
+        {
+          "type": "Total Shots",
+          "value": 7
+        },
+        {
+          "type": "Blocked Shots",
+          "value": 5
+        },
+        {
+          "type": "Shots insidebox",
+          "value": 5
+        },
+        {
+          "type": "Shots outsidebox",
+          "value": 2
+        },
+        {
+          "type": "Fouls",
+          "value": 17
+        },
+        {
+          "type": "Corner Kicks",
+          "value": 3
+        },
+        {
+          "type": "Offsides",
+          "value": 3
+        },
+        {
+          "type": "Ball Possession",
+          "value": "25%"
+        },
+        {
+          "type": "Yellow Cards",
+          "value": 4
+        },
+        {
+          "type": "Red Cards",
+          "value": null
+        },
+        {
+          "type": "Goalkeeper Saves",
+          "value": 3
+        },
+        {
+          "type": "Total passes",
+          "value": 285
+        },
+        {
+          "type": "Passes accurate",
+          "value": 196
+        },
+        {
+          "type": "Passes %",
+          "value": "69%"
+        },
+        {
+          "type": "expected_goals",
+          "value": "0.51"
+        },
+        {
+          "type": "goals_prevented",
+          "value": "0.68"
+        }
+      ]
     }
   ]
 }

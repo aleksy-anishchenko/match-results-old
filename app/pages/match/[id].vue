@@ -80,9 +80,13 @@ useHead({
 
     <template v-else-if="match">
       <MatchHeader :match="match" />
-      <MatchGoals
-        v-if="match.goals.length"
-        :goals="match.goals"
+      <MatchTimeline
+        v-if="match.events.length"
+        :events="match.events"
+      />
+      <MatchStats
+        v-if="match.stats.length"
+        :stats="match.stats"
       />
     </template>
   </div>

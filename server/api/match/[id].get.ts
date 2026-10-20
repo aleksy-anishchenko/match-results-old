@@ -2,7 +2,7 @@ import type { MatchDetails } from '~/types'
 
 type ApiEvent = {
   idEvent: string
-  /** Номер этого матча в API-Football: оттуда берём голы, если у TheSportsDB их нет */
+  /** Номер этого матча в API-Football: оттуда берём хронику и статистику, если у TheSportsDB их нет */
   idAPIfootball: string | null
   strHomeTeam: string
   strAwayTeam: string
@@ -31,31 +31,41 @@ type TimelineResponse = {
   timeline: TimelineEvent[] | null
 }
 
+type StatsResponse = {
+  eventstats: TheSportsDbStat[] | null
+}
+
 export default cachedEventHandler(async (event) => {
   const config = useRuntimeConfig()
   const id = getRouterParam(event, 'id')
   const base = `https://www.thesportsdb.com/api/v1/json/${config.theSportsDbApiKey}`
 
-  const [data, timelineData] = await Promise.all([
+  const [data, timelineData, statsData] = await Promise.all([
     // Сбой TheSportsDB (лимит запросов, 5xx, таймаут) — это 502, а не «матч не найден»
     $fetch<V1Response>(`${base}/lookupevent.php?id=${id}`).catch(() => {
       throw createError({ statusCode: 502, statusMessage: 'TheSportsDB недоступен' })
     }),
-    // Без ленты событий страница матча открывается, просто без голов
+    // Без ленты событий и статистики страница матча открывается, просто без этих блоков
     $fetch<TimelineResponse>(`${base}/lookuptimeline.php?id=${id}`).catch(() => null),
+    $fetch<StatsResponse>(`${base}/lookupeventstats.php?id=${id}`).catch(() => null),
   ])
   const ev = data.events?.[0]
   if (!ev) {
     throw createError({ statusCode: 404, statusMessage: 'Матч не найден' })
   }
 
-  // Голы из ленты TheSportsDB; если её нет или она не сходится со счётом (РПЛ, Саудовская лига, Бразилия),
-  // у сыгранного матча — из API-Football. Матч 0:0 без ленты сходится со счётом и запроса не делает
-  const timelineGoals = getMatchGoals(timelineData?.timeline ?? [])
-  let goals = goalsMatchScore(timelineGoals, ev.intHomeScore, ev.intAwayScore) ? timelineGoals : null
-  if (!goals && FINISHED_MATCH_STATUSES.has(ev.strStatus)) {
-    const fallback = await getFallbackGoals(ev.idAPIfootball)
-    if (fallback && goalsMatchScore(fallback, ev.intHomeScore, ev.intAwayScore)) goals = fallback
+  // Хроника и статистика из TheSportsDB. Если ленты нет или её голы не сходятся со счётом (РПЛ, Саудовская лига,
+  // Бразилия), у сыгранного матча — из API-Football. Пустая лента — тоже «нет данных», даже при 0:0:
+  // без замен и карточек матчей не бывает
+  const timelineEvents = getTimelineEvents(timelineData?.timeline ?? [])
+  let events = timelineEvents.length && goalsMatchScore(timelineEvents, ev.intHomeScore, ev.intAwayScore) ? timelineEvents : []
+  let stats = getTheSportsDbStats(statsData?.eventstats ?? [])
+  if (!events.length && FINISHED_MATCH_STATUSES.has(ev.strStatus)) {
+    const fallback = await getFallbackMatchData(ev.idAPIfootball)
+    if (fallback && goalsMatchScore(fallback.events, ev.intHomeScore, ev.intAwayScore)) {
+      events = fallback.events
+      if (!stats.length) stats = fallback.stats
+    }
   }
 
   const details: MatchDetails = {
@@ -79,7 +89,8 @@ export default cachedEventHandler(async (event) => {
     round: ev.intRound,
     venue: ev.strVenue,
     city: ev.strCity,
-    goals: goals ?? [],
+    events,
+    stats,
   }
 
   return details

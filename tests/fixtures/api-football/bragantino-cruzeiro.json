@@ -32,6 +32,9 @@
       "player": {
         "name": "Guzman Rodriguez"
       },
+      "assist": {
+        "name": null
+      },
       "type": "Card",
       "detail": "Yellow Card",
       "comments": "Foul"
@@ -47,6 +50,9 @@
       },
       "player": {
         "name": "Lucas Henrique Barbosa"
+      },
+      "assist": {
+        "name": "Wallace Yan"
       },
       "type": "Goal",
       "detail": "Normal Goal",
@@ -64,6 +70,9 @@
       "player": {
         "name": "William"
       },
+      "assist": {
+        "name": null
+      },
       "type": "Card",
       "detail": "Yellow Card",
       "comments": "Foul"
@@ -79,6 +88,9 @@
       },
       "player": {
         "name": "Kaio Jorge"
+      },
+      "assist": {
+        "name": null
       },
       "type": "Goal",
       "detail": "Own Goal",
@@ -96,6 +108,9 @@
       "player": {
         "name": "Ryan Augusto"
       },
+      "assist": {
+        "name": null
+      },
       "type": "Card",
       "detail": "Yellow Card",
       "comments": "Foul"
@@ -111,6 +126,9 @@
       },
       "player": {
         "name": "Eric Ramires"
+      },
+      "assist": {
+        "name": null
       },
       "type": "Goal",
       "detail": "Normal Goal",
@@ -128,6 +146,9 @@
       "player": {
         "name": "Zé Lucas"
       },
+      "assist": {
+        "name": "Kaio Jorge"
+      },
       "type": "Goal",
       "detail": "Normal Goal",
       "comments": null
@@ -143,6 +164,9 @@
       },
       "player": {
         "name": "William"
+      },
+      "assist": {
+        "name": "Fabrício Bruno"
       },
       "type": "subst",
       "detail": "Substitution 1",
@@ -160,6 +184,9 @@
       "player": {
         "name": "Gabriel Rojas"
       },
+      "assist": {
+        "name": "Matías Viña"
+      },
       "type": "subst",
       "detail": "Substitution 2",
       "comments": null
@@ -175,6 +202,9 @@
       },
       "player": {
         "name": "Gustavo Marques Alves dos Santos"
+      },
+      "assist": {
+        "name": "Eduardo Santos"
       },
       "type": "subst",
       "detail": "Substitution 1",
@@ -192,6 +222,9 @@
       "player": {
         "name": "Zé Lucas"
       },
+      "assist": {
+        "name": "Matheus Henrique"
+      },
       "type": "subst",
       "detail": "Substitution 3",
       "comments": null
@@ -207,6 +240,9 @@
       },
       "player": {
         "name": "João Marcelo"
+      },
+      "assist": {
+        "name": "Wesley Gassova Ribeiro Teixeira"
       },
       "type": "subst",
       "detail": "Substitution 4",
@@ -224,6 +260,9 @@
       "player": {
         "name": "Wallace Yan"
       },
+      "assist": {
+        "name": "Matheus Fernandes"
+      },
       "type": "subst",
       "detail": "Substitution 2",
       "comments": null
@@ -239,6 +278,9 @@
       },
       "player": {
         "name": "Eric Ramires"
+      },
+      "assist": {
+        "name": "Gabriel Girotto"
       },
       "type": "subst",
       "detail": "Substitution 3",
@@ -256,6 +298,9 @@
       "player": {
         "name": "Eduardo Sasha"
       },
+      "assist": {
+        "name": "Isidro Pitta"
+      },
       "type": "subst",
       "detail": "Substitution 4",
       "comments": null
@@ -271,6 +316,9 @@
       },
       "player": {
         "name": "Felipe Morais"
+      },
+      "assist": {
+        "name": null
       },
       "type": "Card",
       "detail": "Yellow Card",
@@ -288,6 +336,9 @@
       "player": {
         "name": "Felipe Morais"
       },
+      "assist": {
+        "name": "Bruno Rodrigues"
+      },
       "type": "subst",
       "detail": "Substitution 5",
       "comments": null
@@ -303,6 +354,9 @@
       },
       "player": {
         "name": "Lucas Henrique Barbosa"
+      },
+      "assist": {
+        "name": "Jose Herrera"
       },
       "type": "subst",
       "detail": "Substitution 5",
@@ -320,6 +374,9 @@
       "player": {
         "name": "Fernando dos Santos Pedro"
       },
+      "assist": {
+        "name": null
+      },
       "type": "Var",
       "detail": "Goal cancelled",
       "comments": null
@@ -335,6 +392,9 @@
       },
       "player": {
         "name": "Matheus Henrique"
+      },
+      "assist": {
+        "name": null
       },
       "type": "Goal",
       "detail": "Normal Goal",
@@ -352,9 +412,166 @@
       "player": {
         "name": "Jose Herrera"
       },
+      "assist": {
+        "name": "Isidro Pitta"
+      },
       "type": "Goal",
       "detail": "Normal Goal",
       "comments": null
+    }
+  ],
+  "statistics": [
+    {
+      "team": {
+        "id": 794,
+        "name": "RB Bragantino"
+      },
+      "statistics": [
+        {
+          "type": "expected_goals",
+          "value": "2.88"
+        },
+        {
+          "type": "Passes accurate",
+          "value": 196
+        },
+        {
+          "type": "Shots insidebox",
+          "value": 17
+        },
+        {
+          "type": "Shots outsidebox",
+          "value": 3
+        },
+        {
+          "type": "Blocked Shots",
+          "value": 6
+        },
+        {
+          "type": "Free Kicks",
+          "value": 12
+        },
+        {
+          "type": "Shots on Goal",
+          "value": 11
+        },
+        {
+          "type": "Goalkeeper Saves",
+          "value": 10
+        },
+        {
+          "type": "Shots off Goal",
+          "value": 3
+        },
+        {
+          "type": "Offsides",
+          "value": 1
+        },
+        {
+          "type": "Total passes",
+          "value": 257
+        },
+        {
+          "type": "Total Shots",
+          "value": 20
+        },
+        {
+          "type": "Yellow Cards",
+          "value": 2
+        },
+        {
+          "type": "Corner Kicks",
+          "value": 7
+        },
+        {
+          "type": "Fouls",
+          "value": 12
+        },
+        {
+          "type": "Red Cards",
+          "value": 0
+        },
+        {
+          "type": "Ball Possession",
+          "value": "31%"
+        }
+      ]
+    },
+    {
+      "team": {
+        "id": 135,
+        "name": "Cruzeiro"
+      },
+      "statistics": [
+        {
+          "type": "expected_goals",
+          "value": "2.8"
+        },
+        {
+          "type": "Passes accurate",
+          "value": 508
+        },
+        {
+          "type": "Shots insidebox",
+          "value": 17
+        },
+        {
+          "type": "Shots outsidebox",
+          "value": 8
+        },
+        {
+          "type": "Blocked Shots",
+          "value": 4
+        },
+        {
+          "type": "Free Kicks",
+          "value": 12
+        },
+        {
+          "type": "Shots on Goal",
+          "value": 13
+        },
+        {
+          "type": "Goalkeeper Saves",
+          "value": 7
+        },
+        {
+          "type": "Shots off Goal",
+          "value": 8
+        },
+        {
+          "type": "Offsides",
+          "value": 5
+        },
+        {
+          "type": "Total passes",
+          "value": 565
+        },
+        {
+          "type": "Total Shots",
+          "value": 25
+        },
+        {
+          "type": "Yellow Cards",
+          "value": 2
+        },
+        {
+          "type": "Corner Kicks",
+          "value": 6
+        },
+        {
+          "type": "Fouls",
+          "value": 12
+        },
+        {
+          "type": "Red Cards",
+          "value": 0
+        },
+        {
+          "type": "Ball Possession",
+          "value": "69%"
+        }
+      ]
     }
   ]
 }

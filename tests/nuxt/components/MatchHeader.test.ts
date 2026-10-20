@@ -23,7 +23,8 @@ function makeMatch(overrides: Partial<MatchDetails> = {}): MatchDetails {
     round: '6',
     venue: 'Anfield',
     city: null,
-    goals: [],
+    events: [],
+    stats: [],
     ...overrides,
   }
 }

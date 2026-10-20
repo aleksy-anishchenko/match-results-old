@@ -1,0 +1,19 @@
+[
+  {"strStat": "Passes accurate", "intHome": "188", "intAway": "501"},
+  {"strStat": "Shots insidebox", "intHome": "17", "intAway": "17"},
+  {"strStat": "Shots outsidebox", "intHome": "3", "intAway": "8"},
+  {"strStat": "Blocked Shots", "intHome": "6", "intAway": "3"},
+  {"strStat": "Free Kicks", "intHome": "12", "intAway": "12"},
+  {"strStat": "Shots on Goal", "intHome": "11", "intAway": "13"},
+  {"strStat": "Goalkeeper Saves", "intHome": "11", "intAway": "7"},
+  {"strStat": "Shots off Goal", "intHome": "3", "intAway": "9"},
+  {"strStat": "Offsides", "intHome": "1", "intAway": "5"},
+  {"strStat": "Total passes", "intHome": "248", "intAway": "559"},
+  {"strStat": "Total Shots", "intHome": "20", "intAway": "25"},
+  {"strStat": "Yellow Cards", "intHome": "2", "intAway": "2"},
+  {"strStat": "Corner Kicks", "intHome": "7", "intAway": "6"},
+  {"strStat": "Fouls", "intHome": "12", "intAway": "12"},
+  {"strStat": "Red Cards", "intHome": "0", "intAway": "0"},
+  {"strStat": "Ball Possession", "intHome": "31", "intAway": "69"},
+  {"strStat": "expected_goals", "intHome": "2.88", "intAway": "2.8"}
+]
