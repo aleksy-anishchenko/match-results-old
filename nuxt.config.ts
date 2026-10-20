@@ -111,6 +111,20 @@ const MatchResultsPreset = definePreset(Aura, {
 export default defineNuxtConfig({
   modules: ['@primevue/nuxt-module', '@nuxt/eslint'],
   devtools: { enabled: true },
+  // Аналитика Umami. Здесь, а не в useHead в app.vue: app.vue не рендерится на страницах ошибок (404)
+  app: {
+    head: {
+      script: [
+        {
+          'src': 'https://stats.matchresults.ru/script.js',
+          'defer': true,
+          'data-website-id': '2ed1bd3d-190a-4985-9a95-015f493a1613',
+          // Вес числом — после всех тегов Nuxt; стили PrimeVue модуль дописывает в <head> ещё позже
+          'tagPriority': 1000,
+        },
+      ],
+    },
+  },
   css: ['~/assets/css/fonts.css', '~/assets/css/global.scss'],
   runtimeConfig: {
     theSportsDbApiKey: '',
