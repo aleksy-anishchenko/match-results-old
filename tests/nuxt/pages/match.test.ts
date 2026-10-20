@@ -36,6 +36,7 @@ const MATCH: MatchDetails = {
   round: '12',
   venue: null,
   city: null,
+  video: null,
   events: [
     { minute: 18, side: 'home', kind: 'goal', player: 'Pablo Solari', assist: null, playerOut: null },
   ],

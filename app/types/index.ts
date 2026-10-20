@@ -108,6 +108,8 @@ export type MatchDetails = {
   round: string | null
   venue: string | null
   city: string | null
+  /** Видеообзор — https-ссылка на YouTube; null — обзора нет */
+  video: string | null
   /** Хроника по минутам из TheSportsDB или, если там её нет, из API-Football; пусто, если ни там, ни там голы не сходятся со счётом */
   events: MatchEvent[]
   /** Статистика из того же источника, что и хроника; пусто, если её нет */

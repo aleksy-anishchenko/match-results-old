@@ -24,6 +24,7 @@ function makeMatch(overrides: Partial<MatchDetails> = {}): MatchDetails {
     round: '6',
     venue: 'Anfield',
     city: null,
+    video: null,
     events: [],
     stats: [],
     ...overrides,
@@ -134,5 +135,22 @@ describe('MatchHeader', () => {
     })
     expect(wrapper.find('.score__goals').text().replace(/\s+/g, '')).toBe('–:–')
     expect(wrapper.find('.header').classes()).toContain('header--scheduled')
+  })
+
+  it('идущий матч с минутой: минута вместо тайма, в доп. время — с пометкой', async () => {
+    const live = await mountSuspended(MatchHeader, { props: { match: makeMatch({ status: '2H', progress: '52' }) } })
+    expect(live.get('.header__status').text()).toBe('52′')
+    const extraTime = await mountSuspended(MatchHeader, { props: { match: makeMatch({ status: 'ET', progress: '97' }) } })
+    expect(extraTime.get('.header__status').text()).toBe('97′ · доп. время')
+  })
+
+  it('есть обзор — ссылка на YouTube в новой вкладке, нет — ссылки нет', async () => {
+    const video = 'https://www.youtube.com/watch?v=pDyaurLPeko'
+    const withVideo = await mountSuspended(MatchHeader, { props: { match: makeMatch({ video }) } })
+    const link = withVideo.get('a.header__video')
+    expect(link.text()).toBe('Смотреть обзор')
+    expect(link.attributes()).toMatchObject({ href: video, target: '_blank', rel: 'noopener noreferrer' })
+    const withoutVideo = await mountSuspended(MatchHeader, { props: { match: makeMatch() } })
+    expect(withoutVideo.find('.header__video').exists()).toBe(false)
   })
 })

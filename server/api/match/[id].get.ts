@@ -21,6 +21,8 @@ type ApiEvent = {
   intRound: string | null
   strVenue: string | null
   strCity: string | null
+  /** Видеообзор на YouTube; есть в основном у АПЛ, Ла Лиги, Серии А, МЛС */
+  strVideo: string | null
 }
 
 type V1Response = {
@@ -91,6 +93,7 @@ export default cachedEventHandler(async (event) => {
     round: ev.intRound,
     venue: ev.strVenue,
     city: ev.strCity,
+    video: getVideoUrl(ev.strVideo),
     events,
     stats,
   }
