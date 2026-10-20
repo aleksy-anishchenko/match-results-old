@@ -80,6 +80,8 @@ export default cachedEventHandler(async (event) => {
     homePenScore: ev.intHomeScoreExtra ? Number(ev.intHomeScoreExtra) : null,
     awayPenScore: ev.intAwayScoreExtra ? Number(ev.intAwayScoreExtra) : null,
     status: ev.strStatus,
+    // Минуту отдаёт только livescore: её подставляет страница (useLiveScores)
+    progress: null,
     // У старых матчей timestamp бывает пустым, тогда страница покажет только дату
     timestamp: ev.strTimestamp ?? '',
     date: ev.dateEvent ?? '',

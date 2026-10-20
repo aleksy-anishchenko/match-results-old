@@ -65,3 +65,41 @@ export async function getPenaltyScores(
   }))
   return scores
 }
+
+/** Матч из v2 livescore/soccer: поля для счёта и минуты */
+export type LivescoreMatch = {
+  idEvent: string
+  idLeague: string
+  intHomeScore: string | null
+  intAwayScore: string | null
+  strStatus: string
+  /** Минута: «24» */
+  strProgress: string | null
+}
+
+const LIVESCORE_MAX_AGE_MS = 30_000
+
+let livescore: { at: number, matches: LivescoreMatch[] } | null = null
+let livescoreRequest: Promise<LivescoreMatch[]> | null = null
+
+/**
+ * Матчи, которые сейчас идут или недавно закончились, — все лиги разом (во вторник вечером около 80).
+ * Расписание отдаёт счёт с задержкой и без минуты, livescore — свежие. Один запрос на всех посетителей:
+ * ответ живёт 30 секунд. Сбой — пустой список на те же 30 секунд: страница покажет счёт из расписания.
+ */
+export async function getLiveMatches(): Promise<LivescoreMatch[]> {
+  if (livescore && Date.now() - livescore.at < LIVESCORE_MAX_AGE_MS) return livescore.matches
+  livescoreRequest ??= $fetch<{ livescore?: LivescoreMatch[] | null }>(`${API_V2}/livescore/soccer`, {
+    headers: { 'X-API-KEY': useRuntimeConfig().theSportsDbApiKey },
+  })
+    .then(data => data.livescore ?? [])
+    .catch(() => [])
+    .then((matches) => {
+      livescore = { at: Date.now(), matches }
+      return matches
+    })
+    .finally(() => {
+      livescoreRequest = null
+    })
+  return livescoreRequest
+}

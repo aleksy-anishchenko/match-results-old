@@ -1,12 +1,14 @@
 import { describe, it, expect } from 'vitest'
 import { describeDates, formatReadableDate, formatShortDates, groupMatchesByDate, shiftDate } from '~/utils/matches'
 import {
+  applyLiveScore,
   getLeaguePhaseMatches,
   getLeaguePhaseRoundCount,
   getMatchStatusKind,
   getMatchWinnerSide,
   getMoscowDate,
   getRoundCounts,
+  needsLiveScores,
 } from '#shared/utils/matches'
 import type { Match } from '~/types'
 
@@ -112,6 +114,62 @@ describe('getMatchStatusKind', () => {
 
   it('неизвестный код считает запланированным', () => {
     expect(getMatchStatusKind('???')).toBe('scheduled')
+  })
+})
+
+describe('applyLiveScore', () => {
+  const live = { status: '2H', progress: '52', homeScore: '1', awayScore: '0' }
+
+  it('идущий матч: счёт, статус и минута из livescore', () => {
+    const match = makeMatch({ status: '1H', homeScore: '0', awayScore: '0' })
+    expect(applyLiveScore(match, live)).toEqual({ ...match, status: '2H', homeScore: '1', awayScore: '0', progress: '52' })
+  })
+
+  it('матч начался, а расписание ещё пишет «не начался»', () => {
+    expect(applyLiveScore(makeMatch({ status: 'NS' }), { ...live, status: '1H', progress: '3', homeScore: '0' })).toMatchObject({ status: '1H', progress: '3' })
+  })
+
+  it('в перерыве и серии пенальти минуты нет — подпись статуса', () => {
+    expect(applyLiveScore(makeMatch({ status: '1H' }), { ...live, status: 'HT', progress: '45' }).progress).toBeNull()
+    expect(applyLiveScore(makeMatch({ status: 'ET' }), { ...live, status: 'PEN', progress: '120' }).progress).toBeNull()
+    expect(applyLiveScore(makeMatch({ status: '2H' }), { ...live, status: 'ET', progress: '97' }).progress).toBe('97')
+  })
+
+  it('по расписанию матч закончен или перенесён — верим расписанию', () => {
+    const finished = makeMatch({ status: 'FT', homeScore: '2', awayScore: '0' })
+    expect(applyLiveScore(finished, live)).toBe(finished)
+    const postponed = makeMatch({ status: 'PST' })
+    expect(applyLiveScore(postponed, live)).toBe(postponed)
+  })
+
+  it('матча нет в livescore — без изменений', () => {
+    const match = makeMatch({ status: '2H' })
+    expect(applyLiveScore(match, undefined)).toBe(match)
+  })
+})
+
+describe('needsLiveScores', () => {
+  // Матч начинается 23 июня в 10:00 UTC
+  const kickoff = Date.parse('2026-06-23T10:00:00Z')
+  const minutes = (n: number) => n * 60 * 1000
+
+  it('идущий матч — обновляем', () => {
+    expect(needsLiveScores([makeMatch({ status: '2H' })], kickoff + minutes(60))).toBe(true)
+    expect(needsLiveScores([makeMatch({ status: 'HT' })], kickoff + minutes(50))).toBe(true)
+  })
+
+  it('матч по времени уже должен идти, а расписание пишет «не начался» — обновляем, но не дольше 3 часов', () => {
+    expect(needsLiveScores([makeMatch({ status: 'NS' })], kickoff - minutes(1))).toBe(false)
+    expect(needsLiveScores([makeMatch({ status: 'NS' })], kickoff)).toBe(true)
+    expect(needsLiveScores([makeMatch({ status: 'NS' })], kickoff + minutes(179))).toBe(true)
+    expect(needsLiveScores([makeMatch({ status: 'NS' })], kickoff + minutes(180))).toBe(false)
+  })
+
+  it('сыгранные, перенесённые и будущие матчи — не обновляем', () => {
+    const now = kickoff + minutes(30)
+    expect(needsLiveScores([makeMatch({ status: 'FT' }), makeMatch({ status: 'PST' })], now)).toBe(false)
+    expect(needsLiveScores([makeMatch({ status: 'NS', timestamp: '2026-06-24T10:00:00' })], now)).toBe(false)
+    expect(needsLiveScores([], now)).toBe(false)
   })
 })
 

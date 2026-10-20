@@ -24,6 +24,20 @@ const roundsRequest = useFetch<RoundsResponse>('/api/rounds', {
 const { data: match, pending, error } = await useFetch<MatchDetails>(`/api/match/${route.params.id}`)
 const { data: roundsData } = await roundsRequest
 
+// Пока матч идёт, счёт и минута обновляются раз в минуту, а с ними и хроника со статистикой.
+// Хронику спрашиваем тихо, через $fetch: refresh у useFetch на время запроса показал бы «Загрузка...»
+async function updateMatch() {
+  const fresh = await $fetch<MatchDetails>(`/api/match/${route.params.id}`).catch(() => null)
+  if (fresh) match.value = fresh
+}
+const liveMatches = await useLiveScores(() => match.value?.leagueId ?? '', () => match.value ? [match.value] : [], updateMatch)
+const liveMatch = computed(() => liveMatches.value[0])
+
+// Лента событий отстаёт от livescore: только что забитого гола в хронике ещё нет. Неполный список голов
+// выглядит как ошибка — прячем хронику, пока она не догонит счёт в шапке (матч переспрашиваем раз в минуту)
+const showTimeline = computed(() => !!liveMatch.value?.events.length
+  && goalsMatchScore(liveMatch.value.events, liveMatch.value.homeScore, liveMatch.value.awayScore))
+
 // Матч открыли по ссылке, а не с главной: выбранная раньше лига может быть другой (матч РПЛ, а в cookie АПЛ).
 // Тогда ссылка ведёт на лигу самого матча и выбирает её на главной
 const matchCompetition = computed(() => match.value ? getCompetition(match.value.leagueId) : undefined)
@@ -78,15 +92,15 @@ useHead({
       {{ error.statusCode === 404 ? 'Матч не найден' : 'Не удалось загрузить матч. Попробуйте обновить страницу.' }}
     </p>
 
-    <template v-else-if="match">
-      <MatchHeader :match="match" />
+    <template v-else-if="liveMatch">
+      <MatchHeader :match="liveMatch" />
       <MatchTimeline
-        v-if="match.events.length"
-        :events="match.events"
+        v-if="showTimeline"
+        :events="liveMatch.events"
       />
       <MatchStats
-        v-if="match.stats.length"
-        :stats="match.stats"
+        v-if="liveMatch.stats.length"
+        :stats="liveMatch.stats"
       />
     </template>
   </div>

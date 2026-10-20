@@ -54,6 +54,12 @@ const matchRequests: Array<Record<string, string>> = []
 
 registerEndpoint('/api/rounds', () => ROUNDS)
 registerEndpoint('/api/competitions', () => ({ competitions: [] }))
+// По livescore «Эвертон – Ливерпуль» идёт: 52-я минута, 1:0. Счётчик — сколько раз страница спросила
+let liveRequests = 0
+registerEndpoint('/api/live', () => {
+  liveRequests++
+  return { scores: { 2: { status: '2H', progress: '52', homeScore: '1', awayScore: '0' } } }
+})
 registerEndpoint('/api/matches', (event) => {
   const query = new URL(event.path, 'http://localhost').searchParams
   matchRequests.push(Object.fromEntries(query))
@@ -144,5 +150,22 @@ describe('главная', () => {
     await new Promise(resolve => setTimeout(resolve, 50))
     expect(matchRequests).toEqual([{ leagueId: '4335' }])
     expect(page.find('h1').text()).toBe('Матчи: Ла Лига')
+  })
+
+  it('идущий матч — минута и счёт из livescore, раз в минуту спрашиваем заново', async () => {
+    vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] })
+    try {
+      const page = await mountPage('/')
+      const match = page.get('a.match')
+      expect(match.classes()).toContain('match--live')
+      expect(match.get('.match__state').text()).toBe('52′')
+      expect(match.findAll('.score__goals').map(goals => goals.text())).toEqual(['1', '0'])
+      const before = liveRequests
+      vi.advanceTimersByTime(60_000)
+      await vi.waitFor(() => expect(liveRequests).toBe(before + 1))
+    }
+    finally {
+      vi.useRealTimers()
+    }
   })
 })

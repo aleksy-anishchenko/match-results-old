@@ -24,7 +24,7 @@
 - Зоны в таблицах лиг из `strDescription`. Серия А, Бундеслига и Лига 1 пишут без турнира, расшифровка в `LEAGUE_ZONE_OVERRIDES` по правилам УЕФА 2024–2027 — **при смене правил проверить**.
 - Лента событий (`lookuptimeline`): есть у АПЛ, Ла Лиги, МЛС, Эредивизи, ЛЧ (не у всех матчей). У РПЛ почти пусто с октября 2025 (в 2026/27 — 1 матч из 88), у Саудовской лиги и Бразилии в 2026 тоже: источник перестал присылать. v1 `lookuptimeline` и v2 `lookup/event_timeline` отдают одно и то же, у `livescore` авторов голов нет. Время только целыми минутами (без «90+3»). Имена игроков латиницей. В замене `strPlayer` — ушедший с поля, `strAssist` — вышедший (у API-Football так же: `player` и `assist`); бывает замена без вышедшего.
 - Статистика матча (`lookupeventstats`) — там же, где лента, но не у всех матчей с лентой. Названия показателей те же, что у API-Football; значения строками.
-- Минута идущего матча есть только в v2 `livescore/soccer`; расписание и `lookupevent` её не отдают.
+- Минута идущего матча есть только в v2 `livescore/soccer` (`strProgress`); расписание и `lookupevent` её не отдают, а счёт там отстаёт. `livescore` — все лиги разом (вечером во вторник ~80 матчей), обновляется раз в ~2 минуты (поле `updated` — время Великобритании), минута отстаёт на 2–3. Добавленное время — «45+1», в перерыве статус `HT` и минута 45. Закончившиеся матчи остаются в нём со статусом `FT` около часа, потом пропадают. Что там в серии пенальти (`P`, `PEN`?), не проверено — посмотреть в плей-офф.
 
 ## API-Football — запасной источник хроники и статистики
 
@@ -37,8 +37,8 @@
 ## Где что в коде
 
 - `shared/utils/` — общее для сервера и браузера: `bracket.ts` (сетка плей-офф), `rounds.ts` (туры главной и их даты), `matchEvents.ts` (хроника матча), `matchStats.ts`, `standings.ts` (таблицы, зоны), `matches.ts` (статусы, даты по Москве), `competitions.ts` (список турниров: `leaguePhase`, `groupRounds`).
-- `server/api/`: `bracket`, `rounds` (туры, текущий тур, дни с матчами), `matches` (тур, даты или, без них, текущий тур), `match/[id]` (+ хроника и статистика из TheSportsDB или API-Football), `standings`, `competitions`, `image` (прокси эмблем).
-- `app/`: страницы `index`, `standings` (таблица и сетка), `match/[id]`, `about`. Над матчами и таблицей — `CompetitionBar` (`LeagueSelect` и разделы). Поля «Тур» и «Дата» — `RoundSelect`, `DateSelect` на общем `FilterDropdown`: на компьютере PrimeVue `Popover`, на телефоне `Drawer`. Выбор главной хранится в адресе (`utils/homeQuery.ts`). Лига — `useCompetition`, «сегодня» по Москве — `useMoscowToday`.
+- `server/api/`: `bracket`, `rounds` (туры, текущий тур, дни с матчами), `matches` (тур, даты или, без них, текущий тур), `match/[id]` (+ хроника и статистика из TheSportsDB или API-Football), `live` (счёт и минута идущих матчей лиги, без кэша Nitro: `getLiveMatches` сам ходит в TheSportsDB не чаще раза в 30 с), `standings`, `competitions`, `image` (прокси эмблем).
+- `app/`: страницы `index`, `standings` (таблица и сетка), `match/[id]`, `about`. Над матчами и таблицей — `CompetitionBar` (`LeagueSelect` и разделы). Поля «Тур» и «Дата» — `RoundSelect`, `DateSelect` на общем `FilterDropdown`: на компьютере PrimeVue `Popover`, на телефоне `Drawer`. Выбор главной хранится в адресе (`utils/homeQuery.ts`). Лига — `useCompetition`, «сегодня» по Москве — `useMoscowToday`, живой счёт поверх расписания — `useLiveScores` (раз в минуту, пока есть идущий матч).
 
 ## Код и стили
 

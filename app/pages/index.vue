@@ -44,9 +44,10 @@ const { data, pending, error } = await useFetch<MatchesResponse>('/api/matches',
   }),
 })
 
-const groupedMatches = computed(() =>
-  groupMatchesByDate(data.value?.matches ?? []),
-)
+// Счёт и минута идущих матчей обновляются сами, раз в минуту
+const liveMatches = await useLiveScores(leagueId, () => data.value?.matches ?? [])
+
+const groupedMatches = computed(() => groupMatchesByDate(liveMatches.value))
 
 // По датам туров в поле нет, поэтому тур пишем в заголовке дня: «Воскресенье, 20 сентября · 5 тур».
 // Если в день играют матчи разных туров (перенесённый матч), пишем все

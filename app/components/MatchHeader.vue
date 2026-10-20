@@ -9,6 +9,13 @@ import { getTeamName } from '~/utils/teamNames'
 const props = defineProps<{ match: MatchDetails }>()
 
 const kind = computed(() => getMatchStatusKind(props.match.status))
+
+// У идущего матча — минута вместо «2-й тайм»; в доп. время — с пометкой, как «ДВ» в списке матчей
+const statusLabel = computed(() => {
+  const { progress, status } = props.match
+  if (progress == null) return formatMatchStatus(status)
+  return status === 'ET' ? `${progress}′ · доп. время` : `${progress}′`
+})
 const winner = computed(() => getMatchWinnerSide(props.match))
 
 // «АПЛ · 6 тур». Тур показываем только у лиг: у турниров intRound — служебный
@@ -59,7 +66,7 @@ const venue = computed(() => props.match.venue || props.match.city)
         class="header__dot"
         aria-hidden="true"
       />
-      <span>{{ context }} · <span class="header__status">{{ formatMatchStatus(match.status) }}</span></span>
+      <span>{{ context }} · <span class="header__status">{{ statusLabel }}</span></span>
     </p>
 
     <div class="header__teams">

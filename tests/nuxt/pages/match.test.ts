@@ -22,11 +22,12 @@ const MATCH: MatchDetails = {
   awayTeam: 'Rubin Kazan',
   homeBadge: '',
   awayBadge: '',
-  homeScore: '4',
+  homeScore: '1',
   awayScore: '0',
   homePenScore: null,
   awayPenScore: null,
   status: 'FT',
+  progress: null,
   timestamp: '2026-10-18T15:45:00',
   date: '2026-10-18',
   leagueId: '4355',
@@ -47,6 +48,28 @@ registerEndpoint('/api/rounds', () => ROUNDS)
 registerEndpoint('/api/match/1', () => MATCH)
 // Матч без ленты событий и статистики
 registerEndpoint('/api/match/2', () => ({ ...MATCH, idEvent: '2', events: [], stats: [] }))
+// Идущий матч: по расписанию 1-й тайм 0:0, по livescore — 2-й тайм, 52-я минута, 1:0
+let matchRequests = 0
+registerEndpoint('/api/match/3', () => {
+  matchRequests++
+  return { ...MATCH, idEvent: '3', status: '1H', homeScore: '0', awayScore: '0', events: [], stats: [] }
+})
+// Ещё один идущий матч: в ленте один гол, а по livescore уже 2:0 — второго гола в ленте пока нет
+registerEndpoint('/api/match/4', () => ({
+  ...MATCH,
+  idEvent: '4',
+  status: '2H',
+  homeScore: '1',
+  awayScore: '0',
+  events: [{ minute: 18, side: 'home', kind: 'goal', player: 'Pablo Solari', assist: null, playerOut: null }],
+  stats: [],
+}))
+registerEndpoint('/api/live', () => ({
+  scores: {
+    3: { status: '2H', progress: '52', homeScore: '1', awayScore: '0' },
+    4: { status: '2H', progress: '70', homeScore: '2', awayScore: '0' },
+  },
+}))
 
 const mountedPages: VueWrapper[] = []
 async function mountPage(route = '/match/1') {
@@ -98,5 +121,31 @@ describe('страница матча: хроника и статистика', 
     expect(page.find('.header').exists()).toBe(true)
     expect(page.find('.timeline').exists()).toBe(false)
     expect(page.find('.stats').exists()).toBe(false)
+  })
+})
+
+describe('страница матча: идущий матч', () => {
+  afterEach(() => {
+    mountedPages.splice(0).forEach(page => page.unmount())
+    vi.useRealTimers()
+  })
+
+  it('минута вместо тайма и счёт из livescore; раз в минуту матч обновляется', async () => {
+    vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] })
+    const page = await mountPage('/match/3')
+    expect(page.get('.header__status').text()).toBe('52′')
+    expect(page.get('.score__goals').text().replace(/\s+/g, '')).toBe('1:0')
+    const before = matchRequests
+    vi.advanceTimersByTime(60_000)
+    await vi.waitFor(() => expect(matchRequests).toBe(before + 1))
+    // Обновление тихое: «Загрузка...» не появляется, счёт остаётся из livescore
+    expect(page.find('.status').exists()).toBe(false)
+    expect(page.get('.header__status').text()).toBe('52′')
+  })
+
+  it('хроника отстала от свежего счёта — прячем её, пока не догонит', async () => {
+    const page = await mountPage('/match/4')
+    expect(page.get('.score__goals').text().replace(/\s+/g, '')).toBe('2:0')
+    expect(page.find('.timeline').exists()).toBe(false)
   })
 })

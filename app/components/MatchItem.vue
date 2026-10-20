@@ -11,16 +11,19 @@ function resultFor(side: 'home' | 'away'): 'win' | 'lose' | null {
   return winner.value === side ? 'win' : 'lose'
 }
 
-// Левая колонка: у идущего матча — минута или период, у остальных — время начала
+// Левая колонка: у идущего матча — точка и минута, у остальных — время начала
 const stateLabel = computed(() => {
-  if (kind.value === 'live') {
-    return props.match.progress != null ? `${props.match.progress}′` : formatMatchStatus(props.match.status)
-  }
+  if (kind.value === 'live') return props.match.progress != null ? `${props.match.progress}′` : ''
   return formatMoscowTime(props.match.timestamp)
 })
 
+// Под ней — мелко. У идущего матча без минуты здесь период («Перерыв», «Пенальти»):
+// рядом с точкой в колонку он не помещается
 const subLabel = computed(() => {
-  if (kind.value === 'live') return props.match.progress != null && props.match.status === 'ET' ? 'ДВ' : ''
+  if (kind.value === 'live') {
+    if (props.match.progress == null) return formatMatchStatus(props.match.status)
+    return props.match.status === 'ET' ? 'ДВ' : ''
+  }
   if (kind.value === 'finished') return 'Завершён'
   if (kind.value === 'inactive') return formatMatchStatus(props.match.status)
   return ''
@@ -126,8 +129,11 @@ const subLabel = computed(() => {
   color: $color-text-3;
 }
 
-.match--live .match__state {
-  color: $color-live;
+.match--live {
+  .match__state,
+  .match__sub {
+    color: $color-live;
+  }
 }
 
 .match--inactive {

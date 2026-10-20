@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { getCurrentSeason, getPenaltyScores, getSeasonSchedule } from '../../../server/utils/theSportsDb'
+import { getCurrentSeason, getLiveMatches, getPenaltyScores, getSeasonSchedule } from '../../../server/utils/theSportsDb'
 
 const API = 'https://www.thesportsdb.com/api/v2/json/schedule'
 const LOOKUP = 'https://www.thesportsdb.com/api/v1/json/test-key/lookupevent.php?id='
@@ -109,5 +109,51 @@ describe('getPenaltyScores', () => {
 
     expect(await getPenaltyScores([{ idEvent: '1', strStatus: 'FT' }])).toEqual({})
     expect(fetchMock).not.toHaveBeenCalled()
+  })
+})
+
+describe('getLiveMatches', () => {
+  const LIVESCORE = 'https://www.thesportsdb.com/api/v2/json/livescore/soccer'
+  const napoli = { idEvent: '2594604', idLeague: '4480', intHomeScore: '1', intAwayScore: '0', strStatus: '1H', strProgress: '24' }
+
+  // Ответ хранится в модуле между тестами: каждый тест начинает на час позже прошлого, когда он уже устарел
+  let hour = 0
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(Date.UTC(2026, 9, 20, 19) + hour++ * 60 * 60 * 1000)
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  it('один запрос на всех в течение 30 секунд', async () => {
+    const fetchMock = mockApi({ [LIVESCORE]: { livescore: [napoli] } })
+
+    const [first, second] = await Promise.all([getLiveMatches(), getLiveMatches()])
+    expect(first).toEqual([napoli])
+    expect(second).toEqual([napoli])
+    vi.advanceTimersByTime(29_000)
+    await getLiveMatches()
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(fetchMock).toHaveBeenCalledWith(LIVESCORE, { headers: { 'X-API-KEY': 'test-key' } })
+
+    vi.advanceTimersByTime(2_000)
+    await getLiveMatches()
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+  })
+
+  it('сбой — пустой список, и 30 секунд TheSportsDB не дёргаем', async () => {
+    const fetchMock = mockApi({})
+
+    expect(await getLiveMatches()).toEqual([])
+    expect(await getLiveMatches()).toEqual([])
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+  })
+
+  it('идущих матчей нет — пустой список', async () => {
+    mockApi({ [LIVESCORE]: NO_DATA })
+
+    expect(await getLiveMatches()).toEqual([])
   })
 })

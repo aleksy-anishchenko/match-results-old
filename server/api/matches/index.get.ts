@@ -61,7 +61,8 @@ export default cachedEventHandler(async (event) => {
     homePenScore: penScoreMap[match.idEvent]?.home ?? null,
     awayPenScore: penScoreMap[match.idEvent]?.away ?? null,
     status: match.strStatus,
-    progress: null, // schedule endpoint doesn't return live-match progress
+    // Минуты в расписании нет: её и свежий счёт подставляет страница из /api/live (useLiveScores)
+    progress: null,
     timestamp: match.strTimestamp,
     date: match.dateEvent,
     group: match.strGroup,

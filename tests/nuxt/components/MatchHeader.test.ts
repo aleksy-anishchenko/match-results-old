@@ -15,6 +15,7 @@ function makeMatch(overrides: Partial<MatchDetails> = {}): MatchDetails {
     homePenScore: null,
     awayPenScore: null,
     status: 'FT',
+    progress: null,
     timestamp: '2026-10-11T15:30:00',
     date: '2026-10-11',
     leagueId: '4328',

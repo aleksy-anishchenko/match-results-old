@@ -1,4 +1,4 @@
-import type { Match, MatchStatusKind } from '~/types'
+import type { LiveScore, Match, MatchStatusKind } from '~/types'
 
 // Коды strStatus из TheSportsDB. Серия пенальти — PEN (идёт) и AP (завершён по пенальти).
 export const FINISHED_MATCH_STATUSES = new Set(['FT', 'AET', 'AP'])
@@ -22,6 +22,42 @@ export function getMatchStatusKind(status: string): MatchStatusKind {
   if (FINISHED_MATCH_STATUSES.has(status)) return 'finished'
   if (INACTIVE_MATCH_STATUSES.has(status)) return 'inactive'
   return 'scheduled'
+}
+
+/** Время матча идёт — показываем минуту. В перерыве и серии пенальти — подпись статуса («Перерыв») */
+const RUNNING_MATCH_STATUSES = new Set(['1H', '2H', 'ET'])
+
+type LiveFields = Pick<Match, 'status' | 'homeScore' | 'awayScore' | 'progress'>
+
+/**
+ * Матч со счётом, статусом и минутой из livescore. Если по расписанию матч уже закончен или не состоится,
+ * верим расписанию: закончившийся матч остаётся в livescore ещё какое-то время и там может отстать
+ */
+export function applyLiveScore<T extends LiveFields>(match: T, live: LiveScore | undefined): T {
+  if (!live || FINISHED_MATCH_STATUSES.has(match.status) || INACTIVE_MATCH_STATUSES.has(match.status)) return match
+  return {
+    ...match,
+    status: live.status,
+    homeScore: live.homeScore,
+    awayScore: live.awayScore,
+    progress: RUNNING_MATCH_STATUSES.has(live.status) ? live.progress : null,
+  }
+}
+
+/** Сколько ждём начала матча после времени из расписания: за 3 часа закончится и матч с доп. временем */
+const LIVE_WINDOW_MS = 3 * 60 * 60 * 1000
+
+/**
+ * Пора ли спросить livescore: среди матчей есть идущий или тот, что по времени уже должен идти,
+ * а расписание ещё пишет «не начался». now — миллисекунды, как Date.now()
+ */
+export function needsLiveScores(matches: Array<Pick<Match, 'status' | 'timestamp'>>, now: number): boolean {
+  return matches.some((match) => {
+    const kind = getMatchStatusKind(match.status)
+    if (kind === 'live') return true
+    const startsAt = Date.parse(`${match.timestamp}Z`)
+    return kind === 'scheduled' && startsAt <= now && now - startsAt < LIVE_WINDOW_MS
+  })
 }
 
 export function getRoundCounts(matches: Array<{ intRound: string }>): Map<string, number> {

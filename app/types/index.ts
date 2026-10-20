@@ -33,6 +33,7 @@ export type Match = {
   homePenScore: number | null
   awayPenScore: number | null
   status: string
+  /** Минута идущего матча («52») из livescore; null — время не идёт или минуты нет */
   progress: string | null
   timestamp: string
   date: string
@@ -44,6 +45,20 @@ export type Match = {
 
 export type MatchesResponse = {
   matches: Match[]
+}
+
+/** Счёт и минута матча из livescore TheSportsDB: свежее расписания, где счёт отстаёт, а минуты нет */
+export type LiveScore = {
+  status: string
+  /** Минута: «52»; null — нет */
+  progress: string | null
+  homeScore: string | null
+  awayScore: string | null
+}
+
+export type LiveScoresResponse = {
+  /** Ключ — idEvent. Только матчи лиги, которые сейчас в livescore: идущие и недавно закончившиеся */
+  scores: Record<string, LiveScore>
 }
 
 /** Тур для навигации на главной: «5 тур», «1/8 финала», «Плей-офф» */
@@ -83,6 +98,8 @@ export type MatchDetails = {
   homePenScore: number | null
   awayPenScore: number | null
   status: string
+  /** Минута идущего матча, как у Match: сервер отдаёт null, на странице её подставляет useLiveScores */
+  progress: string | null
   timestamp: string
   date: string
   leagueId: string
