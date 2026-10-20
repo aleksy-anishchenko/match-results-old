@@ -128,6 +128,8 @@ export default defineNuxtConfig({
   css: ['~/assets/css/fonts.css', '~/assets/css/global.scss'],
   runtimeConfig: {
     theSportsDbApiKey: '',
+    // Запасной источник голов (server/utils/apiFootball.ts); без ключа голы только из TheSportsDB
+    apiFootballKey: '',
   },
   compatibilityDate: '2025-07-15',
   vite: {

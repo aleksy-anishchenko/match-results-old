@@ -2,6 +2,8 @@ import type { MatchDetails } from '~/types'
 
 type ApiEvent = {
   idEvent: string
+  /** Номер этого матча в API-Football: оттуда берём голы, если у TheSportsDB их нет */
+  idAPIfootball: string | null
   strHomeTeam: string
   strAwayTeam: string
   strHomeTeamBadge: string
@@ -47,7 +49,14 @@ export default cachedEventHandler(async (event) => {
     throw createError({ statusCode: 404, statusMessage: 'Матч не найден' })
   }
 
-  const goals = getMatchGoals(timelineData?.timeline ?? [])
+  // Голы из ленты TheSportsDB; если её нет или она не сходится со счётом (РПЛ, Саудовская лига, Бразилия),
+  // у сыгранного матча — из API-Football. Матч 0:0 без ленты сходится со счётом и запроса не делает
+  const timelineGoals = getMatchGoals(timelineData?.timeline ?? [])
+  let goals = goalsMatchScore(timelineGoals, ev.intHomeScore, ev.intAwayScore) ? timelineGoals : null
+  if (!goals && FINISHED_MATCH_STATUSES.has(ev.strStatus)) {
+    const fallback = await getFallbackGoals(ev.idAPIfootball)
+    if (fallback && goalsMatchScore(fallback, ev.intHomeScore, ev.intAwayScore)) goals = fallback
+  }
 
   const details: MatchDetails = {
     idEvent: ev.idEvent,
@@ -70,7 +79,7 @@ export default cachedEventHandler(async (event) => {
     round: ev.intRound,
     venue: ev.strVenue,
     city: ev.strCity,
-    goals: goalsMatchScore(goals, ev.intHomeScore, ev.intAwayScore) ? goals : [],
+    goals: goals ?? [],
   }
 
   return details

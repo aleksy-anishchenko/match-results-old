@@ -91,7 +91,7 @@ export type MatchDetails = {
   round: string | null
   venue: string | null
   city: string | null
-  /** Голы по минутам; пусто, если ленты событий нет или она не сходится со счётом */
+  /** Голы по минутам из TheSportsDB или, если там их нет, из API-Football; пусто, если ни там, ни там список не сходится со счётом */
   goals: MatchGoal[]
 }
 

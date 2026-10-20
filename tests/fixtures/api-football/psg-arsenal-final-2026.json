@@ -1,0 +1,328 @@
+{
+  "fixture": {
+    "id": 1544371,
+    "status": {
+      "short": "PEN"
+    }
+  },
+  "teams": {
+    "home": {
+      "id": 85,
+      "name": "Paris Saint Germain"
+    },
+    "away": {
+      "id": 42,
+      "name": "Arsenal"
+    }
+  },
+  "goals": {
+    "home": 1,
+    "away": 1
+  },
+  "events": [
+    {
+      "time": {
+        "elapsed": 6,
+        "extra": null
+      },
+      "team": {
+        "id": 42,
+        "name": "Arsenal"
+      },
+      "player": {
+        "name": "Kai Havertz"
+      },
+      "type": "Goal",
+      "detail": "Normal Goal",
+      "comments": null
+    },
+    {
+      "time": {
+        "elapsed": 46,
+        "extra": null
+      },
+      "team": {
+        "id": 42,
+        "name": "Arsenal"
+      },
+      "player": {
+        "name": "Cristhian Mosquera"
+      },
+      "type": "Card",
+      "detail": "Yellow Card",
+      "comments": "Time wasting"
+    },
+    {
+      "time": {
+        "elapsed": 54,
+        "extra": null
+      },
+      "team": {
+        "id": 42,
+        "name": "Arsenal"
+      },
+      "player": {
+        "name": "Bukayo Saka"
+      },
+      "type": "Card",
+      "detail": "Yellow Card",
+      "comments": "Foul"
+    },
+    {
+      "time": {
+        "elapsed": 65,
+        "extra": null
+      },
+      "team": {
+        "id": 85,
+        "name": "Paris Saint Germain"
+      },
+      "player": {
+        "name": "Ousmane Dembélé"
+      },
+      "type": "Goal",
+      "detail": "Penalty",
+      "comments": null
+    },
+    {
+      "time": {
+        "elapsed": 66,
+        "extra": null
+      },
+      "team": {
+        "id": 42,
+        "name": "Arsenal"
+      },
+      "player": {
+        "name": "Martin Ødegaard"
+      },
+      "type": "subst",
+      "detail": "Substitution 1",
+      "comments": null
+    },
+    {
+      "time": {
+        "elapsed": 66,
+        "extra": null
+      },
+      "team": {
+        "id": 42,
+        "name": "Arsenal"
+      },
+      "player": {
+        "name": "Cristhian Mosquera"
+      },
+      "type": "subst",
+      "detail": "Substitution 2",
+      "comments": null
+    },
+    {
+      "time": {
+        "elapsed": 83,
+        "extra": null
+      },
+      "team": {
+        "id": 85,
+        "name": "Paris Saint Germain"
+      },
+      "player": {
+        "name": "Khvicha Kvaratskhelia"
+      },
+      "type": "subst",
+      "detail": "Substitution 1",
+      "comments": null
+    },
+    {
+      "time": {
+        "elapsed": 83,
+        "extra": null
+      },
+      "team": {
+        "id": 42,
+        "name": "Arsenal"
+      },
+      "player": {
+        "name": "Bukayo Saka"
+      },
+      "type": "subst",
+      "detail": "Substitution 3",
+      "comments": null
+    },
+    {
+      "time": {
+        "elapsed": 83,
+        "extra": null
+      },
+      "team": {
+        "id": 42,
+        "name": "Arsenal"
+      },
+      "player": {
+        "name": "Leandro Trossard"
+      },
+      "type": "subst",
+      "detail": "Substitution 4",
+      "comments": null
+    },
+    {
+      "time": {
+        "elapsed": 90,
+        "extra": 6
+      },
+      "team": {
+        "id": 85,
+        "name": "Paris Saint Germain"
+      },
+      "player": {
+        "name": "João Neves"
+      },
+      "type": "Card",
+      "detail": "Yellow Card",
+      "comments": "Foul"
+    },
+    {
+      "time": {
+        "elapsed": 90,
+        "extra": null
+      },
+      "team": {
+        "id": 85,
+        "name": "Paris Saint Germain"
+      },
+      "player": {
+        "name": "Ousmane Dembélé"
+      },
+      "type": "subst",
+      "detail": "Substitution 2",
+      "comments": null
+    },
+    {
+      "time": {
+        "elapsed": 91,
+        "extra": null
+      },
+      "team": {
+        "id": 42,
+        "name": "Arsenal"
+      },
+      "player": {
+        "name": "Kai Havertz"
+      },
+      "type": "subst",
+      "detail": "Substitution 5",
+      "comments": null
+    },
+    {
+      "time": {
+        "elapsed": 91,
+        "extra": null
+      },
+      "team": {
+        "id": 42,
+        "name": "Arsenal"
+      },
+      "player": {
+        "name": "Myles Lewis-Skelly"
+      },
+      "type": "subst",
+      "detail": "Substitution 6",
+      "comments": null
+    },
+    {
+      "time": {
+        "elapsed": 95,
+        "extra": null
+      },
+      "team": {
+        "id": 85,
+        "name": "Paris Saint Germain"
+      },
+      "player": {
+        "name": "Fabián Ruiz"
+      },
+      "type": "subst",
+      "detail": "Substitution 3",
+      "comments": null
+    },
+    {
+      "time": {
+        "elapsed": 98,
+        "extra": null
+      },
+      "team": {
+        "id": 42,
+        "name": "Arsenal"
+      },
+      "player": {
+        "name": "Viktor Gyökeres"
+      },
+      "type": "Card",
+      "detail": "Yellow Card",
+      "comments": "Foul"
+    },
+    {
+      "time": {
+        "elapsed": 103,
+        "extra": null
+      },
+      "team": {
+        "id": 42,
+        "name": "Arsenal"
+      },
+      "player": {
+        "name": "Declan Rice"
+      },
+      "type": "Card",
+      "detail": "Yellow Card",
+      "comments": "Argument"
+    },
+    {
+      "time": {
+        "elapsed": 106,
+        "extra": null
+      },
+      "team": {
+        "id": 85,
+        "name": "Paris Saint Germain"
+      },
+      "player": {
+        "name": "Marquinhos"
+      },
+      "type": "subst",
+      "detail": "Substitution 4",
+      "comments": null
+    },
+    {
+      "time": {
+        "elapsed": 106,
+        "extra": null
+      },
+      "team": {
+        "id": 85,
+        "name": "Paris Saint Germain"
+      },
+      "player": {
+        "name": "Vitinha"
+      },
+      "type": "subst",
+      "detail": "Substitution 5",
+      "comments": null
+    },
+    {
+      "time": {
+        "elapsed": 118,
+        "extra": null
+      },
+      "team": {
+        "id": 85,
+        "name": "Paris Saint Germain"
+      },
+      "player": {
+        "name": "Nuno Mendes"
+      },
+      "type": "Card",
+      "detail": "Yellow Card",
+      "comments": "Foul"
+    }
+  ]
+}

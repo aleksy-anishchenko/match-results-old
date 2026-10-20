@@ -1,0 +1,312 @@
+{
+  "fixture": {
+    "id": 1561417,
+    "status": {
+      "short": "FT"
+    }
+  },
+  "teams": {
+    "home": {
+      "id": 558,
+      "name": "Spartak Moscow"
+    },
+    "away": {
+      "id": 1083,
+      "name": "Rubin"
+    }
+  },
+  "goals": {
+    "home": 4,
+    "away": 0
+  },
+  "events": [
+    {
+      "time": {
+        "elapsed": 4,
+        "extra": null
+      },
+      "team": {
+        "id": 1083,
+        "name": "Rubin"
+      },
+      "player": {
+        "name": "Jakhongir Urozov"
+      },
+      "type": "Card",
+      "detail": "Yellow Card",
+      "comments": "Foul"
+    },
+    {
+      "time": {
+        "elapsed": 5,
+        "extra": null
+      },
+      "team": {
+        "id": 558,
+        "name": "Spartak Moscow"
+      },
+      "player": {
+        "name": "Manfred Ugalde"
+      },
+      "type": "Card",
+      "detail": "Yellow Card",
+      "comments": "Foul"
+    },
+    {
+      "time": {
+        "elapsed": 18,
+        "extra": null
+      },
+      "team": {
+        "id": 558,
+        "name": "Spartak Moscow"
+      },
+      "player": {
+        "name": "Pablo Solari"
+      },
+      "type": "Goal",
+      "detail": "Normal Goal",
+      "comments": null
+    },
+    {
+      "time": {
+        "elapsed": 36,
+        "extra": null
+      },
+      "team": {
+        "id": 558,
+        "name": "Spartak Moscow"
+      },
+      "player": {
+        "name": "Victor Parada"
+      },
+      "type": "Card",
+      "detail": "Yellow Card",
+      "comments": "Foul"
+    },
+    {
+      "time": {
+        "elapsed": 43,
+        "extra": null
+      },
+      "team": {
+        "id": 558,
+        "name": "Spartak Moscow"
+      },
+      "player": {
+        "name": "Manfred Ugalde"
+      },
+      "type": "Goal",
+      "detail": "Normal Goal",
+      "comments": null
+    },
+    {
+      "time": {
+        "elapsed": 45,
+        "extra": null
+      },
+      "team": {
+        "id": 1083,
+        "name": "Rubin"
+      },
+      "player": {
+        "name": "Ulvi Babaev"
+      },
+      "type": "subst",
+      "detail": "Substitution 1",
+      "comments": null
+    },
+    {
+      "time": {
+        "elapsed": 63,
+        "extra": null
+      },
+      "team": {
+        "id": 558,
+        "name": "Spartak Moscow"
+      },
+      "player": {
+        "name": "Victor Parada"
+      },
+      "type": "subst",
+      "detail": "Substitution 1",
+      "comments": null
+    },
+    {
+      "time": {
+        "elapsed": 63,
+        "extra": null
+      },
+      "team": {
+        "id": 558,
+        "name": "Spartak Moscow"
+      },
+      "player": {
+        "name": "Marquinhos"
+      },
+      "type": "subst",
+      "detail": "Substitution 2",
+      "comments": null
+    },
+    {
+      "time": {
+        "elapsed": 64,
+        "extra": null
+      },
+      "team": {
+        "id": 558,
+        "name": "Spartak Moscow"
+      },
+      "player": {
+        "name": "Manfred Ugalde"
+      },
+      "type": "subst",
+      "detail": "Substitution 3",
+      "comments": null
+    },
+    {
+      "time": {
+        "elapsed": 65,
+        "extra": null
+      },
+      "team": {
+        "id": 558,
+        "name": "Spartak Moscow"
+      },
+      "player": {
+        "name": "Mirlind Daku"
+      },
+      "type": "Goal",
+      "detail": "Normal Goal",
+      "comments": null
+    },
+    {
+      "time": {
+        "elapsed": 69,
+        "extra": null
+      },
+      "team": {
+        "id": 1083,
+        "name": "Rubin"
+      },
+      "player": {
+        "name": "Jakhongir Urozov"
+      },
+      "type": "subst",
+      "detail": "Substitution 2",
+      "comments": null
+    },
+    {
+      "time": {
+        "elapsed": 69,
+        "extra": null
+      },
+      "team": {
+        "id": 1083,
+        "name": "Rubin"
+      },
+      "player": {
+        "name": "Veldin Hodza"
+      },
+      "type": "subst",
+      "detail": "Substitution 3",
+      "comments": null
+    },
+    {
+      "time": {
+        "elapsed": 69,
+        "extra": null
+      },
+      "team": {
+        "id": 1083,
+        "name": "Rubin"
+      },
+      "player": {
+        "name": "Jacques Siwe"
+      },
+      "type": "subst",
+      "detail": "Substitution 4",
+      "comments": null
+    },
+    {
+      "time": {
+        "elapsed": 74,
+        "extra": null
+      },
+      "team": {
+        "id": 558,
+        "name": "Spartak Moscow"
+      },
+      "player": {
+        "name": "Pablo Solari"
+      },
+      "type": "subst",
+      "detail": "Substitution 4",
+      "comments": null
+    },
+    {
+      "time": {
+        "elapsed": 79,
+        "extra": null
+      },
+      "team": {
+        "id": 1083,
+        "name": "Rubin"
+      },
+      "player": {
+        "name": "Eddie Salcedo"
+      },
+      "type": "subst",
+      "detail": "Substitution 5",
+      "comments": null
+    },
+    {
+      "time": {
+        "elapsed": 83,
+        "extra": null
+      },
+      "team": {
+        "id": 558,
+        "name": "Spartak Moscow"
+      },
+      "player": {
+        "name": "Esequiel Barco"
+      },
+      "type": "subst",
+      "detail": "Substitution 5",
+      "comments": null
+    },
+    {
+      "time": {
+        "elapsed": 86,
+        "extra": null
+      },
+      "team": {
+        "id": 558,
+        "name": "Spartak Moscow"
+      },
+      "player": {
+        "name": "Ivan Sorokin"
+      },
+      "type": "Card",
+      "detail": "Yellow Card",
+      "comments": "Foul"
+    },
+    {
+      "time": {
+        "elapsed": 90,
+        "extra": null
+      },
+      "team": {
+        "id": 558,
+        "name": "Spartak Moscow"
+      },
+      "player": {
+        "name": "Mirlind Daku"
+      },
+      "type": "Goal",
+      "detail": "Normal Goal",
+      "comments": null
+    }
+  ]
+}
