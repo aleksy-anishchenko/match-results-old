@@ -44,9 +44,11 @@ function match(idEvent: string, homeTeam: string, awayTeam: string, round: strin
 
 // Сервер подменён: в 6 туре «Челси – Арсенал», в 7 «Эвертон – Ливерпуль», по датам — «Фулхэм – Брентфорд» из 7 тура.
 // Без тура и дат сервер отдаёт текущий тур, как настоящий
+// «Эвертон – Ливерпуль» начался полчаса назад: по расписанию идёт 1-й тайм
+const halfHourAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString().slice(0, 19)
 const MATCHES_BY_ROUND: Record<string, Match[]> = {
   6: [match('1', 'Chelsea', 'Arsenal', '6')],
-  7: [match('2', 'Everton', 'Liverpool', '7')],
+  7: [{ ...match('2', 'Everton', 'Liverpool', '7'), status: '1H', timestamp: halfHourAgo }],
 }
 
 // Запросы матчей, которые сделала страница: по ним видно, нет ли лишних
@@ -150,6 +152,13 @@ describe('главная', () => {
     await new Promise(resolve => setTimeout(resolve, 50))
     expect(matchRequests).toEqual([{ leagueId: '4335' }])
     expect(page.find('h1').text()).toBe('Матчи: Ла Лига')
+  })
+
+  it('идущих матчей нет — livescore не спрашиваем', async () => {
+    const before = liveRequests
+    const page = await mountPage('/?round=6')
+    expect(page.text()).toContain('Челси')
+    expect(liveRequests).toBe(before)
   })
 
   it('идущий матч — минута и счёт из livescore, раз в минуту спрашиваем заново', async () => {

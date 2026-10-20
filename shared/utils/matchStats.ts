@@ -42,8 +42,8 @@ export function getTheSportsDbStats(stats: TheSportsDbStat[]): MatchStat[] {
 
 /** Статистика матча из API-Football: там она по командам, хозяев узнаём по номеру команды */
 export function getApiFootballStats(fixture: ApiFootballFixture): MatchStat[] {
-  const home = fixture.statistics.find(team => team.team.id === fixture.teams.home.id)
-  const away = fixture.statistics.find(team => team.team.id === fixture.teams.away.id)
+  const home = fixture.statistics?.find(team => team.team.id === fixture.teams.home.id)
+  const away = fixture.statistics?.find(team => team.team.id === fixture.teams.away.id)
   if (!home || !away) return []
   const awayValues = new Map(away.statistics.map(stat => [stat.type, toNumber(stat.value)]))
   return pickStats(new Map(home.statistics.map(stat => [stat.type, [toNumber(stat.value), awayValues.get(stat.type) ?? 0]])))

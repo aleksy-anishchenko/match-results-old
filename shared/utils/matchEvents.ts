@@ -14,12 +14,15 @@ export type TimelineEvent = {
   strComment: string | null
 }
 
-/** Матч из API-Football (fixtures?id=…): поля, нужные для хроники, статистики и составов */
+/**
+ * Матч из API-Football (fixtures?id=…): поля, нужные для хроники, статистики и составов.
+ * Списки обычно приходят и пустыми, но если какого-то нет, разбор не должен падать — поэтому они необязательные
+ */
 export type ApiFootballFixture = {
   fixture: { status: { short: string } }
   teams: { home: { id: number }, away: { id: number } }
   goals: { home: number | null, away: number | null }
-  events: Array<{
+  events?: Array<{
     time: { elapsed: number | null, extra: number | null }
     team: { id: number }
     /** У замены — ушедший с поля */
@@ -31,12 +34,12 @@ export type ApiFootballFixture = {
     comments: string | null
   }>
   /** По команде на каждую; пусто, если статистики у матча нет */
-  statistics: Array<{
+  statistics?: Array<{
     team: { id: number }
     statistics: Array<{ type: string, value: number | string | null }>
   }>
   /** По команде на каждую; пусто, если составов нет */
-  lineups: Array<{
+  lineups?: Array<{
     team: { id: number }
     formation: string | null
     startXI: ApiFootballLineupPlayer[]
@@ -67,12 +70,17 @@ const GOAL_KINDS: Record<string, MatchEvent['kind']> = {
   'Own Goal': 'own-goal',
 }
 
+// Вторая жёлтая — это удаление: показываем красной
 const CARD_KINDS: Record<string, MatchEvent['kind']> = {
   'Yellow Card': 'yellow-card',
+  'Second Yellow card': 'red-card',
   'Red Card': 'red-card',
 }
 
 const GOAL_EVENT_KINDS = new Set<MatchEvent['kind']>(Object.values(GOAL_KINDS))
+
+/** Гол: обычный, с пенальти или автогол */
+export const isGoalEvent = (event: Pick<MatchEvent, 'kind'>) => GOAL_EVENT_KINDS.has(event.kind)
 
 /**
  * Голы, карточки и замены по минутам. Серия пенальти после матча (комментарий «Penalty Shootout»),
@@ -91,7 +99,7 @@ function toMatchEvents(events: RawEvent[]): MatchEvent[] {
       }
       const kind = event.type === 'Goal' ? GOAL_KINDS[event.detail] : event.type === 'Card' ? CARD_KINDS[event.detail] : undefined
       if (!kind) return []
-      const assist = GOAL_EVENT_KINDS.has(kind) ? event.assist || null : null
+      const assist = isGoalEvent({ kind }) ? event.assist || null : null
       return [{ ...base, kind, player: event.player ?? '', assist, playerOut: null }]
     })
     .sort((a, b) => a.minute - b.minute)
@@ -116,7 +124,7 @@ export function getTimelineEvents(timeline: TimelineEvent[]): MatchEvent[] {
  */
 export function getApiFootballEvents(fixture: ApiFootballFixture): MatchEvent[] {
   const homeId = fixture.teams.home.id
-  return toMatchEvents(fixture.events.map(event => ({
+  return toMatchEvents((fixture.events ?? []).map(event => ({
     minute: event.time.elapsed ?? 0,
     side: event.team.id === homeId ? 'home' : 'away',
     type: event.type,
@@ -132,6 +140,6 @@ export function getApiFootballEvents(fixture: ApiFootballFixture): MatchEvent[] 
  * матча может отставать от счёта — тогда хронику не показываем: неполный список голов выглядит как ошибка.
  */
 export function goalsMatchScore(events: MatchEvent[], homeScore: string | null, awayScore: string | null): boolean {
-  const count = (side: MatchEvent['side']) => events.filter(event => event.side === side && GOAL_EVENT_KINDS.has(event.kind)).length
+  const count = (side: MatchEvent['side']) => events.filter(event => event.side === side && isGoalEvent(event)).length
   return count('home') === Number(homeScore ?? 0) && count('away') === Number(awayScore ?? 0)
 }

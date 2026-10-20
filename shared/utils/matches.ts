@@ -64,15 +64,19 @@ export function applyLiveScore<T extends LiveFields>(match: T, live: LiveScore |
 const LIVE_WINDOW_MS = 3 * 60 * 60 * 1000
 
 /**
- * Пора ли спросить livescore: среди матчей есть идущий или тот, что по времени уже должен идти,
- * а расписание ещё пишет «не начался». now — миллисекунды, как Date.now()
+ * Пора ли спросить livescore: по расписанию среди матчей есть идущий или тот, что по времени уже должен идти,
+ * а расписание ещё пишет «не начался», — не дольше 3 часов от начала. Решаем по расписанию, а не по livescore:
+ * по livescore матч заканчивается раньше, чем страница успевает получить его итоговые хронику и составы.
+ * now — миллисекунды, как Date.now()
  */
 export function needsLiveScores(matches: Array<Pick<Match, 'status' | 'timestamp'>>, now: number): boolean {
   return matches.some((match) => {
     const kind = getMatchStatusKind(match.status)
-    if (kind === 'live') return true
+    if (kind !== 'live' && kind !== 'scheduled') return false
     const startsAt = Date.parse(`${match.timestamp}Z`)
-    return kind === 'scheduled' && startsAt <= now && now - startsAt < LIVE_WINDOW_MS
+    // Без времени начала окна не посчитать: идущий матч всё равно обновляем
+    if (Number.isNaN(startsAt)) return kind === 'live'
+    return startsAt <= now && now - startsAt < LIVE_WINDOW_MS
   })
 }
 

@@ -101,3 +101,28 @@ $radius-pill: 999px;
   color: #fff;
   font-weight: 600;
 }
+
+// Блок-карточка на странице матча (хроника, статистика, составы) и его заголовок
+@mixin match-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 12px;
+  background: $color-surface;
+  border: 1px solid $color-border;
+  border-radius: $radius-card-lg;
+
+  @media (min-width: $breakpoint-desktop) {
+    padding: 20px 24px;
+  }
+}
+
+@mixin match-section-title {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: $color-text-2;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}

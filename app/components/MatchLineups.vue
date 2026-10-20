@@ -50,8 +50,8 @@ const teams = computed(() => [
           class="lineup__players"
         >
           <li
-            v-for="player in line"
-            :key="player.name"
+            v-for="(player, place) in line"
+            :key="place"
             class="player"
           >
             <span class="player__number num">{{ player.number }}</span>
@@ -69,8 +69,8 @@ const teams = computed(() => [
         class="lineup__players"
       >
         <li
-          v-for="player in team.lineup.substitutes"
-          :key="player.name"
+          v-for="(player, place) in team.lineup.substitutes"
+          :key="place"
           class="player player--sub"
         >
           <span class="player__number num">{{ player.number }}</span>
@@ -93,28 +93,12 @@ const teams = computed(() => [
 
 <style scoped lang="scss">
 .lineups {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding: 16px 12px;
-  background: $color-surface;
-  border: 1px solid $color-border;
-  border-radius: $radius-card-lg;
-
-  @media (min-width: $breakpoint-desktop) {
-    padding: 20px 24px;
-  }
+  @include match-section;
 }
 
 .lineups__title,
 .lineups__subtitle {
-  margin: 0;
-  font-size: 12px;
-  font-weight: 700;
-  color: $color-text-2;
-  text-align: center;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+  @include match-section-title;
 }
 
 .lineups__grid {

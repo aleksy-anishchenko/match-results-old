@@ -37,8 +37,19 @@ describe('getApiFootballLineups', () => {
     expect(lineups.home.lines.map(line => line.length)).toEqual([1, 4, 3, 3])
   })
 
+  // ПСЖ 4-3-3: у одного защитника (второй в списке) позиции нет
+  it('без grid игрок без позиции — последним, а не перед вратарём', () => {
+    const [home, away] = afChampionsLeagueFinal.lineups
+    const startXI = home!.startXI.map(({ player }, index) => ({ player: { ...player, grid: null, pos: index === 1 ? null : player.pos } }))
+    const lineups = getApiFootballLineups({ ...afChampionsLeagueFinal, lineups: [{ ...home!, startXI }, away!] })!
+    expect(lineups.home.lines.map(line => line.length)).toEqual([1, 3, 3, 3, 1])
+    expect(lineups.home.lines.at(-1)).toEqual([{ number: startXI[1]!.player.number, name: startXI[1]!.player.name }])
+  })
+
   it('составов нет или нет у одной из команд — null', () => {
     expect(getApiFootballLineups({ ...afSpartakRubin, lineups: [] })).toBeNull()
+    const { lineups: _lineups, ...withoutLineups } = afSpartakRubin
+    expect(getApiFootballLineups(withoutLineups)).toBeNull()
     expect(getApiFootballLineups({ ...afSpartakRubin, lineups: afSpartakRubin.lineups.slice(0, 1) })).toBeNull()
   })
 })

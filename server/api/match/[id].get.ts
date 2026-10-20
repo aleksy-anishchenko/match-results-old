@@ -58,14 +58,18 @@ export default cachedEventHandler(async (event) => {
 
   // Хроника и статистика из TheSportsDB. Если ленты нет или её голы не сходятся со счётом (РПЛ, Саудовская лига,
   // Бразилия), у сыгранного матча — из API-Football. Пустая лента — тоже «нет данных», даже при 0:0:
-  // без замен и карточек матчей не бывает
+  // без замен и карточек матчей не бывает. У идущего матча ленту отдаём без сверки: счёт в lookupevent
+  // отстаёт от livescore, а со свежим счётом в шапке хронику сверяет страница
+  const finished = FINISHED_MATCH_STATUSES.has(ev.strStatus)
   const timelineEvents = getTimelineEvents(timelineData?.timeline ?? [])
-  let events = timelineEvents.length && goalsMatchScore(timelineEvents, ev.intHomeScore, ev.intAwayScore) ? timelineEvents : []
+  const timelineFits = !finished || goalsMatchScore(timelineEvents, ev.intHomeScore, ev.intAwayScore)
+  let events = timelineEvents.length && timelineFits ? timelineEvents : []
   let stats = getTheSportsDbStats(statsData?.eventstats ?? [])
   // Составы есть только у API-Football: показываем их там, где этот матч и так запрашиваем ради хроники
   let lineups: MatchLineups | null = null
-  if (!events.length && FINISHED_MATCH_STATUSES.has(ev.strStatus)) {
-    const fallback = await getFallbackMatchData(ev.idAPIfootball)
+  if (!events.length && finished) {
+    // Сбой API-Football или хранилища — страница открывается без этих блоков, а не падает
+    const fallback = await getFallbackMatchData(ev.idAPIfootball).catch(() => null)
     if (fallback && goalsMatchScore(fallback.events, ev.intHomeScore, ev.intAwayScore)) {
       events = fallback.events
       lineups = fallback.lineups

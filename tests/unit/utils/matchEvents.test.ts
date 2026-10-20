@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { getApiFootballEvents, getTimelineEvents, goalsMatchScore } from '#shared/utils/matchEvents'
+import { getApiFootballEvents, getTimelineEvents, goalsMatchScore, isGoalEvent } from '#shared/utils/matchEvents'
 import type { MatchEvent } from '~/types'
 // Настоящие ленты событий из TheSportsDB (v1 lookuptimeline), только поля для хроники
 import championsLeagueFinal from '../../fixtures/timeline/champions-league-final-2026.json'
@@ -10,7 +10,7 @@ import afSpartakRubin from '../../fixtures/api-football/spartak-rubin.json'
 import afBragantinoCruzeiro from '../../fixtures/api-football/bragantino-cruzeiro.json'
 import afChampionsLeagueFinal from '../../fixtures/api-football/psg-arsenal-final-2026.json'
 
-const goals = (events: MatchEvent[]) => events.filter(event => ['goal', 'penalty', 'own-goal'].includes(event.kind))
+const goals = (events: MatchEvent[]) => events.filter(isGoalEvent)
 
 describe('getTimelineEvents', () => {
   // Финал ЛЧ 2026 ПСЖ – Арсенал 1:1, ПСЖ выиграл серию пенальти 4:3
@@ -51,6 +51,13 @@ describe('getTimelineEvents', () => {
     expect(events.some(event => event.playerOut === 'Thom van Bergen')).toBe(false)
   })
 
+  it('вторая жёлтая — удаление, показываем красной', () => {
+    const secondYellow = { intTime: '80', strTimeline: 'Card', strTimelineDetail: 'Second Yellow card', strPlayer: 'Bukayo Saka', strAssist: '', strHome: 'No', strComment: 'Foul' }
+    expect(getTimelineEvents([secondYellow])).toEqual([
+      { minute: 80, side: 'away', kind: 'red-card', player: 'Bukayo Saka', assist: null, playerOut: null },
+    ])
+  })
+
   it('пустая лента — событий нет', () => {
     expect(getTimelineEvents([])).toEqual([])
   })
@@ -79,6 +86,11 @@ describe('getApiFootballEvents', () => {
     const events = getApiFootballEvents(afBragantinoCruzeiro)
     expect(events.find(event => event.player === 'Kaio Jorge' && event.kind === 'own-goal')?.side).toBe('home')
     expect(goalsMatchScore(events, '4', '2')).toBe(true)
+  })
+
+  it('нет списка событий в ответе — пусто, а не ошибка', () => {
+    const { events: _events, ...withoutEvents } = afSpartakRubin
+    expect(getApiFootballEvents(withoutEvents)).toEqual([])
   })
 
   it('серия пенальти и незабитый пенальти — не голы', () => {

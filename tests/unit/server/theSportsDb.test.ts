@@ -136,7 +136,8 @@ describe('getLiveMatches', () => {
     vi.advanceTimersByTime(29_000)
     await getLiveMatches()
     expect(fetchMock).toHaveBeenCalledTimes(1)
-    expect(fetchMock).toHaveBeenCalledWith(LIVESCORE, { headers: { 'X-API-KEY': 'test-key' } })
+    // С таймаутом: страницы ждут этот ответ, прежде чем показаться
+    expect(fetchMock).toHaveBeenCalledWith(LIVESCORE, { headers: { 'X-API-KEY': 'test-key' }, timeout: 5000 })
 
     vi.advanceTimersByTime(2_000)
     await getLiveMatches()

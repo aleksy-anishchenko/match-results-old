@@ -78,6 +78,7 @@ export type LivescoreMatch = {
 }
 
 const LIVESCORE_MAX_AGE_MS = 30_000
+const LIVESCORE_TIMEOUT_MS = 5_000
 
 let livescore: { at: number, matches: LivescoreMatch[] } | null = null
 let livescoreRequest: Promise<LivescoreMatch[]> | null = null
@@ -89,8 +90,10 @@ let livescoreRequest: Promise<LivescoreMatch[]> | null = null
  */
 export async function getLiveMatches(): Promise<LivescoreMatch[]> {
   if (livescore && Date.now() - livescore.at < LIVESCORE_MAX_AGE_MS) return livescore.matches
+  // Таймаут обязателен: главная и страница матча ждут этот ответ, прежде чем показаться
   livescoreRequest ??= $fetch<{ livescore?: LivescoreMatch[] | null }>(`${API_V2}/livescore/soccer`, {
     headers: { 'X-API-KEY': useRuntimeConfig().theSportsDbApiKey },
+    timeout: LIVESCORE_TIMEOUT_MS,
   })
     .then(data => data.livescore ?? [])
     .catch(() => [])

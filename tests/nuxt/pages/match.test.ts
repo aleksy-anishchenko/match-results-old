@@ -53,26 +53,31 @@ registerEndpoint('/api/rounds', () => ROUNDS)
 registerEndpoint('/api/match/1', () => MATCH)
 // Матч без ленты событий, статистики и составов
 registerEndpoint('/api/match/2', () => ({ ...MATCH, idEvent: '2', events: [], stats: [], lineups: null }))
+// Идущие матчи начались полчаса назад: livescore спрашиваем не дольше 3 часов от начала
+const halfHourAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString().slice(0, 19)
 // Идущий матч: по расписанию 1-й тайм 0:0, по livescore — 2-й тайм, 52-я минута, 1:0
-let matchRequests = 0
-registerEndpoint('/api/match/3', () => {
-  matchRequests++
-  return { ...MATCH, idEvent: '3', status: '1H', homeScore: '0', awayScore: '0', events: [], stats: [] }
-})
+const matchRequests: Record<string, number> = {}
+function liveMatch(id: string, details: Partial<MatchDetails>) {
+  registerEndpoint(`/api/match/${id}`, () => {
+    matchRequests[id] = (matchRequests[id] ?? 0) + 1
+    return { ...MATCH, idEvent: id, timestamp: halfHourAgo, events: [], stats: [], lineups: null, ...details }
+  })
+}
+liveMatch('3', { status: '1H', homeScore: '0', awayScore: '0' })
+// По livescore матч уже закончен, а по lookupevent ещё идёт: итоговую хронику и составы ещё ждём
+liveMatch('5', { status: '2H', homeScore: '1', awayScore: '0' })
 // Ещё один идущий матч: в ленте один гол, а по livescore уже 2:0 — второго гола в ленте пока нет
-registerEndpoint('/api/match/4', () => ({
-  ...MATCH,
-  idEvent: '4',
+liveMatch('4', {
   status: '2H',
   homeScore: '1',
   awayScore: '0',
   events: [{ minute: 18, side: 'home', kind: 'goal', player: 'Pablo Solari', assist: null, playerOut: null }],
-  stats: [],
-}))
+})
 registerEndpoint('/api/live', () => ({
   scores: {
     3: { status: '2H', progress: '52', homeScore: '1', awayScore: '0' },
     4: { status: '2H', progress: '70', homeScore: '2', awayScore: '0' },
+    5: { status: 'FT', progress: '90', homeScore: '1', awayScore: '0' },
   },
 }))
 
@@ -142,12 +147,21 @@ describe('страница матча: идущий матч', () => {
     const page = await mountPage('/match/3')
     expect(page.get('.header__status').text()).toBe('52′')
     expect(page.get('.score__goals').text().replace(/\s+/g, '')).toBe('1:0')
-    const before = matchRequests
+    const before = matchRequests['3']!
     vi.advanceTimersByTime(60_000)
-    await vi.waitFor(() => expect(matchRequests).toBe(before + 1))
+    await vi.waitFor(() => expect(matchRequests['3']).toBe(before + 1))
     // Обновление тихое: «Загрузка...» не появляется, счёт остаётся из livescore
     expect(page.find('.status').exists()).toBe(false)
     expect(page.get('.header__status').text()).toBe('52′')
+  })
+
+  it('по livescore матч закончился — всё равно обновляем, пока расписание не догонит', async () => {
+    vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] })
+    const page = await mountPage('/match/5')
+    expect(page.get('.header__status').text()).toBe('Завершён')
+    const before = matchRequests['5']!
+    vi.advanceTimersByTime(60_000)
+    await vi.waitFor(() => expect(matchRequests['5']).toBe(before + 1))
   })
 
   it('хроника отстала от свежего счёта — прячем её, пока не догонит', async () => {

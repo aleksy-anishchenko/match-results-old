@@ -37,6 +37,10 @@ const pending = new Map<string, Promise<FallbackMatchData | null>>()
 let limitReachedUntil = 0
 
 const storageKey = (fixtureId: string) => `api-football:match:${fixtureId}`
+/** До хроники (октябрь 2026) из ответа хранились только голы — под этим ключом */
+const goalsStorageKey = (fixtureId: string) => `api-football:goals:${fixtureId}`
+
+type SavedGoal = Pick<MatchEvent, 'minute' | 'player' | 'side'> & { kind: 'goal' | 'penalty' | 'own-goal' }
 
 function nextUtcMidnight(now: number): number {
   const date = new Date(now)
@@ -69,27 +73,39 @@ async function loadMatchData(fixtureId: string, apiKey: string): Promise<Fallbac
     return null
   }
 
-  // Хранилище data: на проде — файлы .data/kv рядом с запущенным сервером, деплой их не трогает
+  // Хранилище data: на проде — файлы .data/kv рядом с запущенным сервером, деплой их не трогает.
+  // Не записалось — данные всё равно отдаём, в следующий раз матч запросим снова
   const matchData: FallbackMatchData = { events, stats: getApiFootballStats(fixture), lineups: getApiFootballLineups(fixture) }
-  await useStorage('data').setItem(storageKey(fixtureId), matchData)
+  await useStorage('data').setItem(storageKey(fixtureId), matchData).catch(() => {})
   return matchData
 }
 
 /**
+ * Сохранённое по матчу раньше, пока из ответа брали не всё: без составов (нет поля lineups) или только голы
+ * (старый ключ). Такой матч запрашиваем заново, а если не вышло — отдаём это: показанные голы не должны пропасть
+ */
+async function getOutdatedMatchData(fixtureId: string, saved: FallbackMatchData | null): Promise<FallbackMatchData | null> {
+  if (saved) return { ...saved, lineups: null }
+  const goals = await useStorage('data').getItem<SavedGoal[]>(goalsStorageKey(fixtureId))
+  return goals ? { events: goals.map(goal => ({ ...goal, assist: null, playerOut: null })), stats: [], lineups: null } : null
+}
+
+/**
  * Хроника, статистика и составы сыгранного матча из API-Football по его номеру (idAPIfootball из TheSportsDB).
- * null — не узнать: ключа нет, у API-Football нет событий или голы не сходятся со счётом, кончился дневной лимит.
+ * null — не узнать и раньше не сохраняли: ключа нет, у API-Football нет событий или голы не сходятся со счётом,
+ * кончился дневной лимит.
  * Сходятся ли голы со счётом TheSportsDB, проверяет вызывающий.
  */
 export async function getFallbackMatchData(fixtureId: string | null | undefined): Promise<FallbackMatchData | null> {
-  const apiKey = useRuntimeConfig().apiFootballKey
-  if (!apiKey || !fixtureId) return null
+  if (!fixtureId) return null
 
-  // Сохранённое до составов (октябрь 2026) — без поля lineups: такой матч один раз запрашиваем заново
   const saved = await useStorage('data').getItem<FallbackMatchData>(storageKey(fixtureId))
   if (saved && 'lineups' in saved) return saved
+  const outdated = await getOutdatedMatchData(fixtureId, saved)
 
+  const apiKey = useRuntimeConfig().apiFootballKey
   const now = Date.now()
-  if (now < limitReachedUntil || now < (retryAt.get(fixtureId) ?? 0)) return null
+  if (!apiKey || now < limitReachedUntil || now < (retryAt.get(fixtureId) ?? 0)) return outdated
 
   // Страницу матча открыли дважды, пока ответ ещё не пришёл, — запрос всё равно один
   let request = pending.get(fixtureId)
@@ -97,5 +113,5 @@ export async function getFallbackMatchData(fixtureId: string | null | undefined)
     request = loadMatchData(fixtureId, apiKey).finally(() => pending.delete(fixtureId))
     pending.set(fixtureId, request)
   }
-  return request
+  return (await request) ?? outdated
 }

@@ -70,27 +70,11 @@ function barParts(stat: MatchStat): [number, number] {
 
 <style scoped lang="scss">
 .stats {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding: 16px 12px;
-  background: $color-surface;
-  border: 1px solid $color-border;
-  border-radius: $radius-card-lg;
-
-  @media (min-width: $breakpoint-desktop) {
-    padding: 20px 24px;
-  }
+  @include match-section;
 }
 
 .stats__title {
-  margin: 0;
-  font-size: 12px;
-  font-weight: 700;
-  color: $color-text-2;
-  text-align: center;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+  @include match-section-title;
 }
 
 .stats__list {

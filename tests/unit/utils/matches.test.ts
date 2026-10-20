@@ -172,9 +172,15 @@ describe('needsLiveScores', () => {
   const kickoff = Date.parse('2026-06-23T10:00:00Z')
   const minutes = (n: number) => n * 60 * 1000
 
-  it('идущий матч — обновляем', () => {
+  it('идущий по расписанию матч — обновляем, но не дольше 3 часов от начала', () => {
     expect(needsLiveScores([makeMatch({ status: '2H' })], kickoff + minutes(60))).toBe(true)
     expect(needsLiveScores([makeMatch({ status: 'HT' })], kickoff + minutes(50))).toBe(true)
+    // Расписание на открытой странице не обновляется и может навсегда остаться на «2-й тайм»
+    expect(needsLiveScores([makeMatch({ status: '2H' })], kickoff + minutes(180))).toBe(false)
+  })
+
+  it('идущий матч без времени начала — обновляем', () => {
+    expect(needsLiveScores([makeMatch({ status: '2H', timestamp: '' })], kickoff)).toBe(true)
   })
 
   it('матч по времени уже должен идти, а расписание пишет «не начался» — обновляем, но не дольше 3 часов', () => {

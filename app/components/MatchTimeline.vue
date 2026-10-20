@@ -17,8 +17,6 @@ const KIND_NAMES: Record<MatchEvent['kind'], string> = {
   'red-card': 'Красная карточка',
   'substitution': 'Замена',
 }
-
-const isGoal = (event: MatchEvent) => event.kind === 'goal' || event.kind === 'penalty' || event.kind === 'own-goal'
 </script>
 
 <template>
@@ -38,11 +36,11 @@ const isGoal = (event: MatchEvent) => event.kind === 'goal' || event.kind === 'p
         v-for="(event, index) in events"
         :key="index"
         class="event"
-        :class="[`event--${event.side}`, { 'event--goal': isGoal(event) }]"
+        :class="[`event--${event.side}`, { 'event--goal': isGoalEvent(event) }]"
       >
         <span class="event__body">
           <svg
-            v-if="isGoal(event)"
+            v-if="isGoalEvent(event)"
             class="event__icon event__icon--goal"
             viewBox="0 0 16 16"
             width="16"
@@ -133,27 +131,11 @@ const isGoal = (event: MatchEvent) => event.kind === 'goal' || event.kind === 'p
 
 <style scoped lang="scss">
 .timeline {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding: 16px 12px;
-  background: $color-surface;
-  border: 1px solid $color-border;
-  border-radius: $radius-card-lg;
-
-  @media (min-width: $breakpoint-desktop) {
-    padding: 20px 24px;
-  }
+  @include match-section;
 }
 
 .timeline__title {
-  margin: 0;
-  font-size: 12px;
-  font-weight: 700;
-  color: $color-text-2;
-  text-align: center;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+  @include match-section-title;
 }
 
 .timeline__list {
