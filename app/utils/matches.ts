@@ -1,4 +1,4 @@
-import type { Match } from '~/types'
+import type { DateRange, Match } from '~/types'
 import { getMoscowDate } from '#shared/utils/matches'
 
 export const MATCH_STATUS_LABELS: Record<string, string> = {
@@ -60,16 +60,44 @@ export function formatReadableDate(dateStr: string, weekday: 'long' | 'short' = 
   return formatted.charAt(0).toUpperCase() + formatted.slice(1)
 }
 
-/** Вчера, сегодня или завтра (YYYY-MM-DD): у этих дней на главной свои кнопки */
-export function isNearDay(date: string, today: string): boolean {
-  return Math.abs(Date.parse(date) - Date.parse(today)) <= 86_400_000
+const SHORT_MONTHS = ['янв', 'фев', 'мар', 'апр', 'мая', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек']
+const SHORT_WEEKDAYS = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб']
+
+/** Быстрые кнопки дат на главной: сдвиг от сегодняшнего дня по Москве */
+export const NEAR_DAYS = [
+  { offset: -1, label: 'Вчера' },
+  { offset: 0, label: 'Сегодня' },
+  { offset: 1, label: 'Завтра' },
+] as const
+
+/** День (YYYY-MM-DD) на days дней позже или раньше: shiftDate('2026-10-31', 1) → '2026-11-01' */
+export function shiftDate(date: string, days: number): string {
+  const result = new Date(date + 'T00:00:00Z')
+  result.setUTCDate(result.getUTCDate() + days)
+  return result.toISOString().slice(0, 10)
 }
 
-/** Даты из календаря на главной: «Вт, 20 октября», «12–15 октября», «28 сентября – 3 октября» */
-export function formatDatesTitle(from: string, to: string): string {
-  if (from === to) return formatReadableDate(from, 'short')
-  const dayMonth = (date: string) => new Date(date + 'T00:00:00').toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' })
+/** «20 сен». Свой список месяцев: toLocaleDateString даёт «сент.» с точкой */
+export function formatShortDate(date: string): string {
+  return `${Number(date.slice(8, 10))} ${SHORT_MONTHS[Number(date.slice(5, 7)) - 1]}`
+}
+
+/** Даты тура или дни из календаря: «20 сен», «18–20 сен», «28 сен – 3 окт» */
+export function formatShortDates(from: string, to: string): string {
+  if (from === to) return formatShortDate(from)
   return from.slice(0, 7) === to.slice(0, 7)
-    ? `${Number(from.slice(8))}–${dayMonth(to)}`
-    : `${dayMonth(from)} – ${dayMonth(to)}`
+    ? `${Number(from.slice(8, 10))}–${formatShortDate(to)}`
+    : `${formatShortDate(from)} – ${formatShortDate(to)}`
+}
+
+/**
+ * Подпись выбранных дней: у вчера, сегодня и завтра — слово и дата отдельно («Сегодня» + «20 сен»),
+ * у другого дня — день недели («Сб, 12 сен»), у нескольких дней — диапазон («12–15 окт»)
+ */
+export function describeDates({ from, to }: DateRange, today: string): { label: string, hint: string | null } {
+  if (from !== to) return { label: formatShortDates(from, to), hint: null }
+  const nearDay = NEAR_DAYS.find(day => shiftDate(today, day.offset) === from)
+  if (nearDay) return { label: nearDay.label, hint: formatShortDate(from) }
+  const weekday = SHORT_WEEKDAYS[new Date(from + 'T00:00:00Z').getUTCDay()]
+  return { label: `${weekday}, ${formatShortDate(from)}`, hint: null }
 }

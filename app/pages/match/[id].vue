@@ -1,17 +1,27 @@
 <script setup lang="ts">
-import type { MatchDetails } from '~/types'
+import type { MatchDetails, RoundsResponse } from '~/types'
 
 const route = useRoute()
+const router = useRouter()
+const { competition } = useCompetition()
 
-// «Результаты» ведёт туда, откуда пришли: тур или даты главной хранятся в её адресе (/?round=5).
+// Ссылка «назад» ведёт туда, откуда пришли: тур или дни главной хранятся в её адресе (/?round=5).
 // Историю читаем после монтирования: пока страница собирается, переход в неё ещё не записан
 const backTo = ref('/')
 onMounted(() => {
-  const previousPath = useRouter().options.history.state.back
+  const previousPath = router.options.history.state.back
   if (typeof previousPath === 'string' && previousPath.startsWith('/?')) backTo.value = previousPath
 })
 
+// Туры нужны только для подписи ссылки («← 5 тур»): запрашиваем их параллельно с матчем
+const roundsRequest = useFetch<RoundsResponse>('/api/rounds', {
+  query: computed(() => ({ leagueId: competition.value.id })),
+})
 const { data: match, pending, error } = await useFetch<MatchDetails>(`/api/match/${route.params.id}`)
+const { data: roundsData } = await roundsRequest
+
+const backLabel = computed(() =>
+  describeHomeSelection(parseHomeQuery(router.resolve(backTo.value).query), roundsData.value, getMoscowDate(new Date())))
 
 useHead({
   title: computed(() => match.value
@@ -37,7 +47,7 @@ useHead({
       >
         <path d="M15 6l-6 6 6 6" />
       </svg>
-      Результаты
+      {{ backLabel }}
     </NuxtLink>
 
     <p

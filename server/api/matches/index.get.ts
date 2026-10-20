@@ -20,8 +20,10 @@ export default cachedEventHandler(async (event) => {
   const query = getQuery(event)
   const leagueId = String(query.leagueId ?? DEFAULT_COMPETITION_ID)
   const competition = getCompetition(leagueId)
-  // Тур (?round=5) или диапазон дат (?dateFrom=…&dateTo=…): на главной выбирают что-то одно
-  const round = typeof query.round === 'string' && query.round ? query.round : null
+  // Тур (?round=5) или диапазон дат (?dateFrom=…&dateTo=…): на главной выбирают что-то одно.
+  // Ни того, ни другого — текущий тур: так главной не нужно ждать /api/rounds, чтобы его узнать
+  const requestedRound = typeof query.round === 'string' && query.round ? query.round : null
+  const hasDates = typeof query.dateFrom === 'string' && !!query.dateFrom
 
   const today = getMoscowDate(new Date())
   const dateFrom = String(query.dateFrom ?? today)
@@ -32,7 +34,11 @@ export default cachedEventHandler(async (event) => {
 
   const schedule = await getSeasonSchedule<ApiMatch>(leagueId, season)
 
-  const roundByMatch = round && competition ? getSeasonRounds(schedule, competition).roundByMatch : null
+  // Тур нужен и при выборе по датам: в заголовке дня на главной пишем «· 5 тур»
+  const roundByMatch = competition ? getSeasonRounds(schedule, competition).roundByMatch : null
+  // Без туров (сезона нет в API) текущего тура нет — тогда матчи за сегодня
+  const round = requestedRound
+    ?? (hasDates || !roundByMatch ? null : getCurrentRound(schedule, roundByMatch, new Date()))
 
   const filtered = schedule
     .filter((match) => {
@@ -60,6 +66,7 @@ export default cachedEventHandler(async (event) => {
     date: match.dateEvent,
     group: match.strGroup,
     season: match.strSeason,
+    round: roundByMatch?.get(match.idEvent) ?? null,
   }))
 
   return { matches }

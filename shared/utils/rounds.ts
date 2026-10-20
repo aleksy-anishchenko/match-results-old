@@ -1,6 +1,6 @@
 import type { BracketTie, Competition, SeasonRound } from '~/types'
 import { buildBracket, getPlayoffMatches, type BracketScheduleMatch } from './bracket'
-import { getLeaguePhaseMatches } from './matches'
+import { getLeaguePhaseMatches, getMoscowDate } from './matches'
 
 /** У лиг стыки и плей-офф в конце сезона — одна страница после последнего тура */
 export const LEAGUE_PLAYOFF_ROUND = 'playoff'
@@ -10,6 +10,22 @@ export type SeasonRounds = {
   rounds: SeasonRound[]
   roundByMatch: Map<string, string>
 }
+
+/** Тур без дат: их считает getSeasonRounds, когда все матчи уже разложены по турам */
+type NamedRound = Pick<SeasonRound, 'id' | 'name'>
+
+type NamedRounds = {
+  rounds: NamedRound[]
+  roundByMatch: Map<string, string>
+}
+
+/**
+ * Пауза длиннее недели — это уже не тот же тур, а перенесённый матч: его в даты тура не берём,
+ * иначе тур растянется на месяцы. Ответные матчи плей-офф идут через 6–7 дней и остаются в туре.
+ */
+const MAX_ROUND_GAP_DAYS = 7
+
+const DAY_MS = 86_400_000
 
 const byNumber = (a: string, b: string) => Number(a) - Number(b)
 
@@ -21,7 +37,7 @@ const isTieMatch = (tie: BracketTie, match: BracketScheduleMatch) =>
  * и плей-офф под кодами 0, 125, 160, 170, 180…: что они значат, зависит от лиги и сезона,
  * поэтому все они — одна страница «Плей-офф».
  */
-function getLeagueRounds(schedule: BracketScheduleMatch[]): SeasonRounds {
+function getLeagueRounds(schedule: BracketScheduleMatch[]): NamedRounds {
   const roundByMatch = new Map<string, string>()
   for (const match of schedule) {
     const number = Number(match.intRound)
@@ -42,7 +58,7 @@ function getLeagueRounds(schedule: BracketScheduleMatch[]): SeasonRounds {
 function getTournamentRounds(
   schedule: BracketScheduleMatch[],
   competition: Pick<Competition, 'groupRounds' | 'leaguePhase'>,
-): SeasonRounds {
+): NamedRounds {
   const roundByMatch = new Map<string, string>()
 
   const groupRounds = new Set(competition.groupRounds ?? [])
@@ -50,7 +66,7 @@ function getTournamentRounds(
     ? getLeaguePhaseMatches(schedule)
     : schedule.filter(match => groupRounds.has(match.intRound))
   for (const match of stageMatches) roundByMatch.set(match.idEvent, match.intRound)
-  const rounds: SeasonRound[] = [...new Set(stageMatches.map(match => match.intRound))]
+  const rounds: NamedRound[] = [...new Set(stageMatches.map(match => match.intRound))]
     .sort(byNumber)
     .map(id => ({ id, name: `${id} тур` }))
 
@@ -76,12 +92,54 @@ function getTournamentRounds(
   return { rounds, roundByMatch }
 }
 
+/**
+ * Даты тура по Москве. Дни матчей (YYYY-MM-DD, по порядку, повторяются) делим на куски там,
+ * где пауза длиннее недели, и берём кусок, где больше всего матчей.
+ */
+function getRoundDates(id: string, days: string[]): Pick<SeasonRound, 'from' | 'to'> {
+  // «Плей-офф» лиги — несколько раундов на одной странице (у МЛС с перерывом на матчи сборных):
+  // паузы между раундами — не переносы, даты берём целиком
+  if (id === LEAGUE_PLAYOFF_ROUND) return { from: days[0] ?? null, to: days.at(-1) ?? null }
+
+  let best: string[] = []
+  let current: string[] = []
+  for (const day of days) {
+    const last = current.at(-1)
+    if (last && Date.parse(day) - Date.parse(last) > MAX_ROUND_GAP_DAYS * DAY_MS) current = []
+    current.push(day)
+    if (current.length > best.length) best = current
+  }
+  return { from: best[0] ?? null, to: best.at(-1) ?? null }
+}
+
+function withDates(schedule: BracketScheduleMatch[], { rounds, roundByMatch }: NamedRounds): SeasonRounds {
+  const daysByRound = new Map<string, string[]>()
+  for (const match of schedule) {
+    const round = roundByMatch.get(match.idEvent)
+    if (!round || !match.strTimestamp) continue
+    const days = daysByRound.get(round) ?? []
+    days.push(getMoscowDate(match.strTimestamp))
+    daysByRound.set(round, days)
+  }
+  return {
+    rounds: rounds.map(round => ({ ...round, ...getRoundDates(round.id, (daysByRound.get(round.id) ?? []).sort()) })),
+    roundByMatch,
+  }
+}
+
 /** Туры сезона для навигации на главной */
 export function getSeasonRounds(
   schedule: BracketScheduleMatch[],
   competition: Pick<Competition, 'type' | 'groupRounds' | 'leaguePhase'>,
 ): SeasonRounds {
-  return competition.type === 'league' ? getLeagueRounds(schedule) : getTournamentRounds(schedule, competition)
+  const named = competition.type === 'league' ? getLeagueRounds(schedule) : getTournamentRounds(schedule, competition)
+  return withDates(schedule, named)
+}
+
+/** Дни сезона с матчами (YYYY-MM-DD по Москве, по порядку): точки в календаре на главной */
+export function getMatchDays(schedule: Array<{ strTimestamp: string }>): string[] {
+  const days = new Set(schedule.filter(match => match.strTimestamp).map(match => getMoscowDate(match.strTimestamp)))
+  return [...days].sort()
 }
 
 /**

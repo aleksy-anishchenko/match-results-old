@@ -60,23 +60,16 @@ function onTabKeydown(event: KeyboardEvent) {
 const tables = computed(() => Object.entries(groups.value).map(([name, rows]) => ({ name, rows })))
 
 const legend = computed(() => collectLegend(tables.value.flatMap(table => table.rows)))
-
-const kicker = computed(() => {
-  const season = standingsData.value?.season
-  return season ? `${competition.value.name} · сезон ${formatSeason(season)}` : competition.value.name
-})
 </script>
 
 <template>
   <div class="standings-page">
-    <header class="page-head">
-      <p class="page-head__kicker">
-        {{ kicker }}
-      </p>
-      <h1 class="page-head__title">
-        Таблица
-      </h1>
-    </header>
+    <!-- Раздел и лига видны в полосе ниже; заголовок нужен экранному диктору и поисковикам -->
+    <h1 class="visually-hidden">
+      Таблица: {{ competition.name }}
+    </h1>
+
+    <CompetitionBar />
 
     <div
       v-if="isTournament"
@@ -183,37 +176,6 @@ const kicker = computed(() => {
 
   @media (min-width: $breakpoint-desktop) {
     gap: 24px;
-  }
-}
-
-.page-head {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-
-  @media (min-width: $breakpoint-desktop) {
-    gap: 6px;
-  }
-}
-
-.page-head__kicker {
-  font-size: 12px;
-  font-weight: 600;
-  color: $color-text-3;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-
-  @media (min-width: $breakpoint-desktop) {
-    font-size: 13px;
-  }
-}
-
-.page-head__title {
-  font-size: 28px;
-  line-height: 1.2;
-
-  @media (min-width: $breakpoint-desktop) {
-    font-size: 40px;
   }
 }
 

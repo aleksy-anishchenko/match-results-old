@@ -41,12 +41,77 @@ const MatchResultsPreset = definePreset(Aura, {
       },
     },
   },
+  // Панель, шторка, список и календарь живут только в полях над матчами (FilterDropdown): размеры
+  // и цвета из макета. #F3F6F4 — фон страницы ($color-bg), наведение на строку в макете такое же
+  components: {
+    popover: {
+      root: {
+        borderColor: '{surface.200}',
+        borderRadius: '16px',
+        shadow: '0 12px 32px rgba(19, 64, 45, 0.14)',
+        gutter: '6px',
+      },
+      content: { padding: '6px' },
+    },
+    drawer: {
+      root: {
+        borderColor: '{surface.200}',
+        shadow: '0 -6px 20px rgba(19, 33, 27, 0.1)',
+      },
+      header: { padding: '4px 6px 6px 16px' },
+      title: { fontSize: '17px', fontWeight: '700' },
+      content: { padding: '0 10px 20px' },
+    },
+    listbox: {
+      root: { background: 'transparent', borderColor: 'transparent', shadow: 'none', borderRadius: '0' },
+      list: { padding: '0', gap: '0', header: { padding: '4px 4px 6px' } },
+      option: {
+        padding: '0 12px',
+        borderRadius: '8px',
+        color: '{surface.700}',
+        focusColor: '{surface.700}',
+        focusBackground: '#F3F6F4',
+        selectedColor: '{surface.700}',
+        selectedBackground: '{primary.100}',
+        selectedFocusColor: '{surface.700}',
+        selectedFocusBackground: '{primary.100}',
+      },
+      optionGroup: { padding: '10px 12px 4px', background: 'transparent', color: '{surface.500}', fontWeight: '700' },
+      emptyMessage: { padding: '10px 12px' },
+    },
+    datepicker: {
+      panel: { padding: '0', borderColor: 'transparent', shadow: 'none' },
+      header: { padding: '4px 0', borderColor: 'transparent' },
+      title: { fontWeight: '700' },
+      selectMonth: { padding: '0' },
+      dayView: { margin: '4px 0 0 0' },
+      weekDay: { padding: '0 0 4px 0', fontWeight: '400', color: '{surface.500}' },
+      date: {
+        width: '100%',
+        height: '36px',
+        padding: '2px',
+        borderRadius: '10px',
+        color: '{surface.700}',
+        hoverBackground: '#F3F6F4',
+        selectedBackground: '{primary.500}',
+        selectedColor: '#FFFFFF',
+        rangeSelectedBackground: '{primary.100}',
+        rangeSelectedColor: '{primary.800}',
+      },
+      // «Сегодня» по Москве рисует DateSelect, своя подсветка PrimeVue (по часам устройства) не нужна
+      colorScheme: {
+        light: {
+          today: { background: 'transparent', color: '{surface.700}' },
+        },
+      },
+    },
+  },
 })
 
 export default defineNuxtConfig({
   modules: ['@primevue/nuxt-module', '@nuxt/eslint'],
   devtools: { enabled: true },
-  css: ['~/assets/css/fonts.css', '~/assets/css/global.scss', 'primeicons/primeicons.css'],
+  css: ['~/assets/css/fonts.css', '~/assets/css/global.scss'],
   runtimeConfig: {
     theSportsDbApiKey: '',
   },
@@ -83,6 +148,13 @@ export default defineNuxtConfig({
         monthNamesShort: ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн', 'Июл', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек'],
         today: 'Сегодня',
         clear: 'Очистить',
+        prevMonth: 'Предыдущий месяц',
+        nextMonth: 'Следующий месяц',
+        searchMessage: 'Найдено: {0}',
+        emptySearchMessage: 'Ничего не нашли',
+        selectionMessage: 'Выбрано: {0}',
+        emptySelectionMessage: 'Ничего не выбрано',
+        aria: { close: 'Закрыть' },
         fileSizeTypes: ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'],
       },
     },

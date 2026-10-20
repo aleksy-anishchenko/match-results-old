@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import type { Competition } from '~/types'
 import type { BracketScheduleMatch } from '#shared/utils/bracket'
-import { getCurrentRound, getSeasonRounds, LEAGUE_PLAYOFF_ROUND } from '#shared/utils/rounds'
+import { getCurrentRound, getMatchDays, getSeasonRounds, LEAGUE_PLAYOFF_ROUND } from '#shared/utils/rounds'
 // Настоящие расписания сезонов из TheSportsDB (v2 schedule/league), только нужные поля
 import bundesliga2526 from '../../fixtures/rounds/bundesliga-2025-26.json'
 import championsLeague2425 from '../../fixtures/bracket/champions-league-2024-25.json'
@@ -66,6 +66,59 @@ describe('getSeasonRounds: турнир', () => {
     const quarterFinals = matchesOf(nationsLeague2425.schedule, NATIONS_LEAGUE, 'playoff-0')
     expect(quarterFinals).toHaveLength(8)
     expect(quarterFinals.some(match => match.strHomeTeam === 'Turkey')).toBe(false)
+  })
+})
+
+describe('getSeasonRounds: даты туров', () => {
+  const datesOf = (schedule: BracketScheduleMatch[], competition: RoundsCompetition, id: string) => {
+    const round = getSeasonRounds(schedule, competition).rounds.find(item => item.id === id)
+    return [round?.from, round?.to]
+  }
+
+  it('первый и последний день тура по Москве', () => {
+    expect(datesOf(bundesliga2526, LEAGUE, '5')).toEqual(['2025-09-26', '2025-09-28'])
+  })
+
+  // В 16 туре один матч перенесли на 27 января, в 17 — на 4 марта: тур от этого не растягивается
+  it('перенесённые матчи в даты тура не входят', () => {
+    expect(datesOf(bundesliga2526, LEAGUE, '16')).toEqual(['2026-01-09', '2026-01-11'])
+    expect(datesOf(bundesliga2526, LEAGUE, '17')).toEqual(['2026-01-13', '2026-01-15'])
+  })
+
+  it('у плей-офф турнира в датах и первые, и ответные матчи', () => {
+    expect(datesOf(championsLeague2526.schedule, LEAGUE_PHASE, 'playoff-16')).toEqual(['2026-03-10', '2026-03-18'])
+  })
+
+  // Как у МЛС: первый раунд, перерыв на матчи сборных, полуфиналы конференций, финал
+  it('у «Плей-офф» лиги даты целиком, даже с перерывами между раундами', () => {
+    const playoffMatch = (idEvent: string, intRound: string, strTimestamp: string): BracketScheduleMatch => ({
+      idEvent,
+      intRound,
+      strTimestamp,
+      strHomeTeam: 'Home',
+      strAwayTeam: 'Away',
+      strHomeTeamBadge: '',
+      strAwayTeamBadge: '',
+      intHomeScore: null,
+      intAwayScore: null,
+      strStatus: 'NS',
+    })
+    const schedule = [
+      playoffMatch('1', '125', '2025-10-25T20:00:00'),
+      playoffMatch('2', '125', '2025-11-08T20:00:00'),
+      playoffMatch('3', '150', '2025-11-22T20:00:00'),
+      playoffMatch('4', '200', '2025-12-06T20:00:00'),
+    ]
+    expect(datesOf(schedule, LEAGUE, LEAGUE_PLAYOFF_ROUND)).toEqual(['2025-10-25', '2025-12-06'])
+  })
+})
+
+describe('getMatchDays', () => {
+  it('все дни сезона с матчами по порядку, и дни перенесённых матчей тоже', () => {
+    const days = getMatchDays(bundesliga2526)
+    expect(days).toHaveLength(102)
+    expect([days[0], days.at(-1)]).toEqual(['2025-08-22', '2026-05-25'])
+    expect(days).toContain('2026-01-27')
   })
 })
 

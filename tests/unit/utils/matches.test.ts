@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { groupMatchesByDate, formatDatesTitle, formatReadableDate, isNearDay } from '~/utils/matches'
+import { describeDates, formatReadableDate, formatShortDates, groupMatchesByDate, shiftDate } from '~/utils/matches'
 import {
   getLeaguePhaseMatches,
   getLeaguePhaseRoundCount,
@@ -26,6 +26,7 @@ const makeMatch = (overrides: Partial<Match>): Match => ({
   date: '2026-06-23',
   group: null,
   season: '2026',
+  round: null,
   ...overrides,
 })
 
@@ -205,24 +206,40 @@ describe('getMatchWinnerSide', () => {
   })
 })
 
-describe('isNearDay', () => {
-  it('вчера, сегодня и завтра — рядом, остальные дни — нет', () => {
-    expect(['2026-10-15', '2026-10-16', '2026-10-17', '2026-10-18', '2026-10-19'].map(date => isNearDay(date, '2026-10-17')))
-      .toEqual([false, true, true, true, false])
-  })
-
-  it('через границу месяца', () => {
-    expect(isNearDay('2026-11-01', '2026-10-31')).toBe(true)
+describe('shiftDate', () => {
+  it('сдвигает день вперёд и назад, в том числе через границу месяца и года', () => {
+    expect(shiftDate('2026-10-31', 1)).toBe('2026-11-01')
+    expect(shiftDate('2027-01-01', -1)).toBe('2026-12-31')
   })
 })
 
-describe('formatDatesTitle', () => {
-  it('один день — с коротким днём недели', () => {
-    expect(formatDatesTitle('2026-10-20', '2026-10-20')).toBe('Вт, 20 октября')
+describe('formatShortDates', () => {
+  it('один день, диапазон в одном месяце и через границу месяцев', () => {
+    expect(formatShortDates('2026-09-20', '2026-09-20')).toBe('20 сен')
+    expect(formatShortDates('2026-09-18', '2026-09-20')).toBe('18–20 сен')
+    expect(formatShortDates('2026-09-28', '2026-10-03')).toBe('28 сен – 3 окт')
   })
 
-  it('диапазон в одном месяце и через границу месяцев', () => {
-    expect(formatDatesTitle('2026-10-12', '2026-10-15')).toBe('12–15 октября')
-    expect(formatDatesTitle('2026-09-28', '2026-10-03')).toBe('28 сентября – 3 октября')
+  // Месяц в родительном падеже, как в «20 мая»
+  it('май — «мая»', () => {
+    expect(formatShortDates('2027-05-23', '2027-05-23')).toBe('23 мая')
+  })
+})
+
+describe('describeDates', () => {
+  const today = '2026-09-20'
+
+  it('вчера, сегодня и завтра — словом, дата отдельно', () => {
+    expect(describeDates({ from: '2026-09-19', to: '2026-09-19' }, today)).toEqual({ label: 'Вчера', hint: '19 сен' })
+    expect(describeDates({ from: '2026-09-20', to: '2026-09-20' }, today)).toEqual({ label: 'Сегодня', hint: '20 сен' })
+    expect(describeDates({ from: '2026-09-21', to: '2026-09-21' }, today)).toEqual({ label: 'Завтра', hint: '21 сен' })
+  })
+
+  it('другой день — с коротким днём недели', () => {
+    expect(describeDates({ from: '2026-09-12', to: '2026-09-12' }, today)).toEqual({ label: 'Сб, 12 сен', hint: null })
+  })
+
+  it('несколько дней — диапазоном, даже если среди них сегодня', () => {
+    expect(describeDates({ from: '2026-09-19', to: '2026-09-21' }, today)).toEqual({ label: '19–21 сен', hint: null })
   })
 })

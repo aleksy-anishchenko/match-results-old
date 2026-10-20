@@ -4,12 +4,17 @@ export default cachedEventHandler(async (event): Promise<RoundsResponse> => {
   const leagueId = String(getQuery(event).leagueId ?? DEFAULT_COMPETITION_ID)
   const competition = getCompetition(leagueId)
   const season = await getCurrentSeason(leagueId)
-  if (!competition || !season) return { season, rounds: [], current: null }
+  if (!competition || !season) return { season, rounds: [], current: null, matchDays: [] }
 
   const schedule = await getSeasonSchedule<BracketScheduleMatch>(leagueId, season)
   const { rounds, roundByMatch } = getSeasonRounds(schedule, competition)
 
-  return { season, rounds, current: getCurrentRound(schedule, roundByMatch, new Date()) }
+  return {
+    season,
+    rounds,
+    current: getCurrentRound(schedule, roundByMatch, new Date()),
+    matchDays: getMatchDays(schedule),
+  }
 }, {
   maxAge: 60,
   getKey: event => `rounds-${getQuery(event).leagueId ?? DEFAULT_COMPETITION_ID}`,

@@ -11,7 +11,8 @@ $container-padding-desktop: 24px;
 $container-max: $content-width + 2 * $container-padding-desktop;
 $header-height: 64px;
 $header-height-mobile: 56px;
-$mobile-nav-height: 44px;
+// Поля «Лига», «Тур», «Дата» над списком матчей
+$field-height: 44px;
 
 // Шрифты
 $font-text: 'Onest', system-ui, -apple-system, 'Segoe UI', sans-serif;
@@ -31,6 +32,8 @@ $color-text: #1B2621;
 $color-text-2: #47524C;
 $color-text-3: #5B6660;
 $color-text-muted: #8A948F;
+// Дни без матчей в календаре
+$color-text-disabled: #B5C0BA;
 
 // Цвета: акцент (зелёный)
 $color-accent: #1F7A4D;
@@ -38,6 +41,8 @@ $color-accent-soft: #DDF0E4;
 $color-accent-dark: #13402D;
 $color-accent-muted: #5E8C75;
 $color-accent-pale: #9FC0B0;
+// Рамка выбранного поля над списком матчей
+$color-accent-border: #9FD3B3;
 
 // Цвета: лайв (красный)
 $color-live: #C2413A;
@@ -63,10 +68,11 @@ $color-zone-relegation: $color-live;
 $radius-card: 16px;
 $radius-card-lg: 20px;
 $radius-card-sm: 10px;
+$radius-field: 12px;
 $radius-score: 10px;
 $radius-pill: 999px;
 
-// Кнопка-пилюля: фильтр дат на главной, вкладки на странице таблицы.
+// Кнопка-пилюля: вкладки «Плей-офф» и «Таблица» на странице таблицы.
 // Выбранная залита акцентом, модификатор задаётся снаружи: &--active { @include pill-button-active; }
 @mixin pill-button {
   height: 40px;

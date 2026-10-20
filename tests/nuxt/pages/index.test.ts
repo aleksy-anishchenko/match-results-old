@@ -1,20 +1,27 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, afterEach, beforeEach, vi } from 'vitest'
 import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
+import type { VueWrapper } from '@vue/test-utils'
 import { getMoscowDate } from '#shared/utils/matches'
+import { shiftDate } from '~/utils/matches'
 import IndexPage from '~/pages/index.vue'
 import type { Match, RoundsResponse } from '~/types'
 
+const today = getMoscowDate(new Date())
+const yesterday = shiftDate(today, -1)
+
+// Вчера и сегодня матчи есть, завтра — нет
 const ROUNDS: RoundsResponse = {
   season: '2026-2027',
   rounds: [
-    { id: '6', name: '6 тур' },
-    { id: '7', name: '7 тур' },
-    { id: '8', name: '8 тур' },
+    { id: '6', name: '6 тур', from: '2026-10-09', to: '2026-10-11' },
+    { id: '7', name: '7 тур', from: '2026-10-16', to: '2026-10-18' },
+    { id: '8', name: '8 тур', from: '2026-10-23', to: '2026-10-25' },
   ],
   current: '7',
+  matchDays: [yesterday, today],
 }
 
-function match(idEvent: string, homeTeam: string, awayTeam: string): Match {
+function match(idEvent: string, homeTeam: string, awayTeam: string, round: string): Match {
   return {
     idEvent,
     homeTeam,
@@ -31,70 +38,111 @@ function match(idEvent: string, homeTeam: string, awayTeam: string): Match {
     date: '2026-10-17',
     group: null,
     season: '2026-2027',
+    round,
   }
 }
 
-// Сервер подменён: в 6 туре «Челси – Арсенал», в 7 «Эвертон – Ливерпуль», по датам — «Фулхэм – Брентфорд»
+// Сервер подменён: в 6 туре «Челси – Арсенал», в 7 «Эвертон – Ливерпуль», по датам — «Фулхэм – Брентфорд» из 7 тура.
+// Без тура и дат сервер отдаёт текущий тур, как настоящий
 const MATCHES_BY_ROUND: Record<string, Match[]> = {
-  6: [match('1', 'Chelsea', 'Arsenal')],
-  7: [match('2', 'Everton', 'Liverpool')],
+  6: [match('1', 'Chelsea', 'Arsenal', '6')],
+  7: [match('2', 'Everton', 'Liverpool', '7')],
 }
 
+// Запросы матчей, которые сделала страница: по ним видно, нет ли лишних
+const matchRequests: Array<Record<string, string>> = []
+
 registerEndpoint('/api/rounds', () => ROUNDS)
+registerEndpoint('/api/competitions', () => ({ competitions: [] }))
 registerEndpoint('/api/matches', (event) => {
   const query = new URL(event.path, 'http://localhost').searchParams
-  const round = query.get('round')
-  return { matches: round ? MATCHES_BY_ROUND[round] ?? [] : [match('3', 'Fulham', 'Brentford')] }
+  matchRequests.push(Object.fromEntries(query))
+  const round = query.get('round') ?? (query.get('dateFrom') ? null : ROUNDS.current)
+  return { matches: round ? MATCHES_BY_ROUND[round] ?? [] : [match('3', 'Fulham', 'Brentford', '7')] }
 })
+
+// Страницы прошлых тестов сами не размонтируются и тоже ответили бы на смену лиги — убираем их после теста
+const mountedPages: VueWrapper[] = []
+async function mountPage(route: string) {
+  const page = await mountSuspended(IndexPage, { route })
+  mountedPages.push(page)
+  return page
+}
+
+// Подписи полей «Тур» и «Дата» для экранного диктора: по ним видно, что выбрано
+const fieldLabels = (page: VueWrapper) =>
+  page.findAll('.filters .field__button').map(button => button.attributes('aria-label'))
+
+// Панель открывается в конце body (teleport), поэтому ищем в документе, в последней открытой
+function lastPanel(): HTMLElement {
+  const panels = document.querySelectorAll<HTMLElement>('.field-popover')
+  return panels[panels.length - 1]!
+}
 
 describe('главная', () => {
   beforeEach(async () => {
     await useRouter().replace('/')
   })
 
-  it('по умолчанию — текущий тур, кнопка «Тур» выбрана', async () => {
-    const page = await mountSuspended(IndexPage, { route: '/' })
-    // Перед точкой неразрывный пробел (\u00a0), чтобы точка не переносилась на новую строку
-    expect(page.find('h1').text().replace(/\u00a0/g, ' ')).toBe('АПЛ · сезон 2026/27 · 7 тур')
+  // Выбор лиги общий на приложение и хранится в cookie: тест со сменой лиги не должен оставить её другим
+  afterEach(() => {
+    mountedPages.splice(0).forEach(page => page.unmount())
+    useCompetition().selectedId.value = '4328'
+  })
+
+  it('по умолчанию — текущий тур с датами, поле «Дата» пустое', async () => {
+    const page = await mountPage('/')
+    expect(fieldLabels(page)).toEqual(['Тур: 7 тур, 16–18 окт', 'Выбрать дату'])
     expect(page.text()).toContain('Эвертон')
-    expect(page.get('button[aria-pressed="true"]').text()).toBe('Тур')
+    expect(page.find('h1').text()).toBe('Матчи: АПЛ')
   })
 
-  it('стрелка «назад» открывает прошлый тур и запоминает его в адресе', async () => {
-    const page = await mountSuspended(IndexPage, { route: '/' })
-    await page.get('button[aria-label="Назад: 6 тур"]').trigger('click')
-    await vi.waitFor(() => expect(page.find('.crumbs__item--current').text()).toBe('6 тур'))
-    expect(useRoute().query).toEqual({ round: '6' })
+  it('тур из списка — в адресе и в поле', async () => {
+    const page = await mountPage('/')
+    await page.get('button[aria-label^="Тур"]').trigger('click')
+    await vi.waitFor(() => expect(lastPanel().querySelector('[aria-label="6 тур"]')).not.toBeNull())
+    lastPanel().querySelector<HTMLElement>('[aria-label="6 тур"]')!.click()
+    await vi.waitFor(() => expect(useRoute().query).toEqual({ round: '6' }))
     await vi.waitFor(() => expect(page.text()).toContain('Челси'))
+    expect(fieldLabels(page)[0]).toBe('Тур: 6 тур, 9–11 окт')
   })
 
-  it('у последнего тура стрелки «вперёд» нет', async () => {
-    const page = await mountSuspended(IndexPage, { route: '/?round=8' })
-    expect(page.get('button[aria-label="Вперёд"]').attributes('disabled')).toBeDefined()
-  })
-
-  it('кнопка «Сегодня» сбрасывает тур: даты в адресе, в крошках только турнир и сезон, стрелок нет', async () => {
-    const page = await mountSuspended(IndexPage, { route: '/?round=6' })
-    await page.findAll('button').find(button => button.text() === 'Сегодня')!.trigger('click')
-    await vi.waitFor(() => expect(page.find('.crumbs__item--current').exists()).toBe(false))
-    expect(page.find('h1').text().replace(/\u00a0/g, ' ')).toBe('АПЛ · сезон 2026/27')
-    const today = getMoscowDate(new Date())
-    expect(useRoute().query).toEqual({ from: today, to: today })
-    expect(page.find('.page-head__arrows').exists()).toBe(false)
+  it('«Вчера» сбрасывает тур: даты в адресе, тур — в заголовке дня', async () => {
+    const page = await mountPage('/?round=6')
+    await page.get('button[aria-haspopup="dialog"]').trigger('click')
+    await vi.waitFor(() => expect(lastPanel().querySelector('.quick__day')).not.toBeNull())
+    const quick = [...lastPanel().querySelectorAll<HTMLButtonElement>('.quick__day')]
+    expect(quick.map(button => button.disabled)).toEqual([false, false, true])
+    quick[0]!.click()
+    await vi.waitFor(() => expect(useRoute().query).toEqual({ from: yesterday, to: yesterday }))
     await vi.waitFor(() => expect(page.text()).toContain('Фулхэм'))
+    expect(fieldLabels(page)[0]).toBe('Выбрать тур')
+    expect(fieldLabels(page)[1]).toMatch(/^Дата: Вчера /)
+    expect(page.find('.day__title').text().replace(/\s+/g, ' ')).toBe('Суббота, 17 октября · 7 тур')
   })
 
-  // У календаря на кнопке только иконка: какие дни выбраны, видно по крошкам
-  it('даты из календаря — в крошках', async () => {
-    const page = await mountSuspended(IndexPage, { route: '/?from=2026-10-12&to=2026-10-15' })
-    expect(page.find('.crumbs__item--current').text()).toBe('12–15 октября')
+  it('несколько дней из адреса — диапазоном в поле «Дата»', async () => {
+    const page = await mountPage('/?from=2026-10-12&to=2026-10-15')
+    expect(fieldLabels(page)).toEqual(['Выбрать тур', 'Дата: 12–15 окт'])
   })
 
-  it('кнопка «Тур» возвращает к текущему туру', async () => {
-    const today = getMoscowDate(new Date())
-    const page = await mountSuspended(IndexPage, { route: `/?from=${today}&to=${today}` })
-    await page.findAll('button').find(button => button.text() === 'Тур')!.trigger('click')
-    await vi.waitFor(() => expect(page.find('.crumbs__item--current').text()).toBe('7 тур'))
-    expect(useRoute().query).toEqual({})
+  it('неверный тур в адресе — текущий тур', async () => {
+    const page = await mountPage('/?round=99')
+    expect(fieldLabels(page)[0]).toBe('Тур: 7 тур, 16–18 окт')
+    expect(page.text()).toContain('Эвертон')
+  })
+
+  // Раньше уходил ещё запрос «новая лига + тур прошлой лиги», пока сбрасывался адрес и грузились туры
+  it('смена лиги — один запрос матчей новой лиги, без тура прошлой', async () => {
+    const page = await mountPage('/?round=6')
+    matchRequests.length = 0
+    await page.get('button[aria-label^="Лига"]').trigger('click')
+    await vi.waitFor(() => expect(lastPanel().querySelector('[aria-label="Ла Лига"]')).not.toBeNull())
+    lastPanel().querySelector<HTMLElement>('[aria-label="Ла Лига"]')!.click()
+    await vi.waitFor(() => expect(useRoute().query).toEqual({}))
+    await vi.waitFor(() => expect(page.text()).toContain('Эвертон'))
+    await new Promise(resolve => setTimeout(resolve, 50))
+    expect(matchRequests).toEqual([{ leagueId: '4335' }])
+    expect(page.find('h1').text()).toBe('Матчи: Ла Лига')
   })
 })

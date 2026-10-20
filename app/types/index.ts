@@ -38,6 +38,8 @@ export type Match = {
   date: string
   group: string | null
   season: string
+  /** Тур матча — id из /api/rounds; null, если матч вне туров (квалификация ЛЧ/ЛЕ) */
+  round: string | null
 }
 
 export type MatchesResponse = {
@@ -49,6 +51,9 @@ export type SeasonRound = {
   /** Для лиг и туров общего этапа — номер тура из API, для плей-офф турниров — playoff-<код раунда> */
   id: string
   name: string
+  /** Первый и последний день тура по Москве (YYYY-MM-DD) без перенесённых матчей; null — дат нет в API */
+  from: string | null
+  to: string | null
 }
 
 export type RoundsResponse = {
@@ -57,6 +62,14 @@ export type RoundsResponse = {
   rounds: SeasonRound[]
   /** Тур матча, ближайшего по времени к сейчас */
   current: string | null
+  /** Дни сезона с матчами (YYYY-MM-DD по Москве): точки в календаре */
+  matchDays: string[]
+}
+
+/** Дни на главной (YYYY-MM-DD по Москве), from и to включительно; один день — from === to */
+export type DateRange = {
+  from: string
+  to: string
 }
 
 export type MatchDetails = {

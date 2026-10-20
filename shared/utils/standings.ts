@@ -110,12 +110,6 @@ export function collectLegend(rows: Array<{ zone: StandingZone | null }>): Stand
   return [...zones.values()]
 }
 
-/** «2026-2027» → «2026/27», сезон в один год («2026») остаётся как есть */
-export function formatSeason(season: string): string {
-  const match = season.match(/^(\d{4})-\d{2}(\d{2})$/)
-  return match ? `${match[1]}/${match[2]}` : season
-}
-
 const GROUP_NAMES: Record<string, string> = {
   'Western Conference': 'Западная конференция',
   'Eastern Conference': 'Восточная конференция',

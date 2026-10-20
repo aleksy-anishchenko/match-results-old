@@ -1,7 +1,12 @@
 <script setup lang="ts">
 import type { Match } from '~/types'
 
-defineProps<{ matches: Record<string, Match[]>, showDate?: boolean }>()
+defineProps<{
+  matches: Record<string, Match[]>
+  showDate?: boolean
+  /** Приписка к заголовку дня по дате (YYYY-MM-DD): «Воскресенье, 20 сентября · 5 тур» */
+  dayNotes?: Record<string, string>
+}>()
 </script>
 
 <template>
@@ -15,7 +20,9 @@ defineProps<{ matches: Record<string, Match[]>, showDate?: boolean }>()
         v-if="showDate"
         class="day__title"
       >
-        {{ formatReadableDate(String(date)) }}
+        {{ formatReadableDate(String(date)) }}<template v-if="dayNotes?.[date]">
+          · {{ dayNotes[date] }}
+        </template>
       </h2>
       <ul class="day__card">
         <li

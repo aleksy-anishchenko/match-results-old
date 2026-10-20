@@ -3,7 +3,6 @@ import {
   calculateStandings,
   collectLegend,
   formatGroupName,
-  formatSeason,
   getLeaguePhaseZone,
   getStandingZone,
   sortGroups,
@@ -94,16 +93,6 @@ describe('sortGroups', () => {
   it('сортирует по названию, числа по значению', () => {
     const groups = { 'Группа H': 1, 'Группа 10': 2, 'Группа A': 3, 'Группа 2': 4 }
     expect(Object.keys(sortGroups(groups))).toEqual(['Группа 2', 'Группа 10', 'Группа A', 'Группа H'])
-  })
-})
-
-describe('formatSeason', () => {
-  it('сокращает сезон из двух лет', () => {
-    expect(formatSeason('2026-2027')).toBe('2026/27')
-  })
-
-  it('сезон в один год оставляет как есть', () => {
-    expect(formatSeason('2026')).toBe('2026')
   })
 })
 

@@ -1,138 +1,116 @@
 <script setup lang="ts">
-import type { MatchesResponse, RoundsResponse } from '~/types'
+import type { DateRange, MatchesResponse, RoundsResponse } from '~/types'
+import type { HomeSelection } from '~/utils/homeQuery'
 
 const { competition } = useCompetition()
 const route = useRoute()
 const router = useRouter()
 
 const leagueId = computed(() => competition.value.id)
+const today = useMoscowToday()
 
-// Что показано, хранится в адресе: ?round=5 — тур, ?from=…&to=… — даты, без параметров — текущий тур.
-// Так «назад» со страницы матча возвращает туда же, откуда ушли
-const queryValue = (value: unknown) => typeof value === 'string' && value ? value : null
-const dateRange = computed(() => {
-  const from = queryValue(route.query.from)
-  return from ? { from, to: queryValue(route.query.to) ?? from } : null
-})
+// Что показано, хранится в адресе (см. parseHomeQuery): «назад» со страницы матча возвращает туда же.
+// При смене лиги адрес сбрасывается не сразу (router.replace асинхронный): пока он старый,
+// выбранный в нём тур или дни относятся к прошлой лиге, и запрос матчей по ним был бы лишним
+const queryLeagueId = ref(leagueId.value)
+const selection = computed<HomeSelection>(() => queryLeagueId.value === leagueId.value
+  ? parseHomeQuery(route.query)
+  : { round: null, range: null })
 
 const { data: roundsData } = await useFetch<RoundsResponse>('/api/rounds', {
   query: computed(() => ({ leagueId: leagueId.value })),
 })
 
 const rounds = computed(() => roundsData.value?.rounds ?? [])
-const roundId = computed(() => queryValue(route.query.round) ?? roundsData.value?.current ?? null)
-const roundIndex = computed(() => rounds.value.findIndex(round => round.id === roundId.value))
-const round = computed(() => rounds.value[roundIndex.value])
-const previousRound = computed(() => roundIndex.value > 0 ? rounds.value[roundIndex.value - 1] : undefined)
-const nextRound = computed(() => roundIndex.value >= 0 ? rounds.value[roundIndex.value + 1] : undefined)
 
-// Без туров (сезона нет в API) сервер покажет матчи за сегодня
+// Тур из адреса, если он есть в сезоне. Нет параметра или он неверный (?round=99) — текущий тур
+const requestedRound = computed(() => rounds.value.find(item => item.id === selection.value.round))
+
+// Без туров (сезона нет в API) показываем сегодняшние матчи: так и выбрано в поле «Дата»
+const dateRange = computed<DateRange | null>(() =>
+  selection.value.range ?? (rounds.value.length ? null : { from: today.value, to: today.value }))
+
+const round = computed(() => {
+  if (dateRange.value) return undefined
+  return requestedRound.value ?? rounds.value.find(item => item.id === roundsData.value?.current)
+})
+
+// Текущий тур сервер находит сам: в запрос попадает только тур, выбранный явно.
+// Так запрос матчей не ждёт туров и не уходит с туром прошлой лиги, пока новые туры грузятся
 const { data, pending, error } = await useFetch<MatchesResponse>('/api/matches', {
-  query: computed(() => dateRange.value
-    ? { leagueId: leagueId.value, dateFrom: dateRange.value.from, dateTo: dateRange.value.to }
-    : { leagueId: leagueId.value, round: round.value?.id ?? '' }),
+  query: computed(() => {
+    if (dateRange.value) return { leagueId: leagueId.value, dateFrom: dateRange.value.from, dateTo: dateRange.value.to }
+    return requestedRound.value ? { leagueId: leagueId.value, round: requestedRound.value.id } : { leagueId: leagueId.value }
+  }),
 })
 
 const groupedMatches = computed(() =>
   groupMatchesByDate(data.value?.matches ?? []),
 )
 
-// Что выбрано — последнее звено крошек. У «Вчера», «Сегодня», «Завтра» звена нет: видно по кнопке
-const selection = computed(() => {
-  if (!dateRange.value) return round.value?.name ?? null
-  const { from, to } = dateRange.value
-  return from === to && isNearDay(from, getMoscowDate(new Date())) ? null : formatDatesTitle(from, to)
+// По датам туров в поле нет, поэтому тур пишем в заголовке дня: «Воскресенье, 20 сентября · 5 тур».
+// Если в день играют матчи разных туров (перенесённый матч), пишем все
+const dayNotes = computed(() => {
+  if (!dateRange.value) return {}
+  const nameById = new Map(rounds.value.map(item => [item.id, item.name]))
+  const notes: Record<string, string> = {}
+  for (const [date, matches] of Object.entries(groupedMatches.value)) {
+    const names = new Set(matches.map(match => match.round && nameById.get(match.round)).filter(Boolean))
+    if (names.size) notes[date] = [...names].join(', ')
+  }
+  return notes
 })
 
-// Заголовок — крошки «АПЛ · сезон 2026/27 · 7 тур»
-const crumbs = computed(() => {
-  const season = roundsData.value?.season
-  return [
-    { text: competition.value.name, current: false },
-    ...(season ? [{ text: `сезон ${formatSeason(season)}`, current: false }] : []),
-    ...(selection.value ? [{ text: selection.value, current: true }] : []),
-  ]
-})
-
-// replace, а не push: стрелки и фильтр не засоряют историю, «назад» уводит со страницы
+// replace, а не push: выбор тура и дат не засоряет историю, «назад» уводит со страницы
 function showRound(id?: string) {
   router.replace({ query: id ? { round: id } : {} })
 }
 
-function showDates(range: { from: string, to: string }) {
+function showDates(range: DateRange) {
   router.replace({ query: range })
 }
 
-// У другого турнира свои туры: показываем его текущий
-watch(leagueId, () => showRound())
+// У другого турнира свои туры: показываем его текущий. Выбор из адреса снова берём, когда адрес сброшен
+watch(leagueId, async (id) => {
+  await router.replace({ query: {} })
+  queryLeagueId.value = id
+})
 </script>
 
 <template>
   <div class="home-page">
-    <header class="page-head">
-      <h1 class="crumbs">
-        <template
-          v-for="(crumb, index) in crumbs"
-          :key="index"
-        >
-          <!-- Неразрывный пробел перед точкой: строка переносится только после неё -->
-          <span v-if="index">&nbsp;· </span>
-          <span
-            class="crumbs__item"
-            :class="{ 'crumbs__item--current': crumb.current }"
-          >{{ crumb.text }}</span>
-        </template>
-      </h1>
-      <div
-        v-if="!dateRange && round"
-        class="page-head__arrows"
-      >
-        <button
-          type="button"
-          class="arrow"
-          :disabled="!previousRound"
-          :aria-label="previousRound ? `Назад: ${previousRound.name}` : 'Назад'"
-          @click="showRound(previousRound?.id)"
-        >
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            aria-hidden="true"
-          >
-            <path d="M15 6l-6 6 6 6" />
-          </svg>
-        </button>
-        <button
-          type="button"
-          class="arrow"
-          :disabled="!nextRound"
-          :aria-label="nextRound ? `Вперёд: ${nextRound.name}` : 'Вперёд'"
-          @click="showRound(nextRound?.id)"
-        >
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            aria-hidden="true"
-          >
-            <path d="M9 6l6 6-6 6" />
-          </svg>
-        </button>
-      </div>
-    </header>
+    <!-- Что выбрано, видно по полям ниже; заголовок нужен экранному диктору и поисковикам -->
+    <h1 class="visually-hidden">
+      Матчи: {{ competition.name }}
+    </h1>
 
-    <AppFilter
-      :range="dateRange"
-      @round="showRound()"
-      @range="showDates"
-    />
+    <div class="toolbar">
+      <CompetitionBar />
+      <div
+        class="filters"
+        role="group"
+        aria-label="Тур или дата"
+      >
+        <RoundSelect
+          v-if="rounds.length"
+          class="filters__field"
+          :class="{ 'filters__field--selected': round }"
+          :rounds="rounds"
+          :selected="round?.id ?? null"
+          :current="roundsData?.current ?? null"
+          :today="today"
+          @select="showRound"
+        />
+        <DateSelect
+          class="filters__field"
+          :class="{ 'filters__field--selected': dateRange }"
+          :range="dateRange"
+          :match-days="roundsData?.matchDays ?? []"
+          :today="today"
+          @select="showDates"
+        />
+      </div>
+    </div>
 
     <p
       v-if="pending"
@@ -155,6 +133,7 @@ watch(leagueId, () => showRound())
     <MatchList
       v-else
       :matches="groupedMatches"
+      :day-notes="dayNotes"
       show-date
     />
   </div>
@@ -171,67 +150,31 @@ watch(leagueId, () => showRound())
   }
 }
 
-// Высота как у стрелок: при переключении на даты стрелки пропадают, а кнопки ниже не прыгают
-.page-head {
+.toolbar {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  min-height: 44px;
-}
-
-.crumbs {
-  min-width: 0;
-  font-family: $font-text;
-  font-size: 12px;
-  font-weight: 600;
-  line-height: 1.5;
-  color: $color-text-3;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+  flex-direction: column;
+  gap: 12px;
 
   @media (min-width: $breakpoint-desktop) {
-    font-size: 13px;
+    gap: 16px;
   }
 }
 
-// Переносится строка только между звеньями, а не внутри «сезон 2026/27»
-.crumbs__item {
-  white-space: nowrap;
-}
-
-.crumbs__item--current {
-  color: $color-text;
-  font-weight: 700;
-}
-
-.page-head__arrows {
+.filters {
   display: flex;
-  flex-shrink: 0;
   gap: 8px;
 }
 
-.arrow {
-  width: 44px;
-  height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  border: 1px solid $color-border-strong;
-  background: $color-surface;
-  color: $color-text;
-  cursor: pointer;
-  transition: border-color 0.15s, color 0.15s;
+// На телефоне выбранное поле растягивается на остаток строки, второе — по своему содержимому
+.filters__field {
+  flex: 0 0 auto;
+}
 
-  &:hover:not(:disabled) {
-    border-color: $color-text-3;
-    color: $color-accent;
-  }
+.filters__field--selected {
+  flex: 1 1 auto;
 
-  &:disabled {
-    color: $color-text-muted;
-    cursor: default;
+  @media (min-width: $breakpoint-desktop) {
+    flex: 0 0 auto;
   }
 }
 
