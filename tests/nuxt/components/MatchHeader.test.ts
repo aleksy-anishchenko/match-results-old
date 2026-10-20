@@ -25,6 +25,7 @@ function makeMatch(overrides: Partial<MatchDetails> = {}): MatchDetails {
     venue: 'Anfield',
     city: null,
     video: null,
+    lineups: null,
     events: [],
     stats: [],
     ...overrides,

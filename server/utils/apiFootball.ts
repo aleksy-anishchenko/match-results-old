@@ -1,11 +1,11 @@
-import type { MatchEvent, MatchStat } from '~/types'
+import type { MatchEvent, MatchLineups, MatchStat } from '~/types'
 import type { ApiFootballFixture } from '#shared/utils/matchEvents'
 
-// Запасной источник хроники и статистики — API-Football (api-sports.io), для матчей, где у TheSportsDB ленты
+// Запасной источник хроники, статистики и составов — API-Football (api-sports.io), для матчей, где у TheSportsDB ленты
 // событий нет или она не сходится со счётом (РПЛ с октября 2025, Саудовская лига, Бразилия). Номер матча
 // в API-Football TheSportsDB отдаёт сам — idAPIfootball. Бесплатный тариф — 100 запросов в день, счётчик
 // обнуляется в 00:00 UTC; весь сезон на нём закрыт, а один матч по номеру (fixtures?id=) отдаётся вместе
-// с событиями и статистикой. Поэтому каждый матч спрашиваем один раз: данные сыгранного матча не меняются,
+// с событиями, статистикой и составами. Поэтому каждый матч спрашиваем один раз: данные сыгранного матча не меняются,
 // найденные хранятся всегда.
 
 const API = 'https://v3.football.api-sports.io'
@@ -18,10 +18,11 @@ const RETRY_SOON_MS = 15 * 60 * 1000
 /** Матч сыгран, а событий нет или голы не сходятся со счётом — данные если и появятся, то не скоро */
 const RETRY_LATER_MS = 6 * 60 * 60 * 1000
 
-/** Хроника и статистика матча из API-Football */
+/** Хроника, статистика и составы матча из API-Football */
 export type FallbackMatchData = {
   events: MatchEvent[]
   stats: MatchStat[]
+  lineups: MatchLineups | null
 }
 
 type FixturesResponse = {
@@ -69,13 +70,13 @@ async function loadMatchData(fixtureId: string, apiKey: string): Promise<Fallbac
   }
 
   // Хранилище data: на проде — файлы .data/kv рядом с запущенным сервером, деплой их не трогает
-  const matchData: FallbackMatchData = { events, stats: getApiFootballStats(fixture) }
+  const matchData: FallbackMatchData = { events, stats: getApiFootballStats(fixture), lineups: getApiFootballLineups(fixture) }
   await useStorage('data').setItem(storageKey(fixtureId), matchData)
   return matchData
 }
 
 /**
- * Хроника и статистика сыгранного матча из API-Football по его номеру (idAPIfootball из TheSportsDB).
+ * Хроника, статистика и составы сыгранного матча из API-Football по его номеру (idAPIfootball из TheSportsDB).
  * null — не узнать: ключа нет, у API-Football нет событий или голы не сходятся со счётом, кончился дневной лимит.
  * Сходятся ли голы со счётом TheSportsDB, проверяет вызывающий.
  */
@@ -83,8 +84,9 @@ export async function getFallbackMatchData(fixtureId: string | null | undefined)
   const apiKey = useRuntimeConfig().apiFootballKey
   if (!apiKey || !fixtureId) return null
 
+  // Сохранённое до составов (октябрь 2026) — без поля lineups: такой матч один раз запрашиваем заново
   const saved = await useStorage('data').getItem<FallbackMatchData>(storageKey(fixtureId))
-  if (saved) return saved
+  if (saved && 'lineups' in saved) return saved
 
   const now = Date.now()
   if (now < limitReachedUntil || now < (retryAt.get(fixtureId) ?? 0)) return null

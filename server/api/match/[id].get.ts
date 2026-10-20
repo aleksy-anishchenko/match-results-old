@@ -1,4 +1,4 @@
-import type { MatchDetails } from '~/types'
+import type { MatchDetails, MatchLineups } from '~/types'
 
 type ApiEvent = {
   idEvent: string
@@ -62,10 +62,13 @@ export default cachedEventHandler(async (event) => {
   const timelineEvents = getTimelineEvents(timelineData?.timeline ?? [])
   let events = timelineEvents.length && goalsMatchScore(timelineEvents, ev.intHomeScore, ev.intAwayScore) ? timelineEvents : []
   let stats = getTheSportsDbStats(statsData?.eventstats ?? [])
+  // Составы есть только у API-Football: показываем их там, где этот матч и так запрашиваем ради хроники
+  let lineups: MatchLineups | null = null
   if (!events.length && FINISHED_MATCH_STATUSES.has(ev.strStatus)) {
     const fallback = await getFallbackMatchData(ev.idAPIfootball)
     if (fallback && goalsMatchScore(fallback.events, ev.intHomeScore, ev.intAwayScore)) {
       events = fallback.events
+      lineups = fallback.lineups
       if (!stats.length) stats = fallback.stats
     }
   }
@@ -96,6 +99,7 @@ export default cachedEventHandler(async (event) => {
     video: getVideoUrl(ev.strVideo),
     events,
     stats,
+    lineups,
   }
 
   return details

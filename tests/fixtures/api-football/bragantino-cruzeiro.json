@@ -573,5 +573,403 @@
         }
       ]
     }
+  ],
+  "lineups": [
+    {
+      "team": {
+        "id": 794,
+        "name": "RB Bragantino"
+      },
+      "formation": "4-2-3-1",
+      "startXI": [
+        {
+          "player": {
+            "name": "Tiago Volpi",
+            "number": 18,
+            "pos": "G",
+            "grid": "1:1"
+          }
+        },
+        {
+          "player": {
+            "name": "Ryan Tavares",
+            "number": 52,
+            "pos": "D",
+            "grid": "2:4"
+          }
+        },
+        {
+          "player": {
+            "name": "Gustavo Marques",
+            "number": 16,
+            "pos": "D",
+            "grid": "2:3"
+          }
+        },
+        {
+          "player": {
+            "name": "Guzmán Rodríguez",
+            "number": 2,
+            "pos": "D",
+            "grid": "2:2"
+          }
+        },
+        {
+          "player": {
+            "name": "Juninho Capixaba",
+            "number": 29,
+            "pos": "D",
+            "grid": "2:1"
+          }
+        },
+        {
+          "player": {
+            "name": "Eric Ramires",
+            "number": 7,
+            "pos": "M",
+            "grid": "3:2"
+          }
+        },
+        {
+          "player": {
+            "name": "Fabinho",
+            "number": 5,
+            "pos": "M",
+            "grid": "3:1"
+          }
+        },
+        {
+          "player": {
+            "name": "Lucas Barbosa",
+            "number": 21,
+            "pos": "M",
+            "grid": "4:3"
+          }
+        },
+        {
+          "player": {
+            "name": "Wallace",
+            "number": 47,
+            "pos": "M",
+            "grid": "4:2"
+          }
+        },
+        {
+          "player": {
+            "name": "Fernando",
+            "number": 11,
+            "pos": "M",
+            "grid": "4:1"
+          }
+        },
+        {
+          "player": {
+            "name": "Eduardo Sasha",
+            "number": 8,
+            "pos": "F",
+            "grid": "5:1"
+          }
+        }
+      ],
+      "substitutes": [
+        {
+          "player": {
+            "name": "Matheus Fernandes",
+            "number": 35,
+            "pos": "M",
+            "grid": null
+          }
+        },
+        {
+          "player": {
+            "name": "Gabriel",
+            "number": 6,
+            "pos": "M",
+            "grid": null
+          }
+        },
+        {
+          "player": {
+            "name": "Eduardo Santos",
+            "number": 3,
+            "pos": "D",
+            "grid": null
+          }
+        },
+        {
+          "player": {
+            "name": "Bruninho",
+            "number": 19,
+            "pos": "F",
+            "grid": null
+          }
+        },
+        {
+          "player": {
+            "name": "J. Herrera",
+            "number": 32,
+            "pos": "F",
+            "grid": null
+          }
+        },
+        {
+          "player": {
+            "name": "Vinicius",
+            "number": 17,
+            "pos": "F",
+            "grid": null
+          }
+        },
+        {
+          "player": {
+            "name": "I. Pitta",
+            "number": 9,
+            "pos": "F",
+            "grid": null
+          }
+        },
+        {
+          "player": {
+            "name": "Gustavinho",
+            "number": 22,
+            "pos": "M",
+            "grid": null
+          }
+        },
+        {
+          "player": {
+            "name": "A. Sant&apos;Anna",
+            "number": 23,
+            "pos": "D",
+            "grid": null
+          }
+        },
+        {
+          "player": {
+            "name": "Cleiton",
+            "number": 1,
+            "pos": "G",
+            "grid": null
+          }
+        },
+        {
+          "player": {
+            "name": "I. Sosa",
+            "number": 15,
+            "pos": "M",
+            "grid": null
+          }
+        },
+        {
+          "player": {
+            "name": "Vanderlan",
+            "number": 12,
+            "pos": "D",
+            "grid": null
+          }
+        }
+      ],
+      "coach": {
+        "name": "Vagner Mancini"
+      }
+    },
+    {
+      "team": {
+        "id": 135,
+        "name": "Cruzeiro"
+      },
+      "formation": "4-2-3-1",
+      "startXI": [
+        {
+          "player": {
+            "name": "Otávio Eleodoro Rezende Costa",
+            "number": 81,
+            "pos": "G",
+            "grid": "1:1"
+          }
+        },
+        {
+          "player": {
+            "name": "William",
+            "number": 12,
+            "pos": "D",
+            "grid": "2:4"
+          }
+        },
+        {
+          "player": {
+            "name": "João Marcelo",
+            "number": 43,
+            "pos": "D",
+            "grid": "2:3"
+          }
+        },
+        {
+          "player": {
+            "name": "Jonathan",
+            "number": 34,
+            "pos": "D",
+            "grid": "2:2"
+          }
+        },
+        {
+          "player": {
+            "name": "G. Rojas",
+            "number": 27,
+            "pos": "D",
+            "grid": "2:1"
+          }
+        },
+        {
+          "player": {
+            "name": "Zé Lucas",
+            "number": 5,
+            "pos": "M",
+            "grid": "3:2"
+          }
+        },
+        {
+          "player": {
+            "name": "Gerson",
+            "number": 8,
+            "pos": "M",
+            "grid": "3:1"
+          }
+        },
+        {
+          "player": {
+            "name": "K. Arroyo",
+            "number": 99,
+            "pos": "M",
+            "grid": "4:3"
+          }
+        },
+        {
+          "player": {
+            "name": "Matheus Pereira",
+            "number": 10,
+            "pos": "M",
+            "grid": "4:2"
+          }
+        },
+        {
+          "player": {
+            "name": "Felipe Morais",
+            "number": 38,
+            "pos": "M",
+            "grid": "4:1"
+          }
+        },
+        {
+          "player": {
+            "name": "Kaio Jorge",
+            "number": 19,
+            "pos": "F",
+            "grid": "5:1"
+          }
+        }
+      ],
+      "substitutes": [
+        {
+          "player": {
+            "name": "Kauã Moraes",
+            "number": 2,
+            "pos": "D",
+            "grid": null
+          }
+        },
+        {
+          "player": {
+            "name": "Wesley Gassova",
+            "number": 20,
+            "pos": "F",
+            "grid": null
+          }
+        },
+        {
+          "player": {
+            "name": "Marquinhos",
+            "number": 11,
+            "pos": "F",
+            "grid": null
+          }
+        },
+        {
+          "player": {
+            "name": "Cássio",
+            "number": 1,
+            "pos": "G",
+            "grid": null
+          }
+        },
+        {
+          "player": {
+            "name": "Bruno Rodrigues",
+            "number": 9,
+            "pos": "F",
+            "grid": null
+          }
+        },
+        {
+          "player": {
+            "name": "L. Rodríguez",
+            "number": 97,
+            "pos": "F",
+            "grid": null
+          }
+        },
+        {
+          "player": {
+            "name": "Lucas Silva",
+            "number": 16,
+            "pos": "M",
+            "grid": null
+          }
+        },
+        {
+          "player": {
+            "name": "Fabrício Bruno",
+            "number": 15,
+            "pos": "D",
+            "grid": null
+          }
+        },
+        {
+          "player": {
+            "name": "Kenji",
+            "number": 70,
+            "pos": "F",
+            "grid": null
+          }
+        },
+        {
+          "player": {
+            "name": "L. Villalba",
+            "number": 25,
+            "pos": "D",
+            "grid": null
+          }
+        },
+        {
+          "player": {
+            "name": "M. Viña",
+            "number": 6,
+            "pos": "D",
+            "grid": null
+          }
+        },
+        {
+          "player": {
+            "name": "Matheus Henrique",
+            "number": 7,
+            "pos": "M",
+            "grid": null
+          }
+        }
+      ],
+      "coach": {
+        "name": "Artur Jorge"
+      }
+    }
   ]
 }

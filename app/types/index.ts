@@ -114,6 +114,28 @@ export type MatchDetails = {
   events: MatchEvent[]
   /** Статистика из того же источника, что и хроника; пусто, если её нет */
   stats: MatchStat[]
+  /** Составы — только когда хронику дал API-Football (у TheSportsDB составов нет); null — нет */
+  lineups: MatchLineups | null
+}
+
+/** Игрок в составе. Имя латиницей и часто сокращённое, как в API-Football: «P. Solari» */
+export type LineupPlayer = {
+  number: number | null
+  name: string
+}
+
+export type TeamLineup = {
+  /** Схема: «4-1-4-1»; null — API не прислал */
+  formation: string | null
+  /** Стартовые по линиям, от вратаря к нападающим */
+  lines: LineupPlayer[][]
+  substitutes: LineupPlayer[]
+  coach: string | null
+}
+
+export type MatchLineups = {
+  home: TeamLineup
+  away: TeamLineup
 }
 
 /** Событие хроники матча: гол, карточка или замена */

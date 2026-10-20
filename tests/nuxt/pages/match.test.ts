@@ -37,6 +37,10 @@ const MATCH: MatchDetails = {
   venue: null,
   city: null,
   video: null,
+  lineups: {
+    home: { formation: '4-1-4-1', lines: [[{ number: 1, name: 'I. Pomazun' }]], substitutes: [], coach: null },
+    away: { formation: '5-4-1', lines: [[{ number: 38, name: 'E. Staver' }]], substitutes: [], coach: null },
+  },
   events: [
     { minute: 18, side: 'home', kind: 'goal', player: 'Pablo Solari', assist: null, playerOut: null },
   ],
@@ -47,8 +51,8 @@ const MATCH: MatchDetails = {
 
 registerEndpoint('/api/rounds', () => ROUNDS)
 registerEndpoint('/api/match/1', () => MATCH)
-// Матч без ленты событий и статистики
-registerEndpoint('/api/match/2', () => ({ ...MATCH, idEvent: '2', events: [], stats: [] }))
+// Матч без ленты событий, статистики и составов
+registerEndpoint('/api/match/2', () => ({ ...MATCH, idEvent: '2', events: [], stats: [], lineups: null }))
 // Идущий матч: по расписанию 1-й тайм 0:0, по livescore — 2-й тайм, 52-я минута, 1:0
 let matchRequests = 0
 registerEndpoint('/api/match/3', () => {
@@ -106,15 +110,16 @@ describe('страница матча: ссылка назад', () => {
   })
 })
 
-describe('страница матча: хроника и статистика', () => {
+describe('страница матча: хроника, статистика, составы', () => {
   afterEach(() => {
     mountedPages.splice(0).forEach(page => page.unmount())
   })
 
-  it('есть данные — оба блока', async () => {
+  it('есть данные — все три блока', async () => {
     const page = await mountPage()
     expect(page.find('.event__player').text()).toBe('Pablo Solari')
     expect(page.find('.stat__label').text()).toBe('Владение мячом')
+    expect(page.find('.lineups .player__name').text()).toBe('I. Pomazun')
   })
 
   it('нет данных — блоков нет', async () => {
@@ -122,6 +127,7 @@ describe('страница матча: хроника и статистика', 
     expect(page.find('.header').exists()).toBe(true)
     expect(page.find('.timeline').exists()).toBe(false)
     expect(page.find('.stats').exists()).toBe(false)
+    expect(page.find('.lineups').exists()).toBe(false)
   })
 })
 

@@ -14,7 +14,7 @@ export type TimelineEvent = {
   strComment: string | null
 }
 
-/** Матч из API-Football (fixtures?id=…): поля, нужные для хроники и статистики */
+/** Матч из API-Football (fixtures?id=…): поля, нужные для хроники, статистики и составов */
 export type ApiFootballFixture = {
   fixture: { status: { short: string } }
   teams: { home: { id: number }, away: { id: number } }
@@ -35,6 +35,19 @@ export type ApiFootballFixture = {
     team: { id: number }
     statistics: Array<{ type: string, value: number | string | null }>
   }>
+  /** По команде на каждую; пусто, если составов нет */
+  lineups: Array<{
+    team: { id: number }
+    formation: string | null
+    startXI: ApiFootballLineupPlayer[]
+    substitutes: ApiFootballLineupPlayer[]
+    coach: { name: string | null } | null
+  }>
+}
+
+/** Игрок в составе API-Football. grid — «линия:место», линия 1 — вратарь; pos — G, D, M, F */
+export type ApiFootballLineupPlayer = {
+  player: { name: string, number: number | null, pos: string | null, grid: string | null }
 }
 
 /** Событие любого из двух API: устроены они одинаково, разные только названия полей */

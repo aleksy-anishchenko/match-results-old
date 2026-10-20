@@ -543,5 +543,403 @@
         }
       ]
     }
+  ],
+  "lineups": [
+    {
+      "team": {
+        "id": 85,
+        "name": "Paris Saint Germain"
+      },
+      "formation": "4-3-3",
+      "startXI": [
+        {
+          "player": {
+            "name": "Matvey Safonov",
+            "number": 39,
+            "pos": "G",
+            "grid": "1:1"
+          }
+        },
+        {
+          "player": {
+            "name": "Achraf Hakimi",
+            "number": 2,
+            "pos": "D",
+            "grid": "2:4"
+          }
+        },
+        {
+          "player": {
+            "name": "Marquinhos",
+            "number": 5,
+            "pos": "D",
+            "grid": "2:3"
+          }
+        },
+        {
+          "player": {
+            "name": "Willian Pacho",
+            "number": 51,
+            "pos": "D",
+            "grid": "2:2"
+          }
+        },
+        {
+          "player": {
+            "name": "Nuno Mendes",
+            "number": 25,
+            "pos": "D",
+            "grid": "2:1"
+          }
+        },
+        {
+          "player": {
+            "name": "João Neves",
+            "number": 87,
+            "pos": "M",
+            "grid": "3:3"
+          }
+        },
+        {
+          "player": {
+            "name": "Vitinha",
+            "number": 17,
+            "pos": "M",
+            "grid": "3:2"
+          }
+        },
+        {
+          "player": {
+            "name": "Fabián Ruiz",
+            "number": 8,
+            "pos": "M",
+            "grid": "3:1"
+          }
+        },
+        {
+          "player": {
+            "name": "Désiré Doué",
+            "number": 14,
+            "pos": "F",
+            "grid": "4:3"
+          }
+        },
+        {
+          "player": {
+            "name": "Ousmane Dembélé",
+            "number": 10,
+            "pos": "F",
+            "grid": "4:2"
+          }
+        },
+        {
+          "player": {
+            "name": "Khvicha Kvaratskhelia",
+            "number": 7,
+            "pos": "F",
+            "grid": "4:1"
+          }
+        }
+      ],
+      "substitutes": [
+        {
+          "player": {
+            "name": "Bradley Barcola",
+            "number": 29,
+            "pos": "F",
+            "grid": null
+          }
+        },
+        {
+          "player": {
+            "name": "Gonçalo Ramos",
+            "number": 9,
+            "pos": "F",
+            "grid": null
+          }
+        },
+        {
+          "player": {
+            "name": "Warren Zaïre-Emery",
+            "number": 33,
+            "pos": "M",
+            "grid": null
+          }
+        },
+        {
+          "player": {
+            "name": "Lucas Beraldo",
+            "number": 4,
+            "pos": "D",
+            "grid": null
+          }
+        },
+        {
+          "player": {
+            "name": "Ilya Zabarnyi",
+            "number": 6,
+            "pos": "D",
+            "grid": null
+          }
+        },
+        {
+          "player": {
+            "name": "Lucas Chevalier",
+            "number": 30,
+            "pos": "G",
+            "grid": null
+          }
+        },
+        {
+          "player": {
+            "name": "Renato Marin",
+            "number": 89,
+            "pos": "G",
+            "grid": null
+          }
+        },
+        {
+          "player": {
+            "name": "Lucas Hernández",
+            "number": 21,
+            "pos": "D",
+            "grid": null
+          }
+        },
+        {
+          "player": {
+            "name": "Kang-in Lee",
+            "number": 19,
+            "pos": "M",
+            "grid": null
+          }
+        },
+        {
+          "player": {
+            "name": "Senny Mayulu",
+            "number": 24,
+            "pos": "M",
+            "grid": null
+          }
+        },
+        {
+          "player": {
+            "name": "Dro Fernández",
+            "number": 27,
+            "pos": "M",
+            "grid": null
+          }
+        },
+        {
+          "player": {
+            "name": "Ibrahim Mbaye",
+            "number": 49,
+            "pos": "F",
+            "grid": null
+          }
+        }
+      ],
+      "coach": {
+        "name": "Enrique Luis"
+      }
+    },
+    {
+      "team": {
+        "id": 42,
+        "name": "Arsenal"
+      },
+      "formation": "4-2-3-1",
+      "startXI": [
+        {
+          "player": {
+            "name": "David Raya",
+            "number": 1,
+            "pos": "G",
+            "grid": "1:1"
+          }
+        },
+        {
+          "player": {
+            "name": "Cristhian Mosquera",
+            "number": 3,
+            "pos": "D",
+            "grid": "2:4"
+          }
+        },
+        {
+          "player": {
+            "name": "William Saliba",
+            "number": 2,
+            "pos": "D",
+            "grid": "2:3"
+          }
+        },
+        {
+          "player": {
+            "name": "Gabriel Magalhães",
+            "number": 6,
+            "pos": "D",
+            "grid": "2:2"
+          }
+        },
+        {
+          "player": {
+            "name": "Piero Hincapié",
+            "number": 5,
+            "pos": "D",
+            "grid": "2:1"
+          }
+        },
+        {
+          "player": {
+            "name": "Declan Rice",
+            "number": 41,
+            "pos": "M",
+            "grid": "3:2"
+          }
+        },
+        {
+          "player": {
+            "name": "Myles Lewis-Skelly",
+            "number": 49,
+            "pos": "M",
+            "grid": "3:1"
+          }
+        },
+        {
+          "player": {
+            "name": "Bukayo Saka",
+            "number": 7,
+            "pos": "M",
+            "grid": "4:3"
+          }
+        },
+        {
+          "player": {
+            "name": "Martin Ødegaard",
+            "number": 8,
+            "pos": "M",
+            "grid": "4:2"
+          }
+        },
+        {
+          "player": {
+            "name": "Leandro Trossard",
+            "number": 19,
+            "pos": "M",
+            "grid": "4:1"
+          }
+        },
+        {
+          "player": {
+            "name": "Kai Havertz",
+            "number": 29,
+            "pos": "F",
+            "grid": "5:1"
+          }
+        }
+      ],
+      "substitutes": [
+        {
+          "player": {
+            "name": "Jurriën Timber",
+            "number": 12,
+            "pos": "D",
+            "grid": null
+          }
+        },
+        {
+          "player": {
+            "name": "Viktor Gyökeres",
+            "number": 14,
+            "pos": "F",
+            "grid": null
+          }
+        },
+        {
+          "player": {
+            "name": "Noni Madueke",
+            "number": 20,
+            "pos": "F",
+            "grid": null
+          }
+        },
+        {
+          "player": {
+            "name": "Gabriel Martinelli",
+            "number": 11,
+            "pos": "F",
+            "grid": null
+          }
+        },
+        {
+          "player": {
+            "name": "Martín Zubimendi",
+            "number": 36,
+            "pos": "M",
+            "grid": null
+          }
+        },
+        {
+          "player": {
+            "name": "Eberechi Eze",
+            "number": 10,
+            "pos": "M",
+            "grid": null
+          }
+        },
+        {
+          "player": {
+            "name": "Kepa Arrizabalaga",
+            "number": 13,
+            "pos": "G",
+            "grid": null
+          }
+        },
+        {
+          "player": {
+            "name": "Riccardo Calafiori",
+            "number": 33,
+            "pos": "D",
+            "grid": null
+          }
+        },
+        {
+          "player": {
+            "name": "Max Dowman",
+            "number": 56,
+            "pos": "M",
+            "grid": null
+          }
+        },
+        {
+          "player": {
+            "name": "Christian Nørgaard",
+            "number": 16,
+            "pos": "M",
+            "grid": null
+          }
+        },
+        {
+          "player": {
+            "name": "Mikel Merino",
+            "number": 23,
+            "pos": "M",
+            "grid": null
+          }
+        },
+        {
+          "player": {
+            "name": "Gabriel Jesus",
+            "number": 9,
+            "pos": "F",
+            "grid": null
+          }
+        }
+      ],
+      "coach": {
+        "name": "Mikel Arteta"
+      }
+    }
   ]
 }

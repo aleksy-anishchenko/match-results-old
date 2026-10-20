@@ -102,6 +102,12 @@ useHead({
         v-if="liveMatch.stats.length"
         :stats="liveMatch.stats"
       />
+      <MatchLineups
+        v-if="liveMatch.lineups"
+        :lineups="liveMatch.lineups"
+        :home-team="liveMatch.homeTeam"
+        :away-team="liveMatch.awayTeam"
+      />
     </template>
   </div>
 </template>
