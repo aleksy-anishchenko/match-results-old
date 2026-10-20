@@ -3,14 +3,18 @@ import type { MatchDetails, RoundsResponse } from '~/types'
 
 const route = useRoute()
 const router = useRouter()
-const { competition } = useCompetition()
+const { selectedId, competition } = useCompetition()
 
 // Ссылка «назад» ведёт туда, откуда пришли: тур или дни главной хранятся в её адресе (/?round=5).
 // Историю читаем после монтирования: пока страница собирается, переход в неё ещё не записан
+const fromHome = ref(false)
 const backTo = ref('/')
 onMounted(() => {
   const previousPath = router.options.history.state.back
-  if (typeof previousPath === 'string' && previousPath.startsWith('/?')) backTo.value = previousPath
+  if (typeof previousPath === 'string' && (previousPath === '/' || previousPath.startsWith('/?'))) {
+    fromHome.value = true
+    backTo.value = previousPath
+  }
 })
 
 // Туры нужны только для подписи ссылки («← 5 тур»): запрашиваем их параллельно с матчем
@@ -20,8 +24,17 @@ const roundsRequest = useFetch<RoundsResponse>('/api/rounds', {
 const { data: match, pending, error } = await useFetch<MatchDetails>(`/api/match/${route.params.id}`)
 const { data: roundsData } = await roundsRequest
 
-const backLabel = computed(() =>
-  describeHomeSelection(parseHomeQuery(router.resolve(backTo.value).query), roundsData.value, getMoscowDate(new Date())))
+// Матч открыли по ссылке, а не с главной: выбранная раньше лига может быть другой (матч РПЛ, а в cookie АПЛ).
+// Тогда ссылка ведёт на лигу самого матча и выбирает её на главной
+const matchCompetition = computed(() => match.value ? getCompetition(match.value.leagueId) : undefined)
+
+const backLabel = computed(() => fromHome.value
+  ? describeHomeSelection(parseHomeQuery(router.resolve(backTo.value).query), roundsData.value, getMoscowDate(new Date()))
+  : matchCompetition.value?.name ?? 'Матчи')
+
+function selectMatchCompetition() {
+  if (!fromHome.value && matchCompetition.value) selectedId.value = matchCompetition.value.id
+}
 
 useHead({
   title: computed(() => match.value
@@ -35,6 +48,7 @@ useHead({
     <NuxtLink
       :to="backTo"
       class="back"
+      @click="selectMatchCompetition"
     >
       <svg
         width="18"
