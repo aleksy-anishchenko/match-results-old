@@ -23,6 +23,7 @@ logs
 .env.*
 !.env.example
 
-# Local notes: personal Claude instructions and unpacked mockups
+# Local notes: personal Claude instructions, feature plan and unpacked mockups
 CLAUDE.local.md
+FEATURES.md
 design/
