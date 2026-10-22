@@ -1,14 +1,108 @@
-import type { MatchEvent, MatchLineups, MatchStat } from '~/types'
+import type { MatchEvent, MatchLineups, MatchStat, SeasonMatch, SeasonTeam } from '~/types'
 import type { ApiFootballFixture } from '#shared/utils/matchEvents'
+import { getTeamName } from './teamNames'
 
-// Запасной источник хроники, статистики и составов — API-Football (api-sports.io), для матчей, где у TheSportsDB ленты
-// событий нет или она не сходится со счётом (РПЛ с октября 2025, Саудовская лига, Бразилия). Номер матча
-// в API-Football TheSportsDB отдаёт сам — idAPIfootball. Бесплатный тариф — 100 запросов в день, счётчик
-// обнуляется в 00:00 UTC; весь сезон на нём закрыт, а один матч по номеру (fixtures?id=) отдаётся вместе
-// с событиями, статистикой и составами. Поэтому каждый матч спрашиваем один раз: данные сыгранного матча не меняются,
-// найденные хранятся всегда.
+// API-Football (api-sports.io). Тариф Pro: 7 500 запросов в день, счётчик обнуляется в 00:00 UTC.
+// Сайт переходит на него целиком; пока страницы на TheSportsDB, отсюда берутся только хроника, статистика
+// и составы матчей, у которых TheSportsDB ленты нет (РПЛ, Саудовская лига, Бразилия).
 
 const API = 'https://v3.football.api-sports.io'
+const TIMEOUT_MS = 10_000
+
+type ApiFootballResponse<T> = {
+  response?: T[]
+  /** [] — всё хорошо. Объект — ошибка: { requests: … } — кончился дневной лимит, { plan: … } — нет доступа */
+  errors?: unknown[] | Record<string, string>
+}
+
+/** Кончился дневной лимит: до полуночи UTC не спрашиваем, ответ всё равно будет ошибкой */
+let limitReachedUntil = 0
+
+function nextUtcMidnight(now: number): number {
+  const date = new Date(now)
+  return Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate() + 1)
+}
+
+/**
+ * Запрос к API-Football: список из поля response. Ошибка API (кончился лимит, нет доступа), нет ключа,
+ * сбой сети — исключение: показать ошибку или обойтись без этих данных, решает вызывающий
+ */
+export async function fetchApiFootball<T>(path: string, query: Record<string, string | number>): Promise<T[]> {
+  const apiKey = useRuntimeConfig().apiFootballKey
+  if (!apiKey) throw new Error('Нет ключа API-Football')
+  if (Date.now() < limitReachedUntil) throw new Error('Кончился дневной лимит API-Football')
+
+  const data = await $fetch<ApiFootballResponse<T>>(`${API}/${path}`, {
+    query,
+    headers: { 'x-apisports-key': apiKey },
+    timeout: TIMEOUT_MS,
+  })
+  const { errors } = data
+  const messages = Array.isArray(errors) ? errors : Object.values(errors ?? {})
+  if (messages.length) {
+    if (errors && !Array.isArray(errors) && 'requests' in errors) limitReachedUntil = nextUtcMidnight(Date.now())
+    throw new Error(`API-Football: ${messages.join('; ')}`)
+  }
+  return data.response ?? []
+}
+
+/**
+ * Текущий сезон турнира — год его начала: 2026/27 — 2026, сезон МЛС 2026 — тоже 2026. null — текущего сезона нет.
+ * Меняется раз в год, поэтому ответ хранится сутки
+ */
+export const getLeagueSeason = defineCachedFunction(async (leagueId: string): Promise<number | null> => {
+  const [league] = await fetchApiFootball<{ seasons: Array<{ year: number, current: boolean }> }>(
+    'leagues',
+    { id: leagueId, current: 'true' },
+  )
+  return league?.seasons.find(season => season.current)?.year ?? null
+}, {
+  name: 'api-football-season',
+  maxAge: 24 * 60 * 60,
+  getKey: (leagueId: string) => leagueId,
+})
+
+type ApiFootballTeam = { id: number, name: string, logo: string }
+
+/** Матч из ответа fixtures?league&season: поля, нужные расписанию */
+export type ApiFootballSeasonFixture = {
+  fixture: { id: number, timestamp: number, status: { short: string } }
+  league: { round: string }
+  teams: { home: ApiFootballTeam, away: ApiFootballTeam }
+  goals: { home: number | null, away: number | null }
+  score: { penalty: { home: number | null, away: number | null } }
+}
+
+const toSeasonTeam = (team: ApiFootballTeam): SeasonTeam => ({ id: team.id, name: getTeamName(team.id, team.name), badge: team.logo })
+
+/** Матч расписания в общем виде: названия по-русски, время — UTC без смещения («2026-10-25T16:30:00») */
+export function toSeasonMatch({ fixture, league, teams, goals, score }: ApiFootballSeasonFixture): SeasonMatch {
+  return {
+    id: String(fixture.id),
+    round: league.round,
+    timestamp: new Date(fixture.timestamp * 1000).toISOString().slice(0, 19),
+    status: fixture.status.short,
+    home: toSeasonTeam(teams.home),
+    away: toSeasonTeam(teams.away),
+    homeScore: goals.home,
+    awayScore: goals.away,
+    homePenalties: score.penalty.home,
+    awayPenalties: score.penalty.away,
+  }
+}
+
+/**
+ * Все матчи сезона по времени начала. Счёт идущих матчей и минуту страницы берут из живых данных,
+ * поэтому расписание хранится 5 минут
+ */
+export const getSeasonMatches = defineCachedFunction(async (leagueId: string, season: number): Promise<SeasonMatch[]> => {
+  const fixtures = await fetchApiFootball<ApiFootballSeasonFixture>('fixtures', { league: leagueId, season })
+  return fixtures.map(toSeasonMatch).sort((a, b) => a.timestamp.localeCompare(b.timestamp))
+}, {
+  name: 'api-football-season-matches',
+  maxAge: 5 * 60,
+  getKey: (leagueId: string, season: number) => `${leagueId}-${season}`,
+})
 
 /** Матч сыгран — в основное время, в дополнительное или по пенальти */
 const FINISHED_STATUSES = new Set(['FT', 'AET', 'PEN'])
@@ -25,16 +119,9 @@ export type FallbackMatchData = {
   lineups: MatchLineups | null
 }
 
-type FixturesResponse = {
-  response?: ApiFootballFixture[]
-  /** [] — всё хорошо. Объект — ошибка: { requests: … } — кончился дневной лимит, { plan: … } — нет доступа */
-  errors?: unknown[] | Record<string, string>
-}
-
 // Состояние в памяти процесса. После перезапуска сервера оно пустое, а найденные матчи лежат в хранилище
 const retryAt = new Map<string, number>()
 const pending = new Map<string, Promise<FallbackMatchData | null>>()
-let limitReachedUntil = 0
 
 const storageKey = (fixtureId: string) => `api-football:match:${fixtureId}`
 /** До хроники (октябрь 2026) из ответа хранились только голы — под этим ключом */
@@ -42,25 +129,8 @@ const goalsStorageKey = (fixtureId: string) => `api-football:goals:${fixtureId}`
 
 type SavedGoal = Pick<MatchEvent, 'minute' | 'player' | 'side'> & { kind: 'goal' | 'penalty' | 'own-goal' }
 
-function nextUtcMidnight(now: number): number {
-  const date = new Date(now)
-  return Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate() + 1)
-}
-
-async function loadMatchData(fixtureId: string, apiKey: string): Promise<FallbackMatchData | null> {
-  const data = await $fetch<FixturesResponse>(`${API}/fixtures`, {
-    query: { id: fixtureId },
-    headers: { 'x-apisports-key': apiKey },
-  }).catch(() => null)
-
-  const errors = data?.errors
-  if (!data || (errors && !Array.isArray(errors))) {
-    if (errors && !Array.isArray(errors) && 'requests' in errors) limitReachedUntil = nextUtcMidnight(Date.now())
-    else retryAt.set(fixtureId, Date.now() + RETRY_SOON_MS)
-    return null
-  }
-
-  const fixture = data.response?.[0]
+async function loadMatchData(fixtureId: string): Promise<FallbackMatchData | null> {
+  const [fixture] = await fetchApiFootball<ApiFootballFixture>('fixtures', { id: fixtureId }).catch(() => [])
   if (!fixture || !FINISHED_STATUSES.has(fixture.fixture.status.short)) {
     retryAt.set(fixtureId, Date.now() + RETRY_SOON_MS)
     return null
@@ -110,7 +180,7 @@ export async function getFallbackMatchData(fixtureId: string | null | undefined)
   // Страницу матча открыли дважды, пока ответ ещё не пришёл, — запрос всё равно один
   let request = pending.get(fixtureId)
   if (!request) {
-    request = loadMatchData(fixtureId, apiKey).finally(() => pending.delete(fixtureId))
+    request = loadMatchData(fixtureId).finally(() => pending.delete(fixtureId))
     pending.set(fixtureId, request)
   }
   return (await request) ?? outdated

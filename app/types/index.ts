@@ -43,6 +43,31 @@ export type Match = {
   round: string | null
 }
 
+/** Команда в матче API-Football: номер, название (по-русски, если есть перевод) и эмблема */
+export type SeasonTeam = {
+  id: number
+  name: string
+  badge: string
+}
+
+/** Матч из расписания сезона API-Football — общий вид для туров, сетки и списков матчей */
+export type SeasonMatch = {
+  id: string
+  /** Раунд, как в API: «Regular Season - 5», «League Stage - 3», «Quarter-finals» */
+  round: string
+  /** Начало матча в UTC без смещения: «2026-10-25T16:30:00» — такое время ждут getMoscowDate и formatMoscowTime */
+  timestamp: string
+  status: string
+  home: SeasonTeam
+  away: SeasonTeam
+  /** Голы с дополнительным временем, без серии пенальти; null — матч не начался */
+  homeScore: number | null
+  awayScore: number | null
+  /** Счёт серии пенальти; null — серии не было */
+  homePenalties: number | null
+  awayPenalties: number | null
+}
+
 export type MatchesResponse = {
   matches: Match[]
 }
