@@ -457,7 +457,7 @@ const TEAM_NAMES: Record<number, string> = {
   3554: 'Жилина', // Žilina
 }
 
-/** Название команды по-русски по её номеру в API-Football; перевода нет — название из API */
-export function getTeamName(id: number, name: string): string {
-  return TEAM_NAMES[id] ?? name
+/** Название команды по-русски по её номеру в API-Football; перевода или номера нет — название из API */
+export function getTeamName(id: number | null, name: string): string {
+  return (id != null && TEAM_NAMES[id]) || name
 }

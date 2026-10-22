@@ -1,6 +1,7 @@
 import type { MatchEvent, MatchLineups, MatchStat, SeasonMatch } from '~/types'
 import type { ApiFootballFixture } from '#shared/utils/matchEvents'
 import { toSeasonMatch, type ApiFootballSeasonFixture } from './seasonMatch'
+import type { ApiFootballStandingRow } from './leagueTable'
 
 // API-Football (api-sports.io). Тариф Pro: 7 500 запросов в день, счётчик обнуляется в 00:00 UTC.
 // Сайт переходит на него целиком; пока страницы на TheSportsDB, отсюда берутся только хроника, статистика
@@ -72,6 +73,19 @@ export const getSeasonMatches = defineCachedFunction(async (leagueId: string, se
 }, {
   name: 'api-football-season-matches',
   maxAge: 5 * 60,
+  getKey: (leagueId: string, season: number) => `${leagueId}-${season}`,
+})
+
+/** Таблица турнира — группы строк. Меняется только после матчей, поэтому хранится 10 минут */
+export const getLeagueStandings = defineCachedFunction(async (leagueId: string, season: number): Promise<ApiFootballStandingRow[][]> => {
+  const [response] = await fetchApiFootball<{ league: { standings: ApiFootballStandingRow[][] } }>(
+    'standings',
+    { league: leagueId, season },
+  )
+  return response?.league.standings ?? []
+}, {
+  name: 'api-football-standings',
+  maxAge: 10 * 60,
   getKey: (leagueId: string, season: number) => `${leagueId}-${season}`,
 })
 

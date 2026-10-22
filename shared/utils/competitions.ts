@@ -126,7 +126,6 @@ export const COMPETITIONS: Competition[] = [
     country: 'Европа',
     type: 'tournament',
     category: 'Сборные',
-    groupRounds: ['1', '2', '3', '4', '5', '6'],
   },
 ]
 

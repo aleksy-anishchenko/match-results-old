@@ -1,5 +1,4 @@
-import type { GroupStanding, StandingZone, StandingZoneKind } from '~/types'
-import { FINISHED_MATCH_STATUSES } from './matches'
+import type { StandingZone, StandingZoneKind } from '~/types'
 
 function zone(kind: StandingZoneKind, label: string): StandingZone {
   return { kind, label }
@@ -8,7 +7,7 @@ function zone(kind: StandingZoneKind, label: string): StandingZone {
 /**
  * Лиги, где API пишет зону без названия турнира: просто «Qualifying» или «Play-offs».
  * Что это значит, зависит от места в таблице и от того, сколько путёвок у страны,
- * поэтому расшифровка своя для каждой лиги. Составлено по правилам УЕФА на 2024–2027:
+ * поэтому расшифровка своя для каждой лиги. И Лига наций, у которой зоны свои. Составлено по правилам УЕФА на 2024–2027:
  * когда правила или места стран поменяются, проверить. Ключ — описание в нижнем регистре.
  */
 const LEAGUE_ZONE_OVERRIDES: Record<string, Record<string, StandingZone>> = {
@@ -25,10 +24,20 @@ const LEAGUE_ZONE_OVERRIDES: Record<string, Record<string, StandingZone>> = {
     'qualifying': zone('tier1-qual', 'Квалификация Лиги чемпионов'),
     'play-offs': zone('tier3-qual', 'Квалификация Лиги конференций'),
   },
+  // Лига наций 2026/27 — переходный сезон перед сокращением до трёх лиг. Лига A: 1–2 места — четвертьфинал,
+  // судьбу 3–4 мест решает сравнение групп (две лучшие третьи остаются, две худшие четвёртые вылетают,
+  // остальные — стыки). Лиги B и C: 1-е — повышение, 2-е — стыки за повышение, 4-е в B — стыки за место.
+  // Лига D упраздняется — повышаются все. С 2028/29 формат другой: проверить
+  5: {
+    'play offs: quarter-finals': zone('tier1', 'Четвертьфинал'),
+    'possible play-off': zone('qual', 'Возможны стыковые матчи'),
+    'promotion': zone('tier2', 'Повышение'),
+    'promotion play-offs': zone('tier2-qual', 'Стыковые матчи за повышение'),
+  },
 }
 
 /**
- * Зона места в таблице лиги по полю strDescription из TheSportsDB. Описания приходят
+ * Зона места в таблице по описанию места из API (description). Описания приходят
  * в разных форматах: «Promotion - Champions League (League phase)», «Champions
  * League league stage», «Relegation - Championship», «Relegation Playoffs».
  * Порядок проверок важен: «AFC Champions League 2» надо узнать раньше, чем
@@ -90,8 +99,9 @@ export function getStandingZone(description: string | null | undefined, leagueId
 }
 
 /**
- * Зона места в таблице общего этапа ЛЧ и ЛЕ (место считается с 1). Готовой таблицы
- * у этих турниров в API нет, поэтому границы свои, по формату УЕФА с 2024/25 на 36 команд:
+ * Зона места в таблице общего этапа ЛЧ и ЛЕ (место считается с 1). Описание из API для неё не годится
+ * («Promotion - Champions League (Play Offs: 1/8-finals)», у 25–36 мест его нет), поэтому границы свои,
+ * по формату УЕФА с 2024/25 на 36 команд:
  * 1–8 сразу в 1/8 финала, 9–24 в раунд плей-офф, 25–36 выбывают (в другой еврокубок
  * не переходят). Когда формат поменяется, проверить.
  */
@@ -115,8 +125,10 @@ const GROUP_NAMES: Record<string, string> = {
   'Eastern Conference': 'Восточная конференция',
 }
 
-/** Название группы из API по-русски: «Group A» → «Группа A», конференции МЛС */
+/** Название группы из API по-русски: «Group A» → «Группа A», «League A - Group B» → «Лига A, группа B», конференции МЛС */
 export function formatGroupName(name: string): string {
+  const nationsLeagueGroup = /^League ([A-Z]) - Group ([A-Z])$/.exec(name)
+  if (nationsLeagueGroup) return `Лига ${nationsLeagueGroup[1]}, группа ${nationsLeagueGroup[2]}`
   return GROUP_NAMES[name] ?? name.replace(/^Group\b/, 'Группа')
 }
 
@@ -125,81 +137,4 @@ export function sortGroups<T>(groups: Record<string, T>): Record<string, T> {
   return Object.fromEntries(
     Object.entries(groups).sort(([a], [b]) => a.localeCompare(b, 'ru', { numeric: true })),
   )
-}
-
-/** Матч из расписания TheSportsDB: поля, нужные для подсчёта таблицы */
-export type ScheduleMatch = {
-  strHomeTeam: string
-  strAwayTeam: string
-  strHomeTeamBadge: string
-  strAwayTeamBadge: string
-  intHomeScore: string | null
-  intAwayScore: string | null
-  strStatus: string
-}
-
-/**
- * Таблица по матчам, для турниров без готовой таблицы в API (общий этап ЛЧ и ЛЕ, Лига наций).
- * В неё попадают все команды из расписания, очки — только за завершённые матчи (FT, AET, AP;
- * матч, решённый пенальти, по счёту ничейный).
- * Порядок: очки, потом разница мячей, потом забитые.
- */
-export function calculateStandings(matches: ScheduleMatch[]): GroupStanding[] {
-  const stats = new Map<string, GroupStanding>()
-  const standingOf = (team: string, badge: string): GroupStanding => {
-    let standing = stats.get(team)
-    if (!standing) {
-      standing = {
-        team,
-        badge,
-        played: 0, won: 0, drawn: 0, lost: 0,
-        goalsFor: 0, goalsAgainst: 0, goalDiff: 0, points: 0,
-        zone: null,
-      }
-      stats.set(team, standing)
-    }
-    return standing
-  }
-
-  for (const match of matches) {
-    const home = standingOf(match.strHomeTeam, match.strHomeTeamBadge)
-    const away = standingOf(match.strAwayTeam, match.strAwayTeamBadge)
-    if (!FINISHED_MATCH_STATUSES.has(match.strStatus)) continue
-
-    const homeGoals = parseInt(match.intHomeScore ?? '0')
-    const awayGoals = parseInt(match.intAwayScore ?? '0')
-
-    home.played++
-    home.goalsFor += homeGoals
-    home.goalsAgainst += awayGoals
-
-    away.played++
-    away.goalsFor += awayGoals
-    away.goalsAgainst += homeGoals
-
-    if (homeGoals > awayGoals) {
-      home.won++
-      home.points += 3
-      away.lost++
-    }
-    else if (homeGoals === awayGoals) {
-      home.drawn++
-      home.points++
-      away.drawn++
-      away.points++
-    }
-    else {
-      away.won++
-      away.points += 3
-      home.lost++
-    }
-  }
-
-  return [...stats.values()]
-    .map(standing => ({ ...standing, goalDiff: standing.goalsFor - standing.goalsAgainst }))
-    .sort((a, b) => {
-      if (b.points !== a.points) return b.points - a.points
-      if (b.goalDiff !== a.goalDiff) return b.goalDiff - a.goalDiff
-      return b.goalsFor - a.goalsFor
-    })
 }

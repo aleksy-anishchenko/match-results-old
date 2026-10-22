@@ -8,7 +8,8 @@ describe('getTeamName', () => {
     expect(getTeamName(2, 'France')).toBe('Франция')
   })
 
-  it('без перевода возвращает название из API', () => {
+  it('без перевода или без номера возвращает название из API', () => {
     expect(getTeamName(999_999, 'Unknown FC')).toBe('Unknown FC')
+    expect(getTeamName(null, 'Sabah FC')).toBe('Sabah FC')
   })
 })
