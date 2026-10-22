@@ -13,15 +13,15 @@ function zone(kind: StandingZoneKind, label: string): StandingZone {
  */
 const LEAGUE_ZONE_OVERRIDES: Record<string, Record<string, StandingZone>> = {
   // Серия А: 6-е место
-  4332: {
+  135: {
     'play-offs': zone('tier3-qual', 'Квалификация Лиги конференций'),
   },
   // Бундеслига: 6-е место
-  4331: {
+  78: {
     qualifying: zone('tier3-qual', 'Квалификация Лиги конференций'),
   },
   // Лига 1: 4-е место — квалификация ЛЧ, 6-е — Лига конференций
-  4334: {
+  61: {
     'qualifying': zone('tier1-qual', 'Квалификация Лиги чемпионов'),
     'play-offs': zone('tier3-qual', 'Квалификация Лиги конференций'),
   },

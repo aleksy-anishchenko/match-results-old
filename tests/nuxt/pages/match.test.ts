@@ -30,7 +30,7 @@ const MATCH: MatchDetails = {
   progress: null,
   timestamp: '2026-10-18T15:45:00',
   date: '2026-10-18',
-  leagueId: '4355',
+  leagueId: '235',
   league: 'Russian Football Premier League',
   season: '2026-2027',
   round: '12',
@@ -92,7 +92,7 @@ describe('страница матча: ссылка назад', () => {
   // Выбор лиги общий на приложение и хранится в cookie: тест со сменой лиги не должен оставить её другим
   afterEach(() => {
     mountedPages.splice(0).forEach(page => page.unmount())
-    useCompetition().selectedId.value = '4328'
+    useCompetition().selectedId.value = '39'
   })
 
   it('пришли с главной — тур, выбранный там', async () => {
@@ -111,7 +111,7 @@ describe('страница матча: ссылка назад', () => {
     expect(page.get('a.back').text()).toBe('РПЛ')
     expect(page.get('a.back').attributes('href')).toBe('/')
     await page.get('a.back').trigger('click')
-    expect(useCompetition().selectedId.value).toBe('4355')
+    expect(useCompetition().selectedId.value).toBe('235')
   })
 })
 

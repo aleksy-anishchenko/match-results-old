@@ -18,7 +18,7 @@ function makeMatch(overrides: Partial<MatchDetails> = {}): MatchDetails {
     progress: null,
     timestamp: '2026-10-11T15:30:00',
     date: '2026-10-11',
-    leagueId: '4328',
+    leagueId: '39',
     league: 'English Premier League',
     season: '2026-2027',
     round: '6',
@@ -41,7 +41,7 @@ describe('MatchHeader', () => {
 
   it('у турнира не показывает номер тура', async () => {
     const wrapper = await mountSuspended(MatchHeader, {
-      props: { match: makeMatch({ leagueId: '4480', round: '125' }) },
+      props: { match: makeMatch({ leagueId: '2', round: '125' }) },
     })
     expect(wrapper.find('.header__meta').text()).toBe('Лига чемпионов · Завершён')
   })

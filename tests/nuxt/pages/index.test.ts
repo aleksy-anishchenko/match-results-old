@@ -95,7 +95,7 @@ describe('главная', () => {
   // Выбор лиги общий на приложение и хранится в cookie: тест со сменой лиги не должен оставить её другим
   afterEach(() => {
     mountedPages.splice(0).forEach(page => page.unmount())
-    useCompetition().selectedId.value = '4328'
+    useCompetition().selectedId.value = '39'
   })
 
   it('по умолчанию — текущий тур с датами, поле «Дата» пустое', async () => {
@@ -150,7 +150,7 @@ describe('главная', () => {
     await vi.waitFor(() => expect(useRoute().query).toEqual({}))
     await vi.waitFor(() => expect(page.text()).toContain('Эвертон'))
     await new Promise(resolve => setTimeout(resolve, 50))
-    expect(matchRequests).toEqual([{ leagueId: '4335' }])
+    expect(matchRequests).toEqual([{ leagueId: '140' }])
     expect(page.find('h1').text()).toBe('Матчи: Ла Лига')
   })
 

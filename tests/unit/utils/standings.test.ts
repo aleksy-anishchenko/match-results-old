@@ -44,17 +44,17 @@ describe('getStandingZone', () => {
 
   // Серия А, Бундеслига и Лига 1 пишут зону без названия турнира, расшифровка своя у каждой лиги
   it.each([
-    ['4332', 'Play-offs', 'tier3-qual', 'Квалификация Лиги конференций'],
-    ['4331', 'Qualifying', 'tier3-qual', 'Квалификация Лиги конференций'],
-    ['4334', ' Qualifying', 'tier1-qual', 'Квалификация Лиги чемпионов'],
-    ['4334', 'Play-offs', 'tier3-qual', 'Квалификация Лиги конференций'],
+    ['135', 'Play-offs', 'tier3-qual', 'Квалификация Лиги конференций'],
+    ['78', 'Qualifying', 'tier3-qual', 'Квалификация Лиги конференций'],
+    ['61', ' Qualifying', 'tier1-qual', 'Квалификация Лиги чемпионов'],
+    ['61', 'Play-offs', 'tier3-qual', 'Квалификация Лиги конференций'],
   ])('лига %s: «%s» → %s', (leagueId, description, kind, label) => {
     expect(getStandingZone(description, leagueId)).toEqual({ kind, label })
   })
 
   it('исключения лиги не трогают остальные описания', () => {
-    expect(getStandingZone('Relegation Playoffs', '4331')).toEqual({ kind: 'relegation-playoff', label: 'Стыковые матчи' })
-    expect(getStandingZone('Champions League league stage', '4334')).toEqual({ kind: 'tier1', label: 'Лига чемпионов' })
+    expect(getStandingZone('Relegation Playoffs', '78')).toEqual({ kind: 'relegation-playoff', label: 'Стыковые матчи' })
+    expect(getStandingZone('Champions League league stage', '61')).toEqual({ kind: 'tier1', label: 'Лига чемпионов' })
   })
 
   it('без описания зоны нет', () => {
