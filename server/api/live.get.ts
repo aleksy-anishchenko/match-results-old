@@ -13,7 +13,7 @@ function parseIds(value: unknown): string[] {
 // главная и страница матча спрашивают их раз в минуту. По номерам, а не «все идущие»: закончившийся матч
 // из списка идущих сразу пропадает, а по номеру приходит уже со статусом «Завершён».
 // Ответ живёт 30 секунд и общий для всех, кто смотрит те же матчи; сбой — пустой ответ, страница покажет расписание
-export default cachedEventHandler(async (event): Promise<LiveScoresResponse> => {
+export default defineEventHandler(async (event): Promise<LiveScoresResponse> => {
   const ids = parseIds(getQuery(event).ids)
   if (!ids.length) return { scores: {} }
 
@@ -23,9 +23,4 @@ export default cachedEventHandler(async (event): Promise<LiveScoresResponse> => 
       .filter(fixture => getCompetition(String(fixture.league.id)))
       .map(fixture => [String(fixture.fixture.id), toLiveScore(fixture)])),
   }
-}, {
-  maxAge: 30,
-  // Без старого ответа на время обновления: минута не должна отставать ещё на полминуты
-  swr: false,
-  getKey: event => `live-${parseIds(getQuery(event).ids).join('-')}`,
 })

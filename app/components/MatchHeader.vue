@@ -17,12 +17,12 @@ const statusLabel = computed(() => {
 })
 const winner = computed(() => getMatchWinnerSide(props.match))
 
-// «АПЛ · 6 тур». Тур показываем только у лиг: у турниров intRound — служебный
-// номер раунда плей-офф (например, 125), а не тур.
+const competition = computed(() => getCompetition(props.match.leagueId))
+
+// «АПЛ · 6 тур». Тур показываем только у лиг: у турниров номер тура общего этапа без названия этапа не нужен
 const context = computed(() => {
-  const competition = getCompetition(props.match.leagueId)
-  const round = competition?.type === 'league' && props.match.round ? `${props.match.round} тур` : null
-  return [competition?.name ?? props.match.league, round].filter(Boolean).join(' · ')
+  const round = competition.value?.type === 'league' && props.match.round ? `${props.match.round} тур` : null
+  return [competition.value?.name ?? props.match.league, round].filter(Boolean).join(' · ')
 })
 
 const teams = computed(() => (['home', 'away'] as const).map(side => ({
@@ -30,9 +30,10 @@ const teams = computed(() => (['home', 'away'] as const).map(side => ({
   name: side === 'home' ? props.match.homeTeam : props.match.awayTeam,
   badge: side === 'home' ? props.match.homeBadge : props.match.awayBadge,
   result: winner.value ? (winner.value === side ? 'win' : 'lose') : null,
-  // Победитель серии пенальти точно проходит дальше. Победитель в доп. время — не всегда:
-  // в ответном матче дальше может пройти соперник по сумме двух встреч.
-  advances: props.match.status === 'PEN' && winner.value === side,
+  // Победитель серии пенальти в турнире точно проходит дальше. Победитель в доп. время — не всегда:
+  // в ответном матче дальше может пройти соперник по сумме двух встреч. У лиг не пишем: в плей-офф МЛС
+  // первый раунд — серии до двух побед, и пенальти решают только один матч серии
+  advances: competition.value?.type === 'tournament' && props.match.status === 'PEN' && winner.value === side,
 })))
 
 // Счёт серии только у матчей с пенальти: у обычного матча API может прислать в этих полях 0
@@ -43,9 +44,7 @@ const penalties = computed(() => {
 })
 
 const when = computed(() => {
-  const { timestamp, date, status } = props.match
-  // Без timestamp остаётся только дата (dateEvent), времени не знаем
-  if (!timestamp) return date ? formatReadableDate(date, 'short') : ''
+  const { timestamp, status } = props.match
   const day = formatReadableDate(getMoscowDate(timestamp), 'short')
   // TBD: время не назначено, в timestamp заглушка 00:00 UTC
   return status === 'TBD' ? day : `${day} · ${formatMoscowTime(timestamp)} МСК`

@@ -5,10 +5,8 @@ import { FINISHED_MATCH_STATUSES } from '#shared/utils/matches'
 import { getApiFootballStats } from '#shared/utils/matchStats'
 import { getRoundNumber } from '#shared/utils/rounds'
 import { decodeEntities } from '#shared/utils/text'
-import { toUtcTimestamp } from './seasonMatch'
+import { toScoreText, toUtcTimestamp } from './seasonMatch'
 import { getTeamName } from './teamNames'
-
-const toScore = (goals: number | null) => goals == null ? null : String(goals)
 
 /**
  * Страница матча из ответа fixtures?id=. У сыгранного матча хроника — только если её голы сходятся со счётом:
@@ -17,8 +15,8 @@ const toScore = (goals: number | null) => goals == null ? null : String(goals)
  */
 export function toMatchDetails(fixture: ApiFootballFixture): MatchDetails {
   const { fixture: info, league, teams, goals, score } = fixture
-  const homeScore = toScore(goals.home)
-  const awayScore = toScore(goals.away)
+  const homeScore = toScoreText(goals.home)
+  const awayScore = toScoreText(goals.away)
   const timestamp = toUtcTimestamp(info.timestamp)
   const events = getApiFootballEvents(fixture)
   const eventsFit = !FINISHED_MATCH_STATUSES.has(info.status.short) || goalsMatchScore(events, homeScore, awayScore)

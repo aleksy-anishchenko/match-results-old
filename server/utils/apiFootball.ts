@@ -1,13 +1,17 @@
 import type { SeasonMatch } from '~/types'
-import type { ApiFootballFixture } from '#shared/utils/matchEvents'
-import { toSeasonMatch, type ApiFootballSeasonFixture } from './seasonMatch'
+import { getCompetition } from '#shared/utils/competitions'
+import { getApiFootballEvents, goalsMatchScore, type ApiFootballFixture } from '#shared/utils/matchEvents'
+import { FINISHED_MATCH_STATUSES } from '#shared/utils/matches'
+import { toSeasonMatch, toScoreText, type ApiFootballSeasonFixture } from './seasonMatch'
 import type { ApiFootballStandingRow } from './leagueTable'
 import type { ApiFootballLiveFixture } from './liveScores'
 
 // API-Football (api-sports.io) — источник всех данных сайта. Тариф Pro: 7 500 запросов в день,
-// счётчик обнуляется в 00:00 UTC. Ответы кэшируются, чтобы посетители не тратили лимит. Здесь и в маршрутах
-// /api/… кэш без swr: старый ответ, пока считается новый, не отдаём. На сайт заходят редко, и первый посетитель
-// увидел бы данные многочасовой давности — матч, сыгранный вечером, утром был бы «не начался»
+// счётчик обнуляется в 00:00 UTC. Ответы кэшируются здесь, в функциях, а маршруты /api/… без кэша: у кэша
+// маршрута без swr Nitro шлёт браузеру Cache-Control: max-age, и браузер сам держал бы ответ — страница
+// идущего матча через раз получала бы свою же минутную копию. Кэш без swr: старый ответ, пока считается
+// новый, не отдаём. На сайт заходят редко, и первый посетитель увидел бы данные многочасовой давности —
+// матч, сыгранный вечером, утром был бы «не начался»
 
 const API = 'https://v3.football.api-sports.io'
 const TIMEOUT_MS = 10_000
@@ -21,9 +25,25 @@ type ApiFootballResponse<T> = {
 /** Кончился дневной лимит: до полуночи UTC не спрашиваем, ответ всё равно будет ошибкой */
 let limitReachedUntil = 0
 
+/**
+ * Сколько запросов осталось до конца дня (UTC), по заголовку последнего ответа. Когда меньше SPARE_RESERVE,
+ * запросы, без которых сайт обойдётся (матч по номеру, живой счёт), не отправляем: иначе перебор номеров
+ * матчей извне съел бы лимит, и до полуночи остались бы без расписаний и таблиц все
+ */
+let remaining = { count: Number.POSITIVE_INFINITY, day: '' }
+const SPARE_RESERVE = 1000
+
+const utcDay = (now: number) => new Date(now).toISOString().slice(0, 10)
+
 function nextUtcMidnight(now: number): number {
   const date = new Date(now)
   return Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate() + 1)
+}
+
+type FetchOptions = {
+  timeout?: number
+  /** Запрос, без которого сайт обойдётся: когда лимит на исходе, его не отправляем */
+  spare?: boolean
 }
 
 /**
@@ -33,16 +53,26 @@ function nextUtcMidnight(now: number): number {
 export async function fetchApiFootball<T>(
   path: string,
   query: Record<string, string | number>,
-  timeout = TIMEOUT_MS,
+  { timeout = TIMEOUT_MS, spare = false }: FetchOptions = {},
 ): Promise<T[]> {
   const apiKey = useRuntimeConfig().apiFootballKey
   if (!apiKey) throw new Error('Нет ключа API-Football')
-  if (Date.now() < limitReachedUntil) throw new Error('Кончился дневной лимит API-Football')
+  const now = Date.now()
+  if (now < limitReachedUntil) throw new Error('Кончился дневной лимит API-Football')
+  if (spare && remaining.day === utcDay(now) && remaining.count < SPARE_RESERVE) {
+    throw new Error('Лимит API-Football на исходе: бережём его для расписаний и таблиц')
+  }
 
   const data = await $fetch<ApiFootballResponse<T>>(`${API}/${path}`, {
     query,
     headers: { 'x-apisports-key': apiKey },
     timeout,
+    onResponse({ response }) {
+      const count = Number(response.headers.get('x-ratelimit-requests-remaining'))
+      if (response.headers.has('x-ratelimit-requests-remaining') && Number.isFinite(count)) {
+        remaining = { count, day: utcDay(Date.now()) }
+      }
+    },
   })
   const { errors } = data
   const messages = Array.isArray(errors) ? errors : Object.values(errors ?? {})
@@ -67,6 +97,8 @@ export const getLeagueSeason = defineCachedFunction(async (leagueId: string): Pr
   name: 'api-football-season',
   maxAge: 24 * 60 * 60,
   swr: false,
+  // Пустой ответ (сбой или смена сезона) на сутки не запоминаем: спросим снова при следующем заходе
+  validate: entry => entry.value != null,
   getKey: (leagueId: string) => leagueId,
 })
 
@@ -103,22 +135,41 @@ const SETTLED_AFTER_MS = 4 * 60 * 60 * 1000
 
 const fixtureKey = (id: string) => `api-football:fixture:${id}`
 
+/** Матч по номеру из API: идущий и будущий меняются, поэтому ответ живёт минуту. null — такого номера нет */
+const loadFixture = defineCachedFunction(async (id: string): Promise<ApiFootballFixture | null> => {
+  const [fixture] = await fetchApiFootball<ApiFootballFixture>('fixtures', { id }, { spare: true })
+  return fixture ?? null
+}, {
+  name: 'api-football-fixture',
+  maxAge: 60,
+  swr: false,
+  getKey: (id: string) => id,
+})
+
+/**
+ * Сыгранный матч больше не меняется: через 4 часа после начала, если голы хроники сходятся со счётом,
+ * он хранится всегда. Неполную хронику не храним — API может её дописать
+ */
+function isSettled({ fixture, goals, ...rest }: ApiFootballFixture, now: number): boolean {
+  if (!FINISHED_MATCH_STATUSES.has(fixture.status.short) || now - fixture.timestamp * 1000 < SETTLED_AFTER_MS) return false
+  const events = getApiFootballEvents({ fixture, goals, ...rest })
+  return events.length > 0 && goalsMatchScore(events, toScoreText(goals.home), toScoreText(goals.away))
+}
+
 /**
  * Матч по номеру — с хроникой, статистикой и составами, всё одним запросом (fixtures?id=). null — матча нет
- * или он не из турниров сайта. Сыгранный матч больше не меняется: через 4 часа после начала он хранится всегда
- * (хранилище data, на проде — файлы .data/kv рядом с сервером, деплой их не трогает), и за ним больше не ходим
+ * или он не из турниров сайта. Сыгранный матч хранится всегда (хранилище data, на проде — файлы .data/kv рядом
+ * с сервером, деплой их не трогает), и за ним больше не ходим
  */
 export async function getMatchFixture(id: string): Promise<ApiFootballFixture | null> {
   const storage = useStorage('data')
   const saved = await storage.getItem<ApiFootballFixture>(fixtureKey(id)).catch(() => null)
   if (saved) return saved
 
-  const [fixture] = await fetchApiFootball<ApiFootballFixture>('fixtures', { id })
+  const fixture = await loadFixture(id)
   if (!fixture || !getCompetition(String(fixture.league.id))) return null
 
-  const settled = FINISHED_MATCH_STATUSES.has(fixture.fixture.status.short)
-    && Date.now() - fixture.fixture.timestamp * 1000 > SETTLED_AFTER_MS
-  if (settled) {
+  if (isSettled(fixture, Date.now())) {
     // Без оценок и статистики игроков (players): они большие, а сайту не нужны. Не записалось — запросим снова
     const { fixture: info, league, teams, goals, score, events, statistics, lineups } = fixture
     await storage.setItem(fixtureKey(id), { fixture: info, league, teams, goals, score, events, statistics, lineups }).catch(() => {})
@@ -131,11 +182,19 @@ const IDS_PER_REQUEST = 20
 /** Главная и страница матча ждут живой счёт, прежде чем показаться: долго ждать нельзя */
 const LIVE_TIMEOUT_MS = 5_000
 
-/** Свежие счёт, статус и минута матчей по номерам — по 20 номеров в запросе */
-export async function getFixturesByIds(ids: string[]): Promise<ApiFootballLiveFixture[]> {
+/**
+ * Свежие счёт, статус и минута матчей по номерам — по 20 номеров в запросе. Ответ живёт 30 секунд
+ * и общий для всех, кто смотрит те же матчи
+ */
+export const getFixturesByIds = defineCachedFunction(async (ids: string[]): Promise<ApiFootballLiveFixture[]> => {
   const chunks = Array.from({ length: Math.ceil(ids.length / IDS_PER_REQUEST) }, (_, index) =>
     ids.slice(index * IDS_PER_REQUEST, (index + 1) * IDS_PER_REQUEST))
   const responses = await Promise.all(chunks.map(chunk =>
-    fetchApiFootball<ApiFootballLiveFixture>('fixtures', { ids: chunk.join('-') }, LIVE_TIMEOUT_MS)))
+    fetchApiFootball<ApiFootballLiveFixture>('fixtures', { ids: chunk.join('-') }, { timeout: LIVE_TIMEOUT_MS, spare: true })))
   return responses.flat()
-}
+}, {
+  name: 'api-football-live',
+  maxAge: 30,
+  swr: false,
+  getKey: (ids: string[]) => ids.join('-'),
+})

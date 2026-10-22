@@ -2,7 +2,7 @@ import type { MatchDetails } from '~/types'
 
 const notFound = () => createError({ statusCode: 404, statusMessage: 'Матч не найден' })
 
-export default cachedEventHandler(async (event): Promise<MatchDetails> => {
+export default defineEventHandler(async (event): Promise<MatchDetails> => {
   const id = getRouterParam(event, 'id') ?? ''
   // Номер матча — только цифры: с другим адресом API-Football не спрашиваем
   if (!/^\d+$/.test(id)) throw notFound()
@@ -13,8 +13,4 @@ export default cachedEventHandler(async (event): Promise<MatchDetails> => {
   })
   if (!fixture) throw notFound()
   return toMatchDetails(fixture)
-}, {
-  maxAge: 60,
-  swr: false,
-  getKey: event => `match-${getRouterParam(event, 'id')}`,
 })

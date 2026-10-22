@@ -17,7 +17,6 @@ const makeMatch = (overrides: Partial<Match>): Match => ({
   progress: null,
   timestamp: '2026-10-20T19:00:00',
   date: '2026-10-20',
-  group: null,
   season: '2026-2027',
   round: '3',
   ...overrides,

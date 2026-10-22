@@ -46,7 +46,7 @@ export type ApiFootballFixture = {
 
 /** Игрок в составе API-Football. grid — «линия:место», линия 1 — вратарь; pos — G, D, M, F */
 export type ApiFootballLineupPlayer = {
-  player: { name: string, number: number | null, pos: string | null, grid: string | null }
+  player: { name: string | null, number: number | null, pos: string | null, grid: string | null }
 }
 
 /** Событие из ответа в общем виде: сторона уже по номеру команды */

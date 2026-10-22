@@ -59,7 +59,10 @@ function tieWinner([first, second]: [BracketTeam, BracketTeam]): 0 | 1 | null {
 export function buildTies(roundMatches: SeasonMatch[]): BracketTie[] {
   const legsByTie = new Map<string, SeasonMatch[]>()
   for (const match of [...roundMatches].sort(byTimestamp)) {
-    const key = [match.home.id, match.away.id].sort((a, b) => a - b).join('-')
+    // Без номера команды пару не узнать: такой матч — отдельной карточкой
+    const key = match.home.id != null && match.away.id != null
+      ? [match.home.id, match.away.id].sort((a, b) => a - b).join('-')
+      : match.id
     legsByTie.set(key, [...(legsByTie.get(key) ?? []), match])
   }
 

@@ -2,7 +2,7 @@ import type { Match } from '~/types'
 
 const toScore = (goals: number | null) => goals == null ? null : String(goals)
 
-export default cachedEventHandler(async (event) => {
+export default defineEventHandler(async (event) => {
   const query = getQuery(event)
   const leagueId = String(query.leagueId ?? DEFAULT_COMPETITION_ID)
   const competition = getCompetition(leagueId)
@@ -47,17 +47,9 @@ export default cachedEventHandler(async (event) => {
     progress: null,
     timestamp: match.timestamp,
     date: match.timestamp.slice(0, 10),
-    group: null,
     season: String(season),
     round: roundByMatch.get(match.id) ?? null,
   }))
 
   return { matches }
-}, {
-  maxAge: 60,
-  swr: false,
-  getKey: (event) => {
-    const query = getQuery(event)
-    return `matches-${query.leagueId}-${query.round ?? ''}-${query.dateFrom}-${query.dateTo}`
-  },
 })

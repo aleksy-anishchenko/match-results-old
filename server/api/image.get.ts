@@ -1,14 +1,14 @@
 // Сколько ждать ответа источника: зависший запрос не должен держать картинку в браузере бесконечно
 const UPSTREAM_TIMEOUT_MS = 10_000
 
-// Эмблемы команд и лиг API-Football
-const IMAGE_HOSTS = ['https://media.api-sports.io/']
+// Эмблемы команд и лиг API-Football: media.api-sports.io, бывает и с номером — media-2.api-sports.io
+const IMAGE_URL = /^https:\/\/media(-\d+)?\.api-sports\.io\//
 
 export default defineEventHandler(async (event) => {
   const query = getQuery(event)
   const url = String(query.url ?? '')
 
-  if (!IMAGE_HOSTS.some(host => url.startsWith(host))) {
+  if (!IMAGE_URL.test(url)) {
     throw createError({ statusCode: 400, message: 'Invalid image URL' })
   }
 

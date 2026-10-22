@@ -2,7 +2,7 @@ import type { BracketResponse } from '~/types'
 
 const NO_BRACKET: BracketResponse = { rounds: [], thirdPlace: null }
 
-export default cachedEventHandler(async (event): Promise<BracketResponse> => {
+export default defineEventHandler(async (event): Promise<BracketResponse> => {
   const query = getQuery(event)
   const leagueId = String(query.leagueId ?? DEFAULT_COMPETITION_ID)
   const competition = getCompetition(leagueId)
@@ -17,8 +17,4 @@ export default cachedEventHandler(async (event): Promise<BracketResponse> => {
   if (!playoffMatches.length) return NO_BRACKET
 
   return buildBracket(playoffMatches, competition)
-}, {
-  maxAge: 60,
-  swr: false,
-  getKey: event => `bracket-${getQuery(event).leagueId ?? DEFAULT_COMPETITION_ID}`,
 })

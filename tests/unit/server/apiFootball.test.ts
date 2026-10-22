@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { fetchApiFootball, getFixturesByIds, getLeagueSeason, getMatchFixture, getSeasonMatches } from '../../../server/utils/apiFootball'
 import { toSeasonMatch } from '../../../server/utils/seasonMatch'
-import { getCompetition } from '#shared/utils/competitions'
 import afSpartakRubin from '../../fixtures/api-football/spartak-rubin.json'
 import championsLeague2526 from '../../fixtures/api-football/seasons/champions-league-2025-26.json'
 import championsLeague2627 from '../../fixtures/api-football/seasons/champions-league-2026-27.json'
@@ -22,8 +21,6 @@ function stubNitro(apiKey: string, fetchMock: (...args: unknown[]) => Promise<un
     setItem: async (key: string, value: unknown) => void storage.set(key, value),
   }))
   vi.stubGlobal('$fetch', vi.fn(fetchMock))
-  vi.stubGlobal('getCompetition', getCompetition)
-  vi.stubGlobal('FINISHED_MATCH_STATUSES', new Set(['FT', 'AET', 'PEN']))
 }
 
 const respond = (...response: unknown[]) => async () => ({ response, errors: [] })
@@ -65,16 +62,41 @@ describe('fetchApiFootball', () => {
   it('кончился дневной лимит — до полуночи UTC не спрашиваем', async () => {
     // Дата в прошлом: лимит «кончается» до неё, и другие тесты он не задевает
     vi.useFakeTimers({ now: new Date('2020-01-01T12:00:00Z') })
-    stubNitro('key', async () => ({ response: [], errors: { requests: 'You have reached the request limit for the day' } }))
+    try {
+      stubNitro('key', async () => ({ response: [], errors: { requests: 'You have reached the request limit for the day' } }))
 
-    await expect(fetchApiFootball('fixtures', { id: 1 })).rejects.toThrow('limit')
-    await expect(fetchApiFootball('fixtures', { id: 2 })).rejects.toThrow('лимит')
-    expect($fetch).toHaveBeenCalledTimes(1)
+      await expect(fetchApiFootball('fixtures', { id: 1 })).rejects.toThrow('limit')
+      await expect(fetchApiFootball('fixtures', { id: 2 })).rejects.toThrow('лимит')
+      expect($fetch).toHaveBeenCalledTimes(1)
 
-    vi.setSystemTime(new Date('2020-01-02T00:00:00Z'))
-    await expect(fetchApiFootball('fixtures', { id: 3 })).rejects.toThrow('limit')
+      vi.setSystemTime(new Date('2020-01-02T00:00:00Z'))
+      await expect(fetchApiFootball('fixtures', { id: 3 })).rejects.toThrow('limit')
+      expect($fetch).toHaveBeenCalledTimes(2)
+    }
+    finally {
+      vi.useRealTimers()
+    }
+  })
+
+  // Перебор номеров матчей извне не должен оставить сайт без расписаний и таблиц до полуночи
+  it('лимит на исходе — матчи по номеру и живой счёт не спрашиваем, расписание спрашиваем', async () => {
+    const withRemaining = (count: string) => async (_url: unknown, options: unknown) => {
+      (options as { onResponse: (context: { response: Response }) => void }).onResponse({
+        response: new Response(null, { headers: { 'x-ratelimit-requests-remaining': count } }),
+      })
+      return { response: [], errors: [] }
+    }
+    stubNitro('key', withRemaining('999'))
+    await fetchApiFootball('fixtures', { league: 39, season: 2026 })
+
+    await expect(fetchApiFootball('fixtures', { id: 1 }, { spare: true })).rejects.toThrow('бережём')
+    await fetchApiFootball('fixtures', { league: 39, season: 2026 })
     expect($fetch).toHaveBeenCalledTimes(2)
-    vi.useRealTimers()
+
+    stubNitro('key', withRemaining('5000'))
+    await fetchApiFootball('standings', { league: 39, season: 2026 })
+    await fetchApiFootball('fixtures', { id: 1 }, { spare: true })
+    expect($fetch).toHaveBeenCalledTimes(2)
   })
 })
 
@@ -159,6 +181,15 @@ describe('getMatchFixture', () => {
     expect(await getMatchFixture('1')).not.toBeNull()
     stubNitro('key', respond({ ...afSpartakRubin, fixture: { ...afSpartakRubin.fixture, id: 2, timestamp: justNow } }))
     expect(await getMatchFixture('2')).not.toBeNull()
+    expect(storage.size).toBe(0)
+  })
+
+  // Хроника, которую API может ещё дописать, навсегда не сохраняется
+  it('сыгранный матч, у которого голы хроники не сходятся со счётом, не сохраняет', async () => {
+    stubNitro('key', respond({ ...afSpartakRubin, fixture: { ...afSpartakRubin.fixture, id: 6 }, goals: { home: 5, away: 0 } }))
+    expect(await getMatchFixture('6')).not.toBeNull()
+    stubNitro('key', respond({ ...afSpartakRubin, fixture: { ...afSpartakRubin.fixture, id: 7 }, events: [] }))
+    expect(await getMatchFixture('7')).not.toBeNull()
     expect(storage.size).toBe(0)
   })
 

@@ -1,6 +1,6 @@
 import type { RoundsResponse } from '~/types'
 
-export default cachedEventHandler(async (event): Promise<RoundsResponse> => {
+export default defineEventHandler(async (event): Promise<RoundsResponse> => {
   const leagueId = String(getQuery(event).leagueId ?? DEFAULT_COMPETITION_ID)
   const competition = getCompetition(leagueId)
   // Турниры не из списка не спрашиваем: каждый запрос к API-Football — из дневного лимита
@@ -16,8 +16,4 @@ export default cachedEventHandler(async (event): Promise<RoundsResponse> => {
     current: getCurrentRound(schedule, roundByMatch, new Date()),
     matchDays: getMatchDays(schedule),
   }
-}, {
-  maxAge: 60,
-  swr: false,
-  getKey: event => `rounds-${getQuery(event).leagueId ?? DEFAULT_COMPETITION_ID}`,
 })

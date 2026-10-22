@@ -460,6 +460,6 @@ const TEAM_NAMES: Record<number, string> = {
 }
 
 /** Название команды по-русски по её номеру в API-Football; перевода или номера нет — название из API */
-export function getTeamName(id: number | null, name: string): string {
-  return (id != null && TEAM_NAMES[id]) || decodeEntities(name)
+export function getTeamName(id: number | null, name: string | null): string {
+  return (id != null && TEAM_NAMES[id]) || decodeEntities(name ?? '')
 }

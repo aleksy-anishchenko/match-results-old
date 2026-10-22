@@ -134,6 +134,11 @@ describe('buildTies', () => {
     expect(tie!.teams.map(getTieTotal)).toEqual([2, 0])
     expect(tie!.winner).toBeNull()
   })
+
+  it('матчи, где у команды нет номера, не склеиваются', () => {
+    const unknown = { id: null, name: '', badge: '' }
+    expect(buildTies([leg({ id: '1', away: unknown }), leg({ id: '2', away: unknown })])).toHaveLength(2)
+  })
 })
 
 describe('buildBracket', () => {

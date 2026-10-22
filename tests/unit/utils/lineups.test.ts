@@ -46,6 +46,13 @@ describe('getApiFootballLineups', () => {
     expect(lineups.home.lines.at(-1)).toEqual([{ number: startXI[1]!.player.number, name: startXI[1]!.player.name }])
   })
 
+  // Без имени в данных пока не встречался, но разбор от такого игрока падать не должен
+  it('игрок без имени — пустое имя, а не ошибка', () => {
+    const [home, away] = afSpartakRubin.lineups
+    const nameless = { ...home!, substitutes: [{ player: { name: null, number: 99, pos: 'M', grid: null } }] }
+    expect(getApiFootballLineups({ ...afSpartakRubin, lineups: [nameless, away!] })?.home.substitutes).toEqual([{ number: 99, name: '' }])
+  })
+
   it('составов нет или нет у одной из команд — null', () => {
     expect(getApiFootballLineups({ ...afSpartakRubin, lineups: [] })).toBeNull()
     const { lineups: _lineups, ...withoutLineups } = afSpartakRubin

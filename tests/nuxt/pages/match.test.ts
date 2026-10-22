@@ -73,7 +73,8 @@ liveMatch('4', {
   events: [{ minute: 18, extra: null, side: 'home', kind: 'goal', player: 'Pablo Solari', assist: null, playerOut: null }],
 })
 const noPenalties = { homePenScore: null, awayPenScore: null }
-registerEndpoint('/api/live', () => ({
+let liveRequests = 0
+registerEndpoint('/api/live', () => (liveRequests++, {
   scores: {
     3: { status: '2H', progress: '52', homeScore: '1', awayScore: '0', ...noPenalties },
     4: { status: '2H', progress: '70', homeScore: '2', awayScore: '0', ...noPenalties },
@@ -155,13 +156,15 @@ describe('страница матча: идущий матч', () => {
     expect(page.get('.header__status').text()).toBe('52′')
   })
 
-  it('по livescore матч закончился — всё равно обновляем, пока расписание не догонит', async () => {
+  it('по живым данным матч закончился — живой счёт больше не спрашиваем, а матч обновляем, пока он не догонит', async () => {
     vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] })
     const page = await mountPage('/match/5')
     expect(page.get('.header__status').text()).toBe('Завершён')
     const before = matchRequests['5']!
+    const liveBefore = liveRequests
     vi.advanceTimersByTime(60_000)
     await vi.waitFor(() => expect(matchRequests['5']).toBe(before + 1))
+    expect(liveRequests).toBe(liveBefore)
   })
 
   it('хроника отстала от свежего счёта — прячем её, пока не догонит', async () => {

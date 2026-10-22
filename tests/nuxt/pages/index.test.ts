@@ -36,7 +36,6 @@ function match(idEvent: string, homeTeam: string, awayTeam: string, round: strin
     progress: null,
     timestamp: '2026-10-17T14:00:00',
     date: '2026-10-17',
-    group: null,
     season: '2026-2027',
     round,
   }

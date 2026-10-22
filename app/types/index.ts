@@ -31,7 +31,6 @@ export type Match = {
   progress: string | null
   timestamp: string
   date: string
-  group: string | null
   season: string
   /** Тур матча — id из /api/rounds; null, если матч вне туров (квалификация ЛЧ/ЛЕ) */
   round: string | null
@@ -39,7 +38,8 @@ export type Match = {
 
 /** Команда в матче API-Football: номер, название (по-русски, если есть перевод) и эмблема */
 export type SeasonTeam = {
-  id: number
+  /** null — в ответе нет номера: такую команду не склеиваем в пару сетки */
+  id: number | null
   name: string
   badge: string
 }
@@ -94,7 +94,7 @@ export type SeasonRound = {
 }
 
 export type RoundsResponse = {
-  /** Сезон из API: «2026-2027» или «2026» */
+  /** Сезон — год его начала: «2026» и у сезона 2026/27, и у МЛС 2026 */
   season: string | null
   rounds: SeasonRound[]
   /** Тур матча, ближайшего по времени к сейчас */
@@ -224,7 +224,7 @@ export type GroupStanding = {
 
 export type StandingsResponse = {
   groups: Record<string, GroupStanding[]>
-  /** Сезон из API: «2026-2027» или «2026» */
+  /** Сезон — год его начала: «2026» */
   season: string | null
 }
 

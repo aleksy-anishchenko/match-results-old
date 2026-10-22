@@ -1,7 +1,8 @@
 import type { SeasonMatch, SeasonTeam } from '~/types'
 import { getTeamName } from './teamNames'
 
-type ApiFootballTeam = { id: number, name: string, logo: string }
+/** Команда в ответе. Без номера и названия в данных пока не встречалась, но разбор от неё падать не должен */
+type ApiFootballTeam = { id: number | null, name: string | null, logo: string | null }
 
 /** Матч из ответа fixtures?league&season: поля, нужные расписанию */
 export type ApiFootballSeasonFixture = {
@@ -12,10 +13,13 @@ export type ApiFootballSeasonFixture = {
   score: { penalty: { home: number | null, away: number | null } }
 }
 
-const toSeasonTeam = (team: ApiFootballTeam): SeasonTeam => ({ id: team.id, name: getTeamName(team.id, team.name), badge: team.logo })
+const toSeasonTeam = (team: ApiFootballTeam): SeasonTeam => ({ id: team.id, name: getTeamName(team.id, team.name), badge: team.logo ?? '' })
 
 /** Время из API (секунды Unix) в UTC без смещения: «2026-10-25T16:30:00» — такое ждут getMoscowDate и formatMoscowTime */
 export const toUtcTimestamp = (seconds: number) => new Date(seconds * 1000).toISOString().slice(0, 19)
+
+/** Голы из API строкой, как счёт у страниц: «2»; null — матч не начался */
+export const toScoreText = (goals: number | null) => goals == null ? null : String(goals)
 
 /** Матч расписания в общем виде: названия по-русски, время — UTC без смещения («2026-10-25T16:30:00») */
 export function toSeasonMatch({ fixture, league, teams, goals, score }: ApiFootballSeasonFixture): SeasonMatch {

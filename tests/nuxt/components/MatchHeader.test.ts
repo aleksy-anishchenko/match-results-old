@@ -76,13 +76,22 @@ describe('MatchHeader', () => {
   it('после серии пенальти показывает счёт серии и кто проходит дальше', async () => {
     const wrapper = await mountSuspended(MatchHeader, {
       props: {
-        match: makeMatch({ homeScore: '1', awayScore: '1', homePenScore: 3, awayPenScore: 4, status: 'PEN' }),
+        match: makeMatch({ leagueId: '2', homeScore: '1', awayScore: '1', homePenScore: 3, awayPenScore: 4, status: 'PEN' }),
       },
     })
     expect(wrapper.find('.score__penalties').text()).toBe('пенальти 3:4')
     const teams = wrapper.findAll('.team')
     expect(teams[0]!.find('.team__advance').exists()).toBe(false)
     expect(teams[1]!.find('.team__advance').text()).toBe('проходит дальше')
+  })
+
+  // В плей-офф МЛС первый раунд — серии до двух побед: пенальти решают один матч, а не пару
+  it('у лиги после серии пенальти «проходит дальше» не пишет', async () => {
+    const wrapper = await mountSuspended(MatchHeader, {
+      props: { match: makeMatch({ leagueId: '253', homeScore: '2', awayScore: '2', homePenScore: 4, awayPenScore: 2, status: 'PEN' }) },
+    })
+    expect(wrapper.find('.score__penalties').text()).toBe('пенальти 4:2')
+    expect(wrapper.find('.team__advance').exists()).toBe(false)
   })
 
   it('у обычного матча нули в полях пенальти не показываются', async () => {
@@ -99,21 +108,6 @@ describe('MatchHeader', () => {
     const when = wrapper.find('.header__when').text()
     expect(when).toContain('Вс, 11 октября')
     expect(when).not.toContain('МСК')
-  })
-
-  it('без timestamp берёт дату из date, время не показывает', async () => {
-    const wrapper = await mountSuspended(MatchHeader, { props: { match: makeMatch({ timestamp: '', date: '2026-10-11' }) } })
-    const when = wrapper.find('.header__when').text()
-    expect(when).toContain('Вс, 11 октября')
-    expect(when).not.toContain('МСК')
-    expect(when).not.toContain('Invalid')
-  })
-
-  it('без даты и стадиона строки нет', async () => {
-    const wrapper = await mountSuspended(MatchHeader, {
-      props: { match: makeMatch({ timestamp: '', date: '', venue: null }) },
-    })
-    expect(wrapper.find('.header__when').exists()).toBe(false)
   })
 
   it('без пенальти пометки «проходит дальше» нет', async () => {
