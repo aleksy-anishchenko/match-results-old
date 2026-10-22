@@ -3,16 +3,16 @@ import { mountSuspended } from '@nuxt/test-utils/runtime'
 import MatchTimeline from '~/components/MatchTimeline.vue'
 
 describe('MatchTimeline', () => {
-  it('события хозяев слева, гостей справа, с минутой, значком и пометками', async () => {
+  it('события хозяев слева, гостей справа, с минутой (и добавленным временем), значком и пометками', async () => {
     const wrapper = await mountSuspended(MatchTimeline, {
       props: {
         events: [
-          { minute: 6, side: 'away', kind: 'goal', player: 'Kai Havertz', assist: 'Leandro Trossard', playerOut: null },
-          { minute: 38, side: 'home', kind: 'own-goal', player: 'Stijn van Gassel', assist: null, playerOut: null },
-          { minute: 54, side: 'away', kind: 'yellow-card', player: 'Bukayo Saka', assist: null, playerOut: null },
-          { minute: 65, side: 'home', kind: 'penalty', player: 'Ousmane Dembélé', assist: null, playerOut: null },
-          { minute: 66, side: 'away', kind: 'substitution', player: 'Jurriën Timber', assist: null, playerOut: 'Cristhian Mosquera' },
-          { minute: 70, side: 'home', kind: 'red-card', player: 'Kevin Danso', assist: null, playerOut: null },
+          { minute: 6, extra: null, side: 'away', kind: 'goal', player: 'Kai Havertz', assist: 'Leandro Trossard', playerOut: null },
+          { minute: 38, extra: null, side: 'home', kind: 'own-goal', player: 'Stijn van Gassel', assist: null, playerOut: null },
+          { minute: 54, extra: null, side: 'away', kind: 'yellow-card', player: 'Bukayo Saka', assist: null, playerOut: null },
+          { minute: 65, extra: null, side: 'home', kind: 'penalty', player: 'Ousmane Dembélé', assist: null, playerOut: null },
+          { minute: 66, extra: null, side: 'away', kind: 'substitution', player: 'Jurriën Timber', assist: null, playerOut: 'Cristhian Mosquera' },
+          { minute: 90, extra: 3, side: 'home', kind: 'red-card', player: 'Kevin Danso', assist: null, playerOut: null },
         ],
       },
     })
@@ -26,7 +26,7 @@ describe('MatchTimeline', () => {
       ['Bukayo Saka', '54′'],
       ['Ousmane Dembélé (пен.)', '65′'],
       ['Jurriën Timber', '66′'],
-      ['Kevin Danso', '70′'],
+      ['Kevin Danso', '90+3′'],
     ])
     expect(events.map(event => event.find('.event__icon').attributes('aria-label'))).toEqual([
       'Гол', 'Гол', 'Жёлтая карточка', 'Гол', 'Замена', 'Красная карточка',

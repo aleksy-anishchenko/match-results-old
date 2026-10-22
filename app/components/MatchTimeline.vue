@@ -123,7 +123,7 @@ const KIND_NAMES: Record<MatchEvent['kind'], string> = {
             >вместо {{ event.playerOut }}</span>
           </span>
         </span>
-        <span class="event__minute">{{ event.minute }}′</span>
+        <span class="event__minute">{{ event.minute }}{{ event.extra ? `+${event.extra}` : '' }}′</span>
       </li>
     </ul>
   </section>
@@ -150,7 +150,8 @@ const KIND_NAMES: Record<MatchEvent['kind'], string> = {
 // Строки одной высоты: минута и значок стоят вровень с первой строкой имени, даже если под ним пас или замена
 .event {
   display: grid;
-  grid-template-columns: 1fr 44px 1fr;
+  // Средняя колонка — минута, с добавленным временем: «120+1′»
+  grid-template-columns: 1fr 52px 1fr;
   align-items: start;
   font-size: 14px;
   line-height: 21px;

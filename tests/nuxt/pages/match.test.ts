@@ -31,18 +31,17 @@ const MATCH: MatchDetails = {
   timestamp: '2026-10-18T15:45:00',
   date: '2026-10-18',
   leagueId: '235',
-  league: 'Russian Football Premier League',
-  season: '2026-2027',
+  league: 'Premier League',
+  season: '2026',
   round: '12',
   venue: null,
   city: null,
-  video: null,
   lineups: {
     home: { formation: '4-1-4-1', lines: [[{ number: 1, name: 'I. Pomazun' }]], substitutes: [], coach: null },
     away: { formation: '5-4-1', lines: [[{ number: 38, name: 'E. Staver' }]], substitutes: [], coach: null },
   },
   events: [
-    { minute: 18, side: 'home', kind: 'goal', player: 'Pablo Solari', assist: null, playerOut: null },
+    { minute: 18, extra: null, side: 'home', kind: 'goal', player: 'Pablo Solari', assist: null, playerOut: null },
   ],
   stats: [
     { label: 'Владение мячом', home: 66, away: 34, format: 'percent' },
@@ -64,14 +63,14 @@ function liveMatch(id: string, details: Partial<MatchDetails>) {
   })
 }
 liveMatch('3', { status: '1H', homeScore: '0', awayScore: '0' })
-// По livescore матч уже закончен, а по lookupevent ещё идёт: итоговую хронику и составы ещё ждём
+// По живым данным матч уже закончен, а по странице матча ещё идёт: итоговую хронику и составы ещё ждём
 liveMatch('5', { status: '2H', homeScore: '1', awayScore: '0' })
 // Ещё один идущий матч: в ленте один гол, а по livescore уже 2:0 — второго гола в ленте пока нет
 liveMatch('4', {
   status: '2H',
   homeScore: '1',
   awayScore: '0',
-  events: [{ minute: 18, side: 'home', kind: 'goal', player: 'Pablo Solari', assist: null, playerOut: null }],
+  events: [{ minute: 18, extra: null, side: 'home', kind: 'goal', player: 'Pablo Solari', assist: null, playerOut: null }],
 })
 registerEndpoint('/api/live', () => ({
   scores: {

@@ -14,12 +14,15 @@ export type ApiFootballSeasonFixture = {
 
 const toSeasonTeam = (team: ApiFootballTeam): SeasonTeam => ({ id: team.id, name: getTeamName(team.id, team.name), badge: team.logo })
 
+/** Время из API (секунды Unix) в UTC без смещения: «2026-10-25T16:30:00» — такое ждут getMoscowDate и formatMoscowTime */
+export const toUtcTimestamp = (seconds: number) => new Date(seconds * 1000).toISOString().slice(0, 19)
+
 /** Матч расписания в общем виде: названия по-русски, время — UTC без смещения («2026-10-25T16:30:00») */
 export function toSeasonMatch({ fixture, league, teams, goals, score }: ApiFootballSeasonFixture): SeasonMatch {
   return {
     id: String(fixture.id),
     round: league.round,
-    timestamp: new Date(fixture.timestamp * 1000).toISOString().slice(0, 19),
+    timestamp: toUtcTimestamp(fixture.timestamp),
     status: fixture.status.short,
     home: toSeasonTeam(teams.home),
     away: toSeasonTeam(teams.away),

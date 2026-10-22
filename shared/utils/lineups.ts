@@ -1,10 +1,11 @@
 import type { LineupPlayer, MatchLineups, TeamLineup } from '~/types'
 import type { ApiFootballFixture, ApiFootballLineupPlayer } from './matchEvents'
+import { decodeEntities } from './text'
 
 /** Порядок линий, если у игроков нет grid: вратарь, защитники, полузащитники, нападающие */
 const POSITION_ORDER = ['G', 'D', 'M', 'F']
 
-const toPlayer = ({ player }: ApiFootballLineupPlayer): LineupPlayer => ({ number: player.number, name: player.name })
+const toPlayer = ({ player }: ApiFootballLineupPlayer): LineupPlayer => ({ number: player.number, name: decodeEntities(player.name) })
 
 /** Линия по позиции; неизвестная позиция — последней, после нападающих */
 function positionLine(pos: string | null): number {
@@ -38,7 +39,7 @@ export function getApiFootballLineups(fixture: ApiFootballFixture): MatchLineups
       formation: team.formation || null,
       lines: toLines(team.startXI),
       substitutes: team.substitutes.map(toPlayer),
-      coach: team.coach?.name || null,
+      coach: team.coach?.name ? decodeEntities(team.coach.name) : null,
     }
   }
   const home = lineup(fixture.teams.home.id)

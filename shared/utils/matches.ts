@@ -25,22 +25,6 @@ export function getMatchStatusKind(status: string): MatchStatusKind {
   return 'scheduled'
 }
 
-/**
- * Ссылка на видеообзор из API, если это https-ссылка на YouTube; иначе null.
- * Адрес попадает в href, поэтому чужие схемы (javascript:) и сайты не пропускаем
- */
-export function getVideoUrl(value: string | null | undefined): string | null {
-  if (!value) return null
-  try {
-    const url = new URL(value)
-    const youtube = /(^|\.)youtube\.com$/.test(url.hostname) || url.hostname === 'youtu.be'
-    return url.protocol === 'https:' && youtube ? url.href : null
-  }
-  catch {
-    return null
-  }
-}
-
 /** Время матча идёт — показываем минуту. В перерыве и серии пенальти — подпись статуса («Перерыв») */
 const RUNNING_MATCH_STATUSES = new Set(['1H', '2H', 'ET'])
 

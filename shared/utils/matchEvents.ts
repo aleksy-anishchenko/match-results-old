@@ -1,27 +1,23 @@
 import type { MatchEvent } from '~/types'
-
-/** Событие из lookuptimeline TheSportsDB: поля, нужные для хроники */
-export type TimelineEvent = {
-  intTime: string | null
-  strTimeline: string
-  strTimelineDetail: string | null
-  /** У замены — ушедший с поля */
-  strPlayer: string | null
-  /** У гола — автор паса, у замены — вышедший на поле; пустая строка — нет */
-  strAssist: string | null
-  /** «Yes» — событие хозяев. Автогол API приписывает команде, которой он засчитан */
-  strHome: string | null
-  strComment: string | null
-}
+import { decodeEntities } from './text'
 
 /**
- * Матч из API-Football (fixtures?id=…): поля, нужные для хроники, статистики и составов.
+ * Матч из API-Football (fixtures?id=…): поля, нужные странице матча — шапке, хронике, статистике и составам.
  * Списки обычно приходят и пустыми, но если какого-то нет, разбор не должен падать — поэтому они необязательные
  */
 export type ApiFootballFixture = {
-  fixture: { status: { short: string } }
-  teams: { home: { id: number }, away: { id: number } }
+  fixture: {
+    id: number
+    /** Начало матча, секунды Unix */
+    timestamp: number
+    venue: { name: string | null, city: string | null }
+    status: { short: string }
+  }
+  /** round — как в расписании: «Regular Season - 11», «Final» */
+  league: { id: number, name: string, season: number, round: string }
+  teams: { home: { id: number, name: string, logo: string }, away: { id: number, name: string, logo: string } }
   goals: { home: number | null, away: number | null }
+  score: { penalty: { home: number | null, away: number | null } }
   events?: Array<{
     time: { elapsed: number | null, extra: number | null }
     team: { id: number }
@@ -53,9 +49,10 @@ export type ApiFootballLineupPlayer = {
   player: { name: string, number: number | null, pos: string | null, grid: string | null }
 }
 
-/** Событие любого из двух API: устроены они одинаково, разные только названия полей */
+/** Событие из ответа в общем виде: сторона уже по номеру команды */
 type RawEvent = {
   minute: number
+  extra: number | null
   side: MatchEvent['side']
   type: string
   detail: string
@@ -91,7 +88,7 @@ function toMatchEvents(events: RawEvent[]): MatchEvent[] {
   return events
     .filter(event => event.comment !== 'Penalty Shootout')
     .flatMap((event): MatchEvent[] => {
-      const base = { minute: event.minute, side: event.side }
+      const base = { minute: event.minute, extra: event.extra, side: event.side }
       if (event.type === 'subst') {
         return event.assist
           ? [{ ...base, kind: 'substitution', player: event.assist, assist: null, playerOut: event.player || null }]
@@ -102,42 +99,30 @@ function toMatchEvents(events: RawEvent[]): MatchEvent[] {
       const assist = isGoalEvent({ kind }) ? event.assist || null : null
       return [{ ...base, kind, player: event.player ?? '', assist, playerOut: null }]
     })
-    .sort((a, b) => a.minute - b.minute)
-}
-
-/** Хроника матча из ленты событий TheSportsDB */
-export function getTimelineEvents(timeline: TimelineEvent[]): MatchEvent[] {
-  return toMatchEvents(timeline.map(event => ({
-    minute: Number(event.intTime ?? 0),
-    side: event.strHome === 'Yes' ? 'home' : 'away',
-    type: event.strTimeline,
-    detail: event.strTimelineDetail ?? '',
-    comment: event.strComment,
-    player: event.strPlayer,
-    assist: event.strAssist,
-  })))
+    .sort((a, b) => a.minute - b.minute || (a.extra ?? 0) - (b.extra ?? 0))
 }
 
 /**
- * Хроника матча из событий API-Football. Как и у TheSportsDB, автогол записан на команду,
- * которой он засчитан, поэтому сторону берём по команде события
+ * Хроника матча из событий API-Football. Автогол записан на команду, которой он засчитан,
+ * поэтому сторону берём по команде события
  */
 export function getApiFootballEvents(fixture: ApiFootballFixture): MatchEvent[] {
   const homeId = fixture.teams.home.id
   return toMatchEvents((fixture.events ?? []).map(event => ({
     minute: event.time.elapsed ?? 0,
+    extra: event.time.extra,
     side: event.team.id === homeId ? 'home' : 'away',
     type: event.type,
     detail: event.detail,
     comment: event.comments,
-    player: event.player.name,
-    assist: event.assist.name,
+    player: event.player.name && decodeEntities(event.player.name),
+    assist: event.assist.name && decodeEntities(event.assist.name),
   })))
 }
 
 /**
- * Голы хроники сходятся со счётом. Лента есть не у всех лиг (у РПЛ и Саудовской лиги пустая) и во время
- * матча может отставать от счёта — тогда хронику не показываем: неполный список голов выглядит как ошибка.
+ * Голы хроники сходятся со счётом. Хроника бывает неполной, а во время матча может отставать
+ * от счёта — тогда её не показываем: неполный список голов выглядит как ошибка.
  */
 export function goalsMatchScore(events: MatchEvent[], homeScore: string | null, awayScore: string | null): boolean {
   const count = (side: MatchEvent['side']) => events.filter(event => event.side === side && isGoalEvent(event)).length

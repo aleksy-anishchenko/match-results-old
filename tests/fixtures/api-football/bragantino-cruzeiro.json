@@ -1,23 +1,44 @@
 {
   "fixture": {
     "id": 1492402,
+    "timestamp": 1791849600,
+    "venue": {
+      "name": "Estadio Cicero de Souza Marques",
+      "city": "Braganza"
+    },
     "status": {
-      "short": "FT"
+      "short": "FT",
+      "elapsed": 90,
+      "extra": null
     }
+  },
+  "league": {
+    "id": 71,
+    "name": "Serie A",
+    "season": 2026,
+    "round": "Regular Season - 30"
   },
   "teams": {
     "home": {
       "id": 794,
-      "name": "RB Bragantino"
+      "name": "RB Bragantino",
+      "logo": ""
     },
     "away": {
       "id": 135,
-      "name": "Cruzeiro"
+      "name": "Cruzeiro",
+      "logo": ""
     }
   },
   "goals": {
     "home": 4,
     "away": 2
+  },
+  "score": {
+    "penalty": {
+      "home": null,
+      "away": null
+    }
   },
   "events": [
     {
@@ -26,8 +47,7 @@
         "extra": null
       },
       "team": {
-        "id": 794,
-        "name": "RB Bragantino"
+        "id": 794
       },
       "player": {
         "name": "Guzman Rodriguez"
@@ -45,8 +65,7 @@
         "extra": null
       },
       "team": {
-        "id": 794,
-        "name": "RB Bragantino"
+        "id": 794
       },
       "player": {
         "name": "Lucas Henrique Barbosa"
@@ -64,8 +83,7 @@
         "extra": null
       },
       "team": {
-        "id": 135,
-        "name": "Cruzeiro"
+        "id": 135
       },
       "player": {
         "name": "William"
@@ -83,8 +101,7 @@
         "extra": null
       },
       "team": {
-        "id": 794,
-        "name": "RB Bragantino"
+        "id": 794
       },
       "player": {
         "name": "Kaio Jorge"
@@ -102,8 +119,7 @@
         "extra": null
       },
       "team": {
-        "id": 794,
-        "name": "RB Bragantino"
+        "id": 794
       },
       "player": {
         "name": "Ryan Augusto"
@@ -121,8 +137,7 @@
         "extra": null
       },
       "team": {
-        "id": 794,
-        "name": "RB Bragantino"
+        "id": 794
       },
       "player": {
         "name": "Eric Ramires"
@@ -140,8 +155,7 @@
         "extra": null
       },
       "team": {
-        "id": 135,
-        "name": "Cruzeiro"
+        "id": 135
       },
       "player": {
         "name": "Zé Lucas"
@@ -159,8 +173,7 @@
         "extra": null
       },
       "team": {
-        "id": 135,
-        "name": "Cruzeiro"
+        "id": 135
       },
       "player": {
         "name": "William"
@@ -178,8 +191,7 @@
         "extra": null
       },
       "team": {
-        "id": 135,
-        "name": "Cruzeiro"
+        "id": 135
       },
       "player": {
         "name": "Gabriel Rojas"
@@ -197,8 +209,7 @@
         "extra": null
       },
       "team": {
-        "id": 794,
-        "name": "RB Bragantino"
+        "id": 794
       },
       "player": {
         "name": "Gustavo Marques Alves dos Santos"
@@ -216,8 +227,7 @@
         "extra": null
       },
       "team": {
-        "id": 135,
-        "name": "Cruzeiro"
+        "id": 135
       },
       "player": {
         "name": "Zé Lucas"
@@ -235,8 +245,7 @@
         "extra": null
       },
       "team": {
-        "id": 135,
-        "name": "Cruzeiro"
+        "id": 135
       },
       "player": {
         "name": "João Marcelo"
@@ -254,8 +263,7 @@
         "extra": null
       },
       "team": {
-        "id": 794,
-        "name": "RB Bragantino"
+        "id": 794
       },
       "player": {
         "name": "Wallace Yan"
@@ -273,8 +281,7 @@
         "extra": null
       },
       "team": {
-        "id": 794,
-        "name": "RB Bragantino"
+        "id": 794
       },
       "player": {
         "name": "Eric Ramires"
@@ -292,8 +299,7 @@
         "extra": null
       },
       "team": {
-        "id": 794,
-        "name": "RB Bragantino"
+        "id": 794
       },
       "player": {
         "name": "Eduardo Sasha"
@@ -311,8 +317,7 @@
         "extra": null
       },
       "team": {
-        "id": 135,
-        "name": "Cruzeiro"
+        "id": 135
       },
       "player": {
         "name": "Felipe Morais"
@@ -330,8 +335,7 @@
         "extra": null
       },
       "team": {
-        "id": 135,
-        "name": "Cruzeiro"
+        "id": 135
       },
       "player": {
         "name": "Felipe Morais"
@@ -349,8 +353,7 @@
         "extra": null
       },
       "team": {
-        "id": 794,
-        "name": "RB Bragantino"
+        "id": 794
       },
       "player": {
         "name": "Lucas Henrique Barbosa"
@@ -368,8 +371,7 @@
         "extra": null
       },
       "team": {
-        "id": 794,
-        "name": "RB Bragantino"
+        "id": 794
       },
       "player": {
         "name": "Fernando dos Santos Pedro"
@@ -387,8 +389,7 @@
         "extra": null
       },
       "team": {
-        "id": 135,
-        "name": "Cruzeiro"
+        "id": 135
       },
       "player": {
         "name": "Matheus Henrique"
@@ -406,8 +407,7 @@
         "extra": 1
       },
       "team": {
-        "id": 794,
-        "name": "RB Bragantino"
+        "id": 794
       },
       "player": {
         "name": "Jose Herrera"
@@ -423,8 +423,7 @@
   "statistics": [
     {
       "team": {
-        "id": 794,
-        "name": "RB Bragantino"
+        "id": 794
       },
       "statistics": [
         {
@@ -499,8 +498,7 @@
     },
     {
       "team": {
-        "id": 135,
-        "name": "Cruzeiro"
+        "id": 135
       },
       "statistics": [
         {
@@ -577,8 +575,7 @@
   "lineups": [
     {
       "team": {
-        "id": 794,
-        "name": "RB Bragantino"
+        "id": 794
       },
       "formation": "4-2-3-1",
       "startXI": [
@@ -775,8 +772,7 @@
     },
     {
       "team": {
-        "id": 135,
-        "name": "Cruzeiro"
+        "id": 135
       },
       "formation": "4-2-3-1",
       "startXI": [

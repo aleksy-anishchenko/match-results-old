@@ -1,3 +1,5 @@
+import { decodeEntities } from '#shared/utils/text'
+
 // Названия команд по-русски. Ключ — номер команды в API-Football (teams.home.id в ответе), в комментарии —
 // её название там. Команды нет в списке — показываем название из API как есть, латиницей
 const TEAM_NAMES: Record<number, string> = {
@@ -459,5 +461,5 @@ const TEAM_NAMES: Record<number, string> = {
 
 /** Название команды по-русски по её номеру в API-Football; перевода или номера нет — название из API */
 export function getTeamName(id: number | null, name: string): string {
-  return (id != null && TEAM_NAMES[id]) || name
+  return (id != null && TEAM_NAMES[id]) || decodeEntities(name)
 }

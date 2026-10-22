@@ -33,6 +33,22 @@ async function updateMatch() {
 const liveMatches = await useLiveScores(() => match.value?.leagueId ?? '', () => match.value ? [match.value] : [], updateMatch)
 const liveMatch = computed(() => liveMatches.value[0])
 
+// Составы API-Football отдаёт примерно за 20–40 минут до начала: пока их нет, за час до матча
+// переспрашиваем его раз в 2 минуты. С начала матча обновлять его будет useLiveScores
+const LINEUPS_WINDOW_MS = 60 * 60 * 1000
+function awaitsLineups() {
+  if (!match.value || match.value.lineups || getMatchStatusKind(match.value.status) !== 'scheduled') return false
+  const untilKickoff = Date.parse(`${match.value.timestamp}Z`) - Date.now()
+  return untilKickoff > 0 && untilKickoff < LINEUPS_WINDOW_MS
+}
+let lineupsTimer: ReturnType<typeof setInterval> | undefined
+onMounted(() => {
+  lineupsTimer = setInterval(() => {
+    if (!document.hidden && awaitsLineups()) updateMatch()
+  }, 2 * 60_000)
+})
+onBeforeUnmount(() => clearInterval(lineupsTimer))
+
 // Лента событий отстаёт от livescore: только что забитого гола в хронике ещё нет. Неполный список голов
 // выглядит как ошибка — прячем хронику, пока она не догонит счёт в шапке (матч переспрашиваем раз в минуту)
 const showTimeline = computed(() => !!liveMatch.value?.events.length

@@ -131,13 +131,11 @@ export type MatchDetails = {
   round: string | null
   venue: string | null
   city: string | null
-  /** Видеообзор — https-ссылка на YouTube; null — обзора нет */
-  video: string | null
-  /** Хроника по минутам из TheSportsDB или, если там её нет, из API-Football; пусто, если ни там, ни там голы не сходятся со счётом */
+  /** Хроника по минутам; у сыгранного матча пусто, если голы хроники не сходятся со счётом */
   events: MatchEvent[]
-  /** Статистика из того же источника, что и хроника; пусто, если её нет */
+  /** Статистика матча; пусто, если её нет */
   stats: MatchStat[]
-  /** Составы — только когда хронику дал API-Football (у TheSportsDB составов нет); null — нет */
+  /** Составы: у будущего матча появляются примерно за 20–40 минут до начала; null — нет */
   lineups: MatchLineups | null
 }
 
@@ -164,6 +162,8 @@ export type MatchLineups = {
 /** Событие хроники матча: гол, карточка или замена */
 export type MatchEvent = {
   minute: number
+  /** Добавленное время: у гола на 90+3 minute 90, extra 3; null — не добавленное */
+  extra: number | null
   /** Чьё событие. Автогол засчитан сопернику команды того, кто его забил */
   side: 'home' | 'away'
   kind: 'goal' | 'penalty' | 'own-goal' | 'yellow-card' | 'red-card' | 'substitution'

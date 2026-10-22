@@ -1,9 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { fetchApiFootball, getFallbackMatchData, getLeagueSeason, getSeasonMatches } from '../../../server/utils/apiFootball'
+import { fetchApiFootball, getLeagueSeason, getMatchFixture, getSeasonMatches } from '../../../server/utils/apiFootball'
 import { toSeasonMatch } from '../../../server/utils/seasonMatch'
-import { getApiFootballEvents, goalsMatchScore } from '#shared/utils/matchEvents'
-import { getApiFootballStats } from '#shared/utils/matchStats'
-import { getApiFootballLineups } from '#shared/utils/lineups'
+import { getCompetition } from '#shared/utils/competitions'
 import afSpartakRubin from '../../fixtures/api-football/spartak-rubin.json'
 import championsLeague2526 from '../../fixtures/api-football/seasons/champions-league-2025-26.json'
 import championsLeague2627 from '../../fixtures/api-football/seasons/champions-league-2026-27.json'
@@ -24,19 +22,11 @@ function stubNitro(apiKey: string, fetchMock: (...args: unknown[]) => Promise<un
     setItem: async (key: string, value: unknown) => void storage.set(key, value),
   }))
   vi.stubGlobal('$fetch', vi.fn(fetchMock))
-  vi.stubGlobal('getApiFootballEvents', getApiFootballEvents)
-  vi.stubGlobal('goalsMatchScore', goalsMatchScore)
-  vi.stubGlobal('getApiFootballStats', getApiFootballStats)
-  vi.stubGlobal('getApiFootballLineups', getApiFootballLineups)
+  vi.stubGlobal('getCompetition', getCompetition)
+  vi.stubGlobal('FINISHED_MATCH_STATUSES', new Set(['FT', 'AET', 'PEN']))
 }
 
-const okResponse = async () => ({ response: [afSpartakRubin], errors: [] })
-const failingRequest = async () => {
-  throw new Error('сеть')
-}
-
-// Голы, сохранённые до хроники: только голы, под старым ключом
-const savedGoals = [{ minute: 18, player: 'Pablo Solari', side: 'home', kind: 'goal' }]
+const respond = (...response: unknown[]) => async () => ({ response, errors: [] })
 
 beforeEach(() => {
   storage = new Map()
@@ -46,70 +36,11 @@ afterEach(() => {
   vi.unstubAllGlobals()
 })
 
-// Номер матча в каждом тесте свой: неудачи модуль помнит в памяти между вызовами
-describe('getFallbackMatchData', () => {
-  it('сохранённый целиком матч — без запроса', async () => {
-    const saved = { events: [], stats: [], lineups: null }
-    storage.set('api-football:match:1', saved)
-    stubNitro('key', okResponse)
-
-    expect(await getFallbackMatchData('1')).toEqual(saved)
-    expect($fetch).not.toHaveBeenCalled()
-  })
-
-  it('матч, от которого сохранены только голы, запрашиваем заново и сохраняем целиком', async () => {
-    storage.set('api-football:goals:2', savedGoals)
-    stubNitro('key', okResponse)
-
-    const data = await getFallbackMatchData('2')
-    expect(data?.events.filter(event => event.kind === 'goal')).toHaveLength(4)
-    expect(data?.lineups?.home.formation).toBe('4-1-4-1')
-    expect(storage.get('api-football:match:2')).toEqual(data)
-  })
-
-  it('запросить заново не вышло — отдаём сохранённые голы, они не пропадают', async () => {
-    storage.set('api-football:goals:3', savedGoals)
-    stubNitro('key', failingRequest)
-
-    expect(await getFallbackMatchData('3')).toEqual({
-      events: [{ minute: 18, player: 'Pablo Solari', side: 'home', kind: 'goal', assist: null, playerOut: null }],
-      stats: [],
-      lineups: null,
-    })
-    // И пока ждём повтора — тоже
-    expect(await getFallbackMatchData('3')).toMatchObject({ lineups: null })
-    expect($fetch).toHaveBeenCalledTimes(1)
-  })
-
-  it('сохранённое без составов при неудачном запросе отдаём как есть', async () => {
-    const saved = { events: [{ minute: 5, side: 'away', kind: 'yellow-card', player: 'J. Urozov', assist: null, playerOut: null }], stats: [] }
-    storage.set('api-football:match:4', saved)
-    stubNitro('key', failingRequest)
-
-    expect(await getFallbackMatchData('4')).toEqual({ ...saved, lineups: null })
-  })
-
-  it('без ключа API-Football — только сохранённое, без запроса', async () => {
-    storage.set('api-football:goals:5', savedGoals)
-    stubNitro('', okResponse)
-
-    expect((await getFallbackMatchData('5'))?.events).toHaveLength(1)
-    expect(await getFallbackMatchData('6')).toBeNull()
-    expect($fetch).not.toHaveBeenCalled()
-  })
-
-  it('ничего не сохранено и запрос не удался — null', async () => {
-    stubNitro('key', failingRequest)
-
-    expect(await getFallbackMatchData('7')).toBeNull()
-  })
-})
-
 const API = 'https://v3.football.api-sports.io'
 
 describe('fetchApiFootball', () => {
   it('отправляет ключ заголовком и отдаёт список из response', async () => {
-    stubNitro('key', async () => ({ response: [{ id: 1 }], errors: [] }))
+    stubNitro('key', respond({ id: 1 }))
 
     expect(await fetchApiFootball('fixtures', { league: 235, season: 2026 })).toEqual([{ id: 1 }])
     expect($fetch).toHaveBeenCalledWith(`${API}/fixtures`, expect.objectContaining({
@@ -205,5 +136,44 @@ describe('getSeasonMatches', () => {
     expect(matches.at(-1)?.round).toBe('Final')
     expect(matches.every((match, index) => index === 0 || matches[index - 1]!.timestamp <= match.timestamp)).toBe(true)
     expect($fetch).toHaveBeenCalledWith(`${API}/fixtures`, expect.objectContaining({ query: { league: '2', season: 2025 } }))
+  })
+})
+
+describe('getMatchFixture', () => {
+  // Спартак – Рубин сыгран 18 октября 2026: прошло больше 4 часов
+  it('сыгранный матч сохраняет без оценок игроков и больше не запрашивает', async () => {
+    stubNitro('key', respond({ ...afSpartakRubin, players: [{ team: { id: 558 } }] }))
+
+    const fixture = await getMatchFixture('1561417')
+    expect(fixture?.fixture.id).toBe(1561417)
+    expect(storage.get('api-football:fixture:1561417')).not.toHaveProperty('players')
+    expect(await getMatchFixture('1561417')).toEqual(storage.get('api-football:fixture:1561417'))
+    expect($fetch).toHaveBeenCalledTimes(1)
+  })
+
+  it('идущий матч и только что закончившийся не сохраняет: API ещё дописывает данные', async () => {
+    const justNow = Math.floor(Date.now() / 1000) - 2 * 60 * 60
+    stubNitro('key', respond(
+      { ...afSpartakRubin, fixture: { ...afSpartakRubin.fixture, id: 1, status: { ...afSpartakRubin.fixture.status, short: '2H' } } },
+    ))
+    expect(await getMatchFixture('1')).not.toBeNull()
+    stubNitro('key', respond({ ...afSpartakRubin, fixture: { ...afSpartakRubin.fixture, id: 2, timestamp: justNow } }))
+    expect(await getMatchFixture('2')).not.toBeNull()
+    expect(storage.size).toBe(0)
+  })
+
+  it('матча нет или он не из турниров сайта — null', async () => {
+    stubNitro('key', respond())
+    expect(await getMatchFixture('3')).toBeNull()
+    stubNitro('key', respond({ ...afSpartakRubin, league: { ...afSpartakRubin.league, id: 999 } }))
+    expect(await getMatchFixture('4')).toBeNull()
+    expect(storage.size).toBe(0)
+  })
+
+  it('сбой API — исключение: страница покажет ошибку, а не «матч не найден»', async () => {
+    stubNitro('key', async () => {
+      throw new Error('сеть')
+    })
+    await expect(getMatchFixture('5')).rejects.toThrow('сеть')
   })
 })

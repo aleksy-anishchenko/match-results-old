@@ -1,11 +1,10 @@
-import type { MatchEvent, MatchLineups, MatchStat, SeasonMatch } from '~/types'
+import type { SeasonMatch } from '~/types'
 import type { ApiFootballFixture } from '#shared/utils/matchEvents'
 import { toSeasonMatch, type ApiFootballSeasonFixture } from './seasonMatch'
 import type { ApiFootballStandingRow } from './leagueTable'
 
-// API-Football (api-sports.io). Тариф Pro: 7 500 запросов в день, счётчик обнуляется в 00:00 UTC.
-// Сайт переходит на него целиком; пока страницы на TheSportsDB, отсюда берутся только хроника, статистика
-// и составы матчей, у которых TheSportsDB ленты нет (РПЛ, Саудовская лига, Бразилия).
+// API-Football (api-sports.io) — источник всех данных сайта. Тариф Pro: 7 500 запросов в день,
+// счётчик обнуляется в 00:00 UTC. Ответы кэшируются, чтобы посетители не тратили лимит.
 
 const API = 'https://v3.football.api-sports.io'
 const TIMEOUT_MS = 10_000
@@ -89,84 +88,30 @@ export const getLeagueStandings = defineCachedFunction(async (leagueId: string, 
   getKey: (leagueId: string, season: number) => `${leagueId}-${season}`,
 })
 
-/** Матч сыгран — в основное время, в дополнительное или по пенальти */
-const FINISHED_STATUSES = new Set(['FT', 'AET', 'PEN'])
+/** Через сколько после начала сыгранный матч сохраняем навсегда: к этому времени API-Football дописывает статистику */
+const SETTLED_AFTER_MS = 4 * 60 * 60 * 1000
 
-/** Сбой сети или матч у API-Football ещё не закончен — спросим снова через 15 минут */
-const RETRY_SOON_MS = 15 * 60 * 1000
-/** Матч сыгран, а событий нет или голы не сходятся со счётом — данные если и появятся, то не скоро */
-const RETRY_LATER_MS = 6 * 60 * 60 * 1000
-
-/** Хроника, статистика и составы матча из API-Football */
-export type FallbackMatchData = {
-  events: MatchEvent[]
-  stats: MatchStat[]
-  lineups: MatchLineups | null
-}
-
-// Состояние в памяти процесса. После перезапуска сервера оно пустое, а найденные матчи лежат в хранилище
-const retryAt = new Map<string, number>()
-const pending = new Map<string, Promise<FallbackMatchData | null>>()
-
-const storageKey = (fixtureId: string) => `api-football:match:${fixtureId}`
-/** До хроники (октябрь 2026) из ответа хранились только голы — под этим ключом */
-const goalsStorageKey = (fixtureId: string) => `api-football:goals:${fixtureId}`
-
-type SavedGoal = Pick<MatchEvent, 'minute' | 'player' | 'side'> & { kind: 'goal' | 'penalty' | 'own-goal' }
-
-async function loadMatchData(fixtureId: string): Promise<FallbackMatchData | null> {
-  const [fixture] = await fetchApiFootball<ApiFootballFixture>('fixtures', { id: fixtureId }).catch(() => [])
-  if (!fixture || !FINISHED_STATUSES.has(fixture.fixture.status.short)) {
-    retryAt.set(fixtureId, Date.now() + RETRY_SOON_MS)
-    return null
-  }
-
-  // Без замен и карточек матчей не бывает: пустой список — событий у API-Football нет, а не «ничего не случилось»
-  const events = getApiFootballEvents(fixture)
-  if (!events.length || !goalsMatchScore(events, String(fixture.goals.home ?? 0), String(fixture.goals.away ?? 0))) {
-    retryAt.set(fixtureId, Date.now() + RETRY_LATER_MS)
-    return null
-  }
-
-  // Хранилище data: на проде — файлы .data/kv рядом с запущенным сервером, деплой их не трогает.
-  // Не записалось — данные всё равно отдаём, в следующий раз матч запросим снова
-  const matchData: FallbackMatchData = { events, stats: getApiFootballStats(fixture), lineups: getApiFootballLineups(fixture) }
-  await useStorage('data').setItem(storageKey(fixtureId), matchData).catch(() => {})
-  return matchData
-}
+const fixtureKey = (id: string) => `api-football:fixture:${id}`
 
 /**
- * Сохранённое по матчу раньше, пока из ответа брали не всё: без составов (нет поля lineups) или только голы
- * (старый ключ). Такой матч запрашиваем заново, а если не вышло — отдаём это: показанные голы не должны пропасть
+ * Матч по номеру — с хроникой, статистикой и составами, всё одним запросом (fixtures?id=). null — матча нет
+ * или он не из турниров сайта. Сыгранный матч больше не меняется: через 4 часа после начала он хранится всегда
+ * (хранилище data, на проде — файлы .data/kv рядом с сервером, деплой их не трогает), и за ним больше не ходим
  */
-async function getOutdatedMatchData(fixtureId: string, saved: FallbackMatchData | null): Promise<FallbackMatchData | null> {
-  if (saved) return { ...saved, lineups: null }
-  const goals = await useStorage('data').getItem<SavedGoal[]>(goalsStorageKey(fixtureId))
-  return goals ? { events: goals.map(goal => ({ ...goal, assist: null, playerOut: null })), stats: [], lineups: null } : null
-}
+export async function getMatchFixture(id: string): Promise<ApiFootballFixture | null> {
+  const storage = useStorage('data')
+  const saved = await storage.getItem<ApiFootballFixture>(fixtureKey(id)).catch(() => null)
+  if (saved) return saved
 
-/**
- * Хроника, статистика и составы сыгранного матча из API-Football по его номеру (idAPIfootball из TheSportsDB).
- * null — не узнать и раньше не сохраняли: ключа нет, у API-Football нет событий или голы не сходятся со счётом,
- * кончился дневной лимит.
- * Сходятся ли голы со счётом TheSportsDB, проверяет вызывающий.
- */
-export async function getFallbackMatchData(fixtureId: string | null | undefined): Promise<FallbackMatchData | null> {
-  if (!fixtureId) return null
+  const [fixture] = await fetchApiFootball<ApiFootballFixture>('fixtures', { id })
+  if (!fixture || !getCompetition(String(fixture.league.id))) return null
 
-  const saved = await useStorage('data').getItem<FallbackMatchData>(storageKey(fixtureId))
-  if (saved && 'lineups' in saved) return saved
-  const outdated = await getOutdatedMatchData(fixtureId, saved)
-
-  const apiKey = useRuntimeConfig().apiFootballKey
-  const now = Date.now()
-  if (!apiKey || now < limitReachedUntil || now < (retryAt.get(fixtureId) ?? 0)) return outdated
-
-  // Страницу матча открыли дважды, пока ответ ещё не пришёл, — запрос всё равно один
-  let request = pending.get(fixtureId)
-  if (!request) {
-    request = loadMatchData(fixtureId).finally(() => pending.delete(fixtureId))
-    pending.set(fixtureId, request)
+  const settled = FINISHED_MATCH_STATUSES.has(fixture.fixture.status.short)
+    && Date.now() - fixture.fixture.timestamp * 1000 > SETTLED_AFTER_MS
+  if (settled) {
+    // Без оценок и статистики игроков (players): они большие, а сайту не нужны. Не записалось — запросим снова
+    const { fixture: info, league, teams, goals, score, events, statistics, lineups } = fixture
+    await storage.setItem(fixtureKey(id), { fixture: info, league, teams, goals, score, events, statistics, lineups }).catch(() => {})
   }
-  return (await request) ?? outdated
+  return fixture
 }

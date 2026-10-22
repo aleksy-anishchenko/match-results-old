@@ -5,7 +5,6 @@ import {
   getMatchStatusKind,
   getMatchWinnerSide,
   getMoscowDate,
-  getVideoUrl,
   needsLiveScores,
 } from '#shared/utils/matches'
 import type { Match } from '~/types'
@@ -113,24 +112,6 @@ describe('getMatchStatusKind', () => {
 
   it('неизвестный код считает запланированным', () => {
     expect(getMatchStatusKind('???')).toBe('scheduled')
-  })
-})
-
-describe('getVideoUrl', () => {
-  it('https-ссылки YouTube — как есть', () => {
-    expect(getVideoUrl('https://www.youtube.com/watch?v=pDyaurLPeko')).toBe('https://www.youtube.com/watch?v=pDyaurLPeko')
-    expect(getVideoUrl('https://youtu.be/pDyaurLPeko')).toBe('https://youtu.be/pDyaurLPeko')
-    expect(getVideoUrl('https://m.youtube.com/watch?v=pDyaurLPeko')).toBe('https://m.youtube.com/watch?v=pDyaurLPeko')
-  })
-
-  it('пусто, не YouTube, не https или не адрес — null', () => {
-    expect(getVideoUrl(null)).toBeNull()
-    expect(getVideoUrl('')).toBeNull()
-    expect(getVideoUrl('http://www.youtube.com/watch?v=pDyaurLPeko')).toBeNull()
-    expect(getVideoUrl('https://notyoutube.com/watch?v=1')).toBeNull()
-    expect(getVideoUrl('https://youtube.com.evil.example/watch')).toBeNull()
-    expect(getVideoUrl('javascript:alert(1)')).toBeNull()
-    expect(getVideoUrl('просто текст')).toBeNull()
   })
 })
 

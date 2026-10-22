@@ -126,27 +126,6 @@ const venue = computed(() => props.match.venue || props.match.city)
         class="header__venue"
       >{{ venue }}</span>
     </p>
-
-    <a
-      v-if="match.video"
-      :href="match.video"
-      target="_blank"
-      rel="noopener noreferrer"
-      class="header__video"
-    >
-      <svg
-        width="14"
-        height="14"
-        viewBox="0 0 16 16"
-        aria-hidden="true"
-      >
-        <path
-          d="M4 2.5v11l9.5-5.5z"
-          fill="currentColor"
-        />
-      </svg>
-      Смотреть обзор
-    </a>
   </section>
 </template>
 
@@ -308,21 +287,6 @@ const venue = computed(() => props.match.venue || props.match.city)
 
 .header__venue {
   display: block;
-}
-
-// Обзор открывается на YouTube в новой вкладке
-.header__video {
-  @include pill-button;
-
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: 600;
-  color: $color-accent-dark;
-
-  svg {
-    color: $color-live;
-  }
 }
 
 @media (min-width: $breakpoint-desktop) {

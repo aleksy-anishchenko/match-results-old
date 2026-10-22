@@ -1,14 +1,7 @@
 import type { MatchStat } from '~/types'
 import type { ApiFootballFixture } from './matchEvents'
 
-/** Показатель из lookupeventstats TheSportsDB. Значения строками: «66», «1.77» */
-export type TheSportsDbStat = {
-  strStat: string
-  intHome: string | number | null
-  intAway: string | number | null
-}
-
-/** Что показываем и в каком порядке. Названия показателей у TheSportsDB и API-Football одинаковые */
+/** Что показываем и в каком порядке: названия показателей из API-Football */
 const MATCH_STATS: Array<{ name: string, label: string, format: MatchStat['format'] }> = [
   { name: 'Ball Possession', label: 'Владение мячом', format: 'percent' },
   { name: 'expected_goals', label: 'Ожидаемые голы (xG)', format: 'decimal' },
@@ -20,7 +13,7 @@ const MATCH_STATS: Array<{ name: string, label: string, format: MatchStat['forma
   { name: 'Goalkeeper Saves', label: 'Сейвы', format: 'number' },
 ]
 
-/** «66%» и «3.39» у API-Football, «66» у TheSportsDB. null — у API-Football это 0 */
+/** «66%», «3.39», 12. null — у API-Football это 0 */
 const toNumber = (value: string | number | null | undefined) => Number(String(value ?? 0).replace('%', '')) || 0
 
 /**
@@ -33,11 +26,6 @@ function pickStats(values: Map<string, [number, number]>): MatchStat[] {
     return pair ? [{ label, home: pair[0], away: pair[1], format }] : []
   })
   return stats.some(stat => stat.home || stat.away) ? stats : []
-}
-
-/** Статистика матча из TheSportsDB */
-export function getTheSportsDbStats(stats: TheSportsDbStat[]): MatchStat[] {
-  return pickStats(new Map(stats.map(stat => [stat.strStat, [toNumber(stat.intHome), toNumber(stat.intAway)]])))
 }
 
 /** Статистика матча из API-Football: там она по командам, хозяев узнаём по номеру команды */

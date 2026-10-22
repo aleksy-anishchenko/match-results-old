@@ -1,23 +1,44 @@
 {
   "fixture": {
     "id": 1544371,
+    "timestamp": 1780156800,
+    "venue": {
+      "name": "Ferenc Puskás Stadium",
+      "city": "Budapest"
+    },
     "status": {
-      "short": "PEN"
+      "short": "PEN",
+      "elapsed": 120,
+      "extra": null
     }
+  },
+  "league": {
+    "id": 2,
+    "name": "UEFA Champions League",
+    "season": 2025,
+    "round": "Final"
   },
   "teams": {
     "home": {
       "id": 85,
-      "name": "Paris Saint Germain"
+      "name": "Paris Saint Germain",
+      "logo": ""
     },
     "away": {
       "id": 42,
-      "name": "Arsenal"
+      "name": "Arsenal",
+      "logo": ""
     }
   },
   "goals": {
     "home": 1,
     "away": 1
+  },
+  "score": {
+    "penalty": {
+      "home": 4,
+      "away": 3
+    }
   },
   "events": [
     {
@@ -26,8 +47,7 @@
         "extra": null
       },
       "team": {
-        "id": 42,
-        "name": "Arsenal"
+        "id": 42
       },
       "player": {
         "name": "Kai Havertz"
@@ -45,8 +65,7 @@
         "extra": null
       },
       "team": {
-        "id": 42,
-        "name": "Arsenal"
+        "id": 42
       },
       "player": {
         "name": "Cristhian Mosquera"
@@ -64,8 +83,7 @@
         "extra": null
       },
       "team": {
-        "id": 42,
-        "name": "Arsenal"
+        "id": 42
       },
       "player": {
         "name": "Bukayo Saka"
@@ -83,8 +101,7 @@
         "extra": null
       },
       "team": {
-        "id": 85,
-        "name": "Paris Saint Germain"
+        "id": 85
       },
       "player": {
         "name": "Ousmane Dembélé"
@@ -102,8 +119,7 @@
         "extra": null
       },
       "team": {
-        "id": 42,
-        "name": "Arsenal"
+        "id": 42
       },
       "player": {
         "name": "Martin Ødegaard"
@@ -121,8 +137,7 @@
         "extra": null
       },
       "team": {
-        "id": 42,
-        "name": "Arsenal"
+        "id": 42
       },
       "player": {
         "name": "Cristhian Mosquera"
@@ -140,8 +155,7 @@
         "extra": null
       },
       "team": {
-        "id": 85,
-        "name": "Paris Saint Germain"
+        "id": 85
       },
       "player": {
         "name": "Khvicha Kvaratskhelia"
@@ -159,8 +173,7 @@
         "extra": null
       },
       "team": {
-        "id": 42,
-        "name": "Arsenal"
+        "id": 42
       },
       "player": {
         "name": "Bukayo Saka"
@@ -178,8 +191,7 @@
         "extra": null
       },
       "team": {
-        "id": 42,
-        "name": "Arsenal"
+        "id": 42
       },
       "player": {
         "name": "Leandro Trossard"
@@ -197,8 +209,7 @@
         "extra": 6
       },
       "team": {
-        "id": 85,
-        "name": "Paris Saint Germain"
+        "id": 85
       },
       "player": {
         "name": "João Neves"
@@ -216,8 +227,7 @@
         "extra": null
       },
       "team": {
-        "id": 85,
-        "name": "Paris Saint Germain"
+        "id": 85
       },
       "player": {
         "name": "Ousmane Dembélé"
@@ -235,8 +245,7 @@
         "extra": null
       },
       "team": {
-        "id": 42,
-        "name": "Arsenal"
+        "id": 42
       },
       "player": {
         "name": "Kai Havertz"
@@ -254,8 +263,7 @@
         "extra": null
       },
       "team": {
-        "id": 42,
-        "name": "Arsenal"
+        "id": 42
       },
       "player": {
         "name": "Myles Lewis-Skelly"
@@ -273,8 +281,7 @@
         "extra": null
       },
       "team": {
-        "id": 85,
-        "name": "Paris Saint Germain"
+        "id": 85
       },
       "player": {
         "name": "Fabián Ruiz"
@@ -292,8 +299,7 @@
         "extra": null
       },
       "team": {
-        "id": 42,
-        "name": "Arsenal"
+        "id": 42
       },
       "player": {
         "name": "Viktor Gyökeres"
@@ -311,8 +317,7 @@
         "extra": null
       },
       "team": {
-        "id": 42,
-        "name": "Arsenal"
+        "id": 42
       },
       "player": {
         "name": "Declan Rice"
@@ -330,8 +335,7 @@
         "extra": null
       },
       "team": {
-        "id": 85,
-        "name": "Paris Saint Germain"
+        "id": 85
       },
       "player": {
         "name": "Marquinhos"
@@ -349,8 +353,7 @@
         "extra": null
       },
       "team": {
-        "id": 85,
-        "name": "Paris Saint Germain"
+        "id": 85
       },
       "player": {
         "name": "Vitinha"
@@ -368,8 +371,7 @@
         "extra": null
       },
       "team": {
-        "id": 85,
-        "name": "Paris Saint Germain"
+        "id": 85
       },
       "player": {
         "name": "Nuno Mendes"
@@ -385,8 +387,7 @@
   "statistics": [
     {
       "team": {
-        "id": 85,
-        "name": "Paris Saint Germain"
+        "id": 85
       },
       "statistics": [
         {
@@ -465,8 +466,7 @@
     },
     {
       "team": {
-        "id": 42,
-        "name": "Arsenal"
+        "id": 42
       },
       "statistics": [
         {
@@ -547,8 +547,7 @@
   "lineups": [
     {
       "team": {
-        "id": 85,
-        "name": "Paris Saint Germain"
+        "id": 85
       },
       "formation": "4-3-3",
       "startXI": [
@@ -745,8 +744,7 @@
     },
     {
       "team": {
-        "id": 42,
-        "name": "Arsenal"
+        "id": 42
       },
       "formation": "4-2-3-1",
       "startXI": [

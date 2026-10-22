@@ -1,23 +1,44 @@
 {
   "fixture": {
     "id": 1561417,
+    "timestamp": 1792338300,
+    "venue": {
+      "name": "Lukoil Arena",
+      "city": "Moscow"
+    },
     "status": {
-      "short": "FT"
+      "short": "FT",
+      "elapsed": 90,
+      "extra": null
     }
+  },
+  "league": {
+    "id": 235,
+    "name": "Premier League",
+    "season": 2026,
+    "round": "Regular Season - 11"
   },
   "teams": {
     "home": {
       "id": 558,
-      "name": "Spartak Moscow"
+      "name": "Spartak Moscow",
+      "logo": ""
     },
     "away": {
       "id": 1083,
-      "name": "Rubin"
+      "name": "Rubin",
+      "logo": ""
     }
   },
   "goals": {
     "home": 4,
     "away": 0
+  },
+  "score": {
+    "penalty": {
+      "home": null,
+      "away": null
+    }
   },
   "events": [
     {
@@ -26,8 +47,7 @@
         "extra": null
       },
       "team": {
-        "id": 1083,
-        "name": "Rubin"
+        "id": 1083
       },
       "player": {
         "name": "Jakhongir Urozov"
@@ -45,8 +65,7 @@
         "extra": null
       },
       "team": {
-        "id": 558,
-        "name": "Spartak Moscow"
+        "id": 558
       },
       "player": {
         "name": "Manfred Ugalde"
@@ -64,8 +83,7 @@
         "extra": null
       },
       "team": {
-        "id": 558,
-        "name": "Spartak Moscow"
+        "id": 558
       },
       "player": {
         "name": "Pablo Solari"
@@ -83,8 +101,7 @@
         "extra": null
       },
       "team": {
-        "id": 558,
-        "name": "Spartak Moscow"
+        "id": 558
       },
       "player": {
         "name": "Victor Parada"
@@ -102,8 +119,7 @@
         "extra": null
       },
       "team": {
-        "id": 558,
-        "name": "Spartak Moscow"
+        "id": 558
       },
       "player": {
         "name": "Manfred Ugalde"
@@ -121,8 +137,7 @@
         "extra": null
       },
       "team": {
-        "id": 1083,
-        "name": "Rubin"
+        "id": 1083
       },
       "player": {
         "name": "Ulvi Babaev"
@@ -140,8 +155,7 @@
         "extra": null
       },
       "team": {
-        "id": 558,
-        "name": "Spartak Moscow"
+        "id": 558
       },
       "player": {
         "name": "Victor Parada"
@@ -159,8 +173,7 @@
         "extra": null
       },
       "team": {
-        "id": 558,
-        "name": "Spartak Moscow"
+        "id": 558
       },
       "player": {
         "name": "Marquinhos"
@@ -178,8 +191,7 @@
         "extra": null
       },
       "team": {
-        "id": 558,
-        "name": "Spartak Moscow"
+        "id": 558
       },
       "player": {
         "name": "Manfred Ugalde"
@@ -197,8 +209,7 @@
         "extra": null
       },
       "team": {
-        "id": 558,
-        "name": "Spartak Moscow"
+        "id": 558
       },
       "player": {
         "name": "Mirlind Daku"
@@ -216,8 +227,7 @@
         "extra": null
       },
       "team": {
-        "id": 1083,
-        "name": "Rubin"
+        "id": 1083
       },
       "player": {
         "name": "Jakhongir Urozov"
@@ -235,8 +245,7 @@
         "extra": null
       },
       "team": {
-        "id": 1083,
-        "name": "Rubin"
+        "id": 1083
       },
       "player": {
         "name": "Veldin Hodza"
@@ -254,8 +263,7 @@
         "extra": null
       },
       "team": {
-        "id": 1083,
-        "name": "Rubin"
+        "id": 1083
       },
       "player": {
         "name": "Jacques Siwe"
@@ -273,8 +281,7 @@
         "extra": null
       },
       "team": {
-        "id": 558,
-        "name": "Spartak Moscow"
+        "id": 558
       },
       "player": {
         "name": "Pablo Solari"
@@ -292,8 +299,7 @@
         "extra": null
       },
       "team": {
-        "id": 1083,
-        "name": "Rubin"
+        "id": 1083
       },
       "player": {
         "name": "Eddie Salcedo"
@@ -311,8 +317,7 @@
         "extra": null
       },
       "team": {
-        "id": 558,
-        "name": "Spartak Moscow"
+        "id": 558
       },
       "player": {
         "name": "Esequiel Barco"
@@ -330,8 +335,7 @@
         "extra": null
       },
       "team": {
-        "id": 558,
-        "name": "Spartak Moscow"
+        "id": 558
       },
       "player": {
         "name": "Ivan Sorokin"
@@ -349,8 +353,7 @@
         "extra": null
       },
       "team": {
-        "id": 558,
-        "name": "Spartak Moscow"
+        "id": 558
       },
       "player": {
         "name": "Mirlind Daku"
@@ -366,8 +369,7 @@
   "statistics": [
     {
       "team": {
-        "id": 558,
-        "name": "Spartak Moscow"
+        "id": 558
       },
       "statistics": [
         {
@@ -442,8 +444,7 @@
     },
     {
       "team": {
-        "id": 1083,
-        "name": "Rubin"
+        "id": 1083
       },
       "statistics": [
         {
@@ -520,8 +521,7 @@
   "lineups": [
     {
       "team": {
-        "id": 558,
-        "name": "Spartak Moscow"
+        "id": 558
       },
       "formation": "4-1-4-1",
       "startXI": [
@@ -710,8 +710,7 @@
     },
     {
       "team": {
-        "id": 1083,
-        "name": "Rubin"
+        "id": 1083
       },
       "formation": "5-4-1",
       "startXI": [
