@@ -12,8 +12,6 @@ const props = defineProps<{
 const badgeUrl = computed(() =>
   props.badge ? getBadgeUrl(props.badge) : '',
 )
-
-const localName = computed(() => getTeamName(props.name))
 </script>
 
 <template>
@@ -40,7 +38,7 @@ const localName = computed(() => getTeamName(props.name))
         'team__name--lose': result === 'lose',
         'team__name--muted': muted,
       }"
-    >{{ localName }}</span>
+    >{{ name }}</span>
   </div>
 </template>
 

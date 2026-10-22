@@ -47,8 +47,8 @@ function match(idEvent: string, homeTeam: string, awayTeam: string, round: strin
 // «Эвертон – Ливерпуль» начался полчаса назад: по расписанию идёт 1-й тайм
 const halfHourAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString().slice(0, 19)
 const MATCHES_BY_ROUND: Record<string, Match[]> = {
-  6: [match('1', 'Chelsea', 'Arsenal', '6')],
-  7: [{ ...match('2', 'Everton', 'Liverpool', '7'), status: '1H', timestamp: halfHourAgo }],
+  6: [match('1', 'Челси', 'Арсенал', '6')],
+  7: [{ ...match('2', 'Эвертон', 'Ливерпуль', '7'), status: '1H', timestamp: halfHourAgo }],
 }
 
 // Запросы матчей, которые сделала страница: по ним видно, нет ли лишних
@@ -67,7 +67,7 @@ registerEndpoint('/api/matches', (event) => {
   const query = new URL(event.path, 'http://localhost').searchParams
   matchRequests.push(Object.fromEntries(query))
   const round = query.get('round') ?? (query.get('dateFrom') ? null : ROUNDS.current)
-  return { matches: round ? MATCHES_BY_ROUND[round] ?? [] : [match('3', 'Fulham', 'Brentford', '7')] }
+  return { matches: round ? MATCHES_BY_ROUND[round] ?? [] : [match('3', 'Фулхэм', 'Брентфорд', '7')] }
 })
 
 // Страницы прошлых тестов сами не размонтируются и тоже ответили бы на смену лиги — убираем их после теста

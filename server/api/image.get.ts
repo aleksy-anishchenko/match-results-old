@@ -1,8 +1,8 @@
 // Сколько ждать ответа источника: зависший запрос не должен держать картинку в браузере бесконечно
 const UPSTREAM_TIMEOUT_MS = 10_000
 
-// Эмблемы API-Football и, пока сайт переходит на него, TheSportsDB
-const IMAGE_HOSTS = ['https://media.api-sports.io/', 'https://www.thesportsdb.com/', 'https://r2.thesportsdb.com/']
+// Эмблемы команд и лиг API-Football
+const IMAGE_HOSTS = ['https://media.api-sports.io/']
 
 export default defineEventHandler(async (event) => {
   const query = getQuery(event)

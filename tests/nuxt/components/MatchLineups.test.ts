@@ -6,8 +6,8 @@ describe('MatchLineups', () => {
   it('хозяева слева, гости справа: название по-русски, схема, линии, запасные, тренер', async () => {
     const wrapper = await mountSuspended(MatchLineups, {
       props: {
-        homeTeam: 'Spartak Moscow',
-        awayTeam: 'Rubin Kazan',
+        homeTeam: 'Спартак',
+        awayTeam: 'Рубин',
         lineups: {
           home: {
             formation: '4-1-4-1',

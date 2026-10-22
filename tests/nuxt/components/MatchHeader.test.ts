@@ -6,8 +6,8 @@ import type { MatchDetails } from '~/types'
 function makeMatch(overrides: Partial<MatchDetails> = {}): MatchDetails {
   return {
     idEvent: '1',
-    homeTeam: 'Liverpool',
-    awayTeam: 'Manchester City',
+    homeTeam: 'Ливерпуль',
+    awayTeam: 'Манчестер Сити',
     homeBadge: '',
     awayBadge: '',
     homeScore: '2',

@@ -68,7 +68,7 @@ function selectMatchCompetition() {
 
 useHead({
   title: computed(() => match.value
-    ? `${getTeamName(match.value.homeTeam)} – ${getTeamName(match.value.awayTeam)}`
+    ? `${match.value.homeTeam} – ${match.value.awayTeam}`
     : 'Матч'),
 })
 </script>

@@ -4,7 +4,6 @@ import { getCompetition } from '#shared/utils/competitions'
 import { PENALTY_MATCH_STATUSES, getMatchStatusKind, getMatchWinnerSide, getMoscowDate } from '#shared/utils/matches'
 import { getBadgeUrl } from '~/utils/images'
 import { formatMatchStatus, formatMoscowTime, formatReadableDate } from '~/utils/matches'
-import { getTeamName } from '~/utils/teamNames'
 
 const props = defineProps<{ match: MatchDetails }>()
 
@@ -28,7 +27,7 @@ const context = computed(() => {
 
 const teams = computed(() => (['home', 'away'] as const).map(side => ({
   side,
-  name: getTeamName(side === 'home' ? props.match.homeTeam : props.match.awayTeam),
+  name: side === 'home' ? props.match.homeTeam : props.match.awayTeam,
   badge: side === 'home' ? props.match.homeBadge : props.match.awayBadge,
   result: winner.value ? (winner.value === side ? 'win' : 'lose') : null,
   // Победитель серии пенальти точно проходит дальше. Победитель в доп. время — не всегда:

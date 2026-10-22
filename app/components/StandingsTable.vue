@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { GroupStanding } from '~/types'
 import { getBadgeUrl } from '~/utils/images'
-import { getTeamName } from '~/utils/teamNames'
 
 defineProps<{
   rows: GroupStanding[]
@@ -111,7 +110,7 @@ function formatGoalDiff(goalDiff: number): string {
                   v-else
                   class="table__badge table__badge--empty"
                 />
-                <span class="table__name">{{ getTeamName(row.team) }}</span>
+                <span class="table__name">{{ row.team }}</span>
               </span>
             </td>
             <td>{{ row.played }}</td>

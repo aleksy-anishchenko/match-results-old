@@ -18,8 +18,8 @@ const ROUNDS: RoundsResponse = {
 // Матч РПЛ, хотя выбрана АПЛ
 const MATCH: MatchDetails = {
   idEvent: '1',
-  homeTeam: 'Spartak Moscow',
-  awayTeam: 'Rubin Kazan',
+  homeTeam: 'Спартак',
+  awayTeam: 'Рубин',
   homeBadge: '',
   awayBadge: '',
   homeScore: '1',

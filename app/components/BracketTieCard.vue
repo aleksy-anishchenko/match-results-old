@@ -35,7 +35,7 @@ defineProps<{
         v-else
         class="tie-card__badge tie-card__badge--empty"
       />
-      <span class="tie-card__name">{{ getTeamName(team.name) || 'Не определен' }}</span>
+      <span class="tie-card__name">{{ team.name || 'Не определен' }}</span>
       <!-- В паре из двух матчей: мелко голы в каждом сыгранном матче, крупно сумма -->
       <span
         v-if="team.goals.length > 1"

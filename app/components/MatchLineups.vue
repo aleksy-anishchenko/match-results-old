@@ -9,8 +9,8 @@ const props = defineProps<{
 
 // Как в хронике: хозяева слева, гости справа
 const teams = computed(() => [
-  { side: 'home', name: getTeamName(props.homeTeam), lineup: props.lineups.home },
-  { side: 'away', name: getTeamName(props.awayTeam), lineup: props.lineups.away },
+  { side: 'home', name: props.homeTeam, lineup: props.lineups.home },
+  { side: 'away', name: props.awayTeam, lineup: props.lineups.away },
 ] as const)
 </script>
 
