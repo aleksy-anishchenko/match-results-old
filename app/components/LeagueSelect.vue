@@ -1,17 +1,7 @@
 <script setup lang="ts">
-import type { CompetitionWithBadge } from '~/types'
-
 const { selectedId, competition } = useCompetition()
 
-const { data: competitionsData } = await useFetch<{ competitions: CompetitionWithBadge[] }>('/api/competitions')
-
-const badgeById = computed(() => {
-  const map: Record<string, string> = {}
-  for (const item of competitionsData.value?.competitions ?? []) {
-    if (item.badge) map[item.id] = getBadgeUrl(item.badge)
-  }
-  return map
-})
+const badgeOf = (id: string) => getBadgeUrl(getCompetitionBadge(id))
 
 const groups = COMPETITION_CATEGORIES
   .map(category => ({ label: category, items: COMPETITIONS.filter(item => item.category === category) }))
@@ -28,9 +18,6 @@ function select(id: string | null) {
   if (id) selectedId.value = id
   dropdown.value.close()
 }
-
-// Белые логотипы (ЛЧ, ЛЕ) на белом не видны, подкладываем самый тёмный цвет палитры
-const isWhiteBadge = (id: string) => getCompetition(id)?.whiteBadge ?? false
 </script>
 
 <template>
@@ -44,10 +31,8 @@ const isWhiteBadge = (id: string) => getCompetition(id)?.whiteBadge ?? false
   >
     <template #value>
       <img
-        v-if="badgeById[competition.id]"
-        :src="badgeById[competition.id]"
+        :src="badgeOf(competition.id)"
         class="field-icon badge"
-        :class="{ 'badge--bg': isWhiteBadge(competition.id) }"
         alt=""
       >
       <span class="field-label league__name">{{ competition.name }}</span>
@@ -76,16 +61,10 @@ const isWhiteBadge = (id: string) => getCompetition(id)?.whiteBadge ?? false
       >
         <template #option="{ option }">
           <img
-            v-if="badgeById[option.id]"
-            :src="badgeById[option.id]"
+            :src="badgeOf(option.id)"
             class="badge badge--option"
-            :class="{ 'badge--bg': isWhiteBadge(option.id) }"
             alt=""
           >
-          <span
-            v-else
-            class="badge badge--option"
-          />
           <span
             class="option__name"
             :class="{ 'option__name--selected': option.id === selectedId }"
@@ -138,12 +117,6 @@ const isWhiteBadge = (id: string) => getCompetition(id)?.whiteBadge ?? false
 .badge--option {
   width: 24px;
   height: 24px;
-}
-
-.badge--bg {
-  padding: 2px;
-  border-radius: 6px;
-  background: $color-text;
 }
 
 .league__name {

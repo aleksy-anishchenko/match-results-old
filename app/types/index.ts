@@ -14,11 +14,7 @@ export type Competition = {
    * зоны в ней по месту, первый раунд плей-офф — раунд плей-офф перед 1/8
    */
   leaguePhase?: boolean
-  /** Логотип преимущественно белый — показывать на тёмной подложке */
-  whiteBadge?: boolean
 }
-
-export type CompetitionWithBadge = Competition & { badge: string | null }
 
 export type Match = {
   idEvent: string

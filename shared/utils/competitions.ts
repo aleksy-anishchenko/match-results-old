@@ -57,7 +57,6 @@ export const COMPETITIONS: Competition[] = [
     type: 'tournament',
     category: 'Еврокубки',
     leaguePhase: true,
-    whiteBadge: true,
   },
   {
     id: '3',
@@ -66,7 +65,6 @@ export const COMPETITIONS: Competition[] = [
     type: 'tournament',
     category: 'Еврокубки',
     leaguePhase: true,
-    whiteBadge: true,
   },
   {
     id: '88',
@@ -74,7 +72,6 @@ export const COMPETITIONS: Competition[] = [
     country: 'Нидерланды',
     type: 'league',
     category: 'Остальной мир',
-    whiteBadge: true,
   },
   {
     id: '94',
@@ -82,7 +79,6 @@ export const COMPETITIONS: Competition[] = [
     country: 'Португалия',
     type: 'league',
     category: 'Остальной мир',
-    whiteBadge: true,
   },
   {
     id: '144',
@@ -90,7 +86,6 @@ export const COMPETITIONS: Competition[] = [
     country: 'Бельгия',
     type: 'league',
     category: 'Остальной мир',
-    whiteBadge: true,
   },
   {
     id: '203',
@@ -130,6 +125,9 @@ export const COMPETITIONS: Competition[] = [
 ]
 
 export const DEFAULT_COMPETITION_ID = '39'
+
+/** Эмблема турнира у API-Football: адрес известен по номеру, спрашивать его не нужно. Тёмная на прозрачном фоне */
+export const getCompetitionBadge = (id: string) => `https://media.api-sports.io/football/leagues/${id}.png`
 
 /**
  * Номера турниров в TheSportsDB, на данных которого сайт работал до перехода на API-Football: под ними лежит

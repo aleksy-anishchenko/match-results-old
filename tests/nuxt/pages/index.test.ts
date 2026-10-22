@@ -55,7 +55,6 @@ const MATCHES_BY_ROUND: Record<string, Match[]> = {
 const matchRequests: Array<Record<string, string>> = []
 
 registerEndpoint('/api/rounds', () => ROUNDS)
-registerEndpoint('/api/competitions', () => ({ competitions: [] }))
 // По живым данным «Эвертон – Ливерпуль» идёт: 52-я минута, 1:0. Счётчик — сколько раз страница спросила, и о каких матчах
 let liveRequests = 0
 const liveRequestIds: string[] = []
