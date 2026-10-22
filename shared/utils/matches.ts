@@ -28,11 +28,17 @@ export function getMatchStatusKind(status: string): MatchStatusKind {
 /** Время матча идёт — показываем минуту. В перерыве и серии пенальти — подпись статуса («Перерыв») */
 const RUNNING_MATCH_STATUSES = new Set(['1H', '2H', 'ET'])
 
-type LiveFields = Pick<Match, 'status' | 'homeScore' | 'awayScore' | 'progress'>
+/** Минута идущего матча из API-Football: «52», с добавленным временем — «45+2». null — время не идёт */
+export function formatMatchProgress(status: string, elapsed: number | null, extra: number | null): string | null {
+  if (!RUNNING_MATCH_STATUSES.has(status) || elapsed == null) return null
+  return extra ? `${elapsed}+${extra}` : String(elapsed)
+}
+
+type LiveFields = Pick<Match, 'status' | 'homeScore' | 'awayScore' | 'homePenScore' | 'awayPenScore' | 'progress'>
 
 /**
- * Матч со счётом, статусом и минутой из livescore. Если по расписанию матч уже закончен или не состоится,
- * верим расписанию: закончившийся матч остаётся в livescore ещё какое-то время и там может отстать
+ * Матч со счётом, статусом и минутой из живых данных. Если по расписанию матч уже закончен или не состоится,
+ * верим расписанию: живые данные о нём и так те же, а расписание с ними уже сошлось
  */
 export function applyLiveScore<T extends LiveFields>(match: T, live: LiveScore | undefined): T {
   if (!live || FINISHED_MATCH_STATUSES.has(match.status) || INACTIVE_MATCH_STATUSES.has(match.status)) return match
@@ -41,6 +47,8 @@ export function applyLiveScore<T extends LiveFields>(match: T, live: LiveScore |
     status: live.status,
     homeScore: live.homeScore,
     awayScore: live.awayScore,
+    homePenScore: live.homePenScore,
+    awayPenScore: live.awayPenScore,
     progress: RUNNING_MATCH_STATUSES.has(live.status) ? live.progress : null,
   }
 }
@@ -49,20 +57,20 @@ export function applyLiveScore<T extends LiveFields>(match: T, live: LiveScore |
 const LIVE_WINDOW_MS = 3 * 60 * 60 * 1000
 
 /**
- * Пора ли спросить livescore: по расписанию среди матчей есть идущий или тот, что по времени уже должен идти,
- * а расписание ещё пишет «не начался», — не дольше 3 часов от начала. Решаем по расписанию, а не по livescore:
- * по livescore матч заканчивается раньше, чем страница успевает получить его итоговые хронику и составы.
+ * Матчи, о которых пора спросить живые данные: по расписанию идущие и те, что по времени уже должны идти,
+ * а расписание ещё пишет «не начался», — не дольше 3 часов от начала. Решаем по расписанию, а не по живым
+ * данным: по ним матч заканчивается раньше, чем страница успевает получить его итоговые хронику и составы.
  * now — миллисекунды, как Date.now()
  */
-export function needsLiveScores(matches: Array<Pick<Match, 'status' | 'timestamp'>>, now: number): boolean {
-  return matches.some((match) => {
+export function getDueMatchIds(matches: Array<Pick<Match, 'idEvent' | 'status' | 'timestamp'>>, now: number): string[] {
+  return matches.filter((match) => {
     const kind = getMatchStatusKind(match.status)
     if (kind !== 'live' && kind !== 'scheduled') return false
     const startsAt = Date.parse(`${match.timestamp}Z`)
     // Без времени начала окна не посчитать: идущий матч всё равно обновляем
     if (Number.isNaN(startsAt)) return kind === 'live'
     return startsAt <= now && now - startsAt < LIVE_WINDOW_MS
-  })
+  }).map(match => match.idEvent)
 }
 
 export function getMatchWinnerSide(

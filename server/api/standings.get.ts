@@ -11,5 +11,6 @@ export default cachedEventHandler(async (event): Promise<StandingsResponse> => {
   return { groups: toLeagueTable(groups, competition), season: String(season) }
 }, {
   maxAge: 60,
+  swr: false,
   getKey: event => `standings-${getQuery(event).leagueId ?? DEFAULT_COMPETITION_ID}`,
 })

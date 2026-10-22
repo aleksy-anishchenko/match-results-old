@@ -45,7 +45,7 @@ const { data, pending, error } = await useFetch<MatchesResponse>('/api/matches',
 })
 
 // Счёт и минута идущих матчей обновляются сами, раз в минуту
-const liveMatches = await useLiveScores(leagueId, () => data.value?.matches ?? [])
+const liveMatches = await useLiveScores(() => data.value?.matches ?? [])
 
 const groupedMatches = computed(() => groupMatchesByDate(liveMatches.value))
 

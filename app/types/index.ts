@@ -31,7 +31,7 @@ export type Match = {
   homePenScore: number | null
   awayPenScore: number | null
   status: string
-  /** Минута идущего матча («52») из livescore; null — время не идёт или минуты нет */
+  /** Минута идущего матча («52», «45+2») из /api/live; null — время не идёт или минуты нет */
   progress: string | null
   timestamp: string
   date: string
@@ -70,17 +70,20 @@ export type MatchesResponse = {
   matches: Match[]
 }
 
-/** Счёт и минута матча из livescore TheSportsDB: свежее расписания, где счёт отстаёт, а минуты нет */
+/** Счёт и минута идущего матча из API-Football: свежее расписания, которое хранится несколько минут */
 export type LiveScore = {
   status: string
-  /** Минута: «52»; null — нет */
+  /** Минута: «52», «45+2»; null — время не идёт (перерыв, пенальти, матч закончен) */
   progress: string | null
   homeScore: string | null
   awayScore: string | null
+  /** Счёт серии пенальти; null — серии нет */
+  homePenScore: number | null
+  awayPenScore: number | null
 }
 
 export type LiveScoresResponse = {
-  /** Ключ — idEvent. Только матчи лиги, которые сейчас в livescore: идущие и недавно закончившиеся */
+  /** Ключ — номер матча. Только матчи, о которых спросила страница, и только из турниров сайта */
   scores: Record<string, LiveScore>
 }
 

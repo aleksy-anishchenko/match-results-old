@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { fetchApiFootball, getLeagueSeason, getMatchFixture, getSeasonMatches } from '../../../server/utils/apiFootball'
+import { fetchApiFootball, getFixturesByIds, getLeagueSeason, getMatchFixture, getSeasonMatches } from '../../../server/utils/apiFootball'
 import { toSeasonMatch } from '../../../server/utils/seasonMatch'
 import { getCompetition } from '#shared/utils/competitions'
 import afSpartakRubin from '../../fixtures/api-football/spartak-rubin.json'
@@ -175,5 +175,20 @@ describe('getMatchFixture', () => {
       throw new Error('сеть')
     })
     await expect(getMatchFixture('5')).rejects.toThrow('сеть')
+  })
+})
+
+describe('getFixturesByIds', () => {
+  it('по 20 номеров в запросе, ответы вместе', async () => {
+    stubNitro('key', async (...args: unknown[]) => {
+      const ids = String((args[1] as { query: { ids: string } }).query.ids).split('-')
+      return { response: ids.map(id => ({ fixture: { id: Number(id) } })), errors: [] }
+    })
+    const ids = Array.from({ length: 25 }, (_, index) => String(index + 1))
+
+    const fixtures = await getFixturesByIds(ids)
+    expect(fixtures.map(item => item.fixture.id)).toEqual(ids.map(Number))
+    expect($fetch).toHaveBeenCalledTimes(2)
+    expect($fetch).toHaveBeenCalledWith(`${API}/fixtures`, expect.objectContaining({ query: { ids: ids.slice(0, 20).join('-') }, timeout: 5000 }))
   })
 })

@@ -56,11 +56,13 @@ const matchRequests: Array<Record<string, string>> = []
 
 registerEndpoint('/api/rounds', () => ROUNDS)
 registerEndpoint('/api/competitions', () => ({ competitions: [] }))
-// По livescore «Эвертон – Ливерпуль» идёт: 52-я минута, 1:0. Счётчик — сколько раз страница спросила
+// По живым данным «Эвертон – Ливерпуль» идёт: 52-я минута, 1:0. Счётчик — сколько раз страница спросила, и о каких матчах
 let liveRequests = 0
-registerEndpoint('/api/live', () => {
+const liveRequestIds: string[] = []
+registerEndpoint('/api/live', (event) => {
   liveRequests++
-  return { scores: { 2: { status: '2H', progress: '52', homeScore: '1', awayScore: '0' } } }
+  liveRequestIds.push(new URL(event.path, 'http://localhost').searchParams.get('ids') ?? '')
+  return { scores: { 2: { status: '2H', progress: '52', homeScore: '1', awayScore: '0', homePenScore: null, awayPenScore: null } } }
 })
 registerEndpoint('/api/matches', (event) => {
   const query = new URL(event.path, 'http://localhost').searchParams
@@ -154,14 +156,14 @@ describe('главная', () => {
     expect(page.find('h1').text()).toBe('Матчи: Ла Лига')
   })
 
-  it('идущих матчей нет — livescore не спрашиваем', async () => {
+  it('идущих матчей нет — живые данные не спрашиваем', async () => {
     const before = liveRequests
     const page = await mountPage('/?round=6')
     expect(page.text()).toContain('Челси')
     expect(liveRequests).toBe(before)
   })
 
-  it('идущий матч — минута и счёт из livescore, раз в минуту спрашиваем заново', async () => {
+  it('идущий матч — минута и счёт из живых данных, раз в минуту спрашиваем о нём заново', async () => {
     vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] })
     try {
       const page = await mountPage('/')
@@ -169,6 +171,8 @@ describe('главная', () => {
       expect(match.classes()).toContain('match--live')
       expect(match.get('.match__state').text()).toBe('52′')
       expect(match.findAll('.score__goals').map(goals => goals.text())).toEqual(['1', '0'])
+      // Спрашиваем только об идущем матче, а не обо всей лиге
+      expect(liveRequestIds.at(-1)).toBe('2')
       const before = liveRequests
       vi.advanceTimersByTime(60_000)
       await vi.waitFor(() => expect(liveRequests).toBe(before + 1))

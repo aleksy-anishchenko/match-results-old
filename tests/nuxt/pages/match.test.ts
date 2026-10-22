@@ -72,11 +72,12 @@ liveMatch('4', {
   awayScore: '0',
   events: [{ minute: 18, extra: null, side: 'home', kind: 'goal', player: 'Pablo Solari', assist: null, playerOut: null }],
 })
+const noPenalties = { homePenScore: null, awayPenScore: null }
 registerEndpoint('/api/live', () => ({
   scores: {
-    3: { status: '2H', progress: '52', homeScore: '1', awayScore: '0' },
-    4: { status: '2H', progress: '70', homeScore: '2', awayScore: '0' },
-    5: { status: 'FT', progress: '90', homeScore: '1', awayScore: '0' },
+    3: { status: '2H', progress: '52', homeScore: '1', awayScore: '0', ...noPenalties },
+    4: { status: '2H', progress: '70', homeScore: '2', awayScore: '0', ...noPenalties },
+    5: { status: 'FT', progress: null, homeScore: '1', awayScore: '0', ...noPenalties },
   },
 }))
 

@@ -18,5 +18,6 @@ export default cachedEventHandler(async (event): Promise<RoundsResponse> => {
   }
 }, {
   maxAge: 60,
+  swr: false,
   getKey: event => `rounds-${getQuery(event).leagueId ?? DEFAULT_COMPETITION_ID}`,
 })

@@ -19,5 +19,6 @@ export default cachedEventHandler(async (event): Promise<BracketResponse> => {
   return buildBracket(playoffMatches, competition)
 }, {
   maxAge: 60,
+  swr: false,
   getKey: event => `bracket-${getQuery(event).leagueId ?? DEFAULT_COMPETITION_ID}`,
 })

@@ -15,5 +15,6 @@ export default cachedEventHandler(async (event): Promise<MatchDetails> => {
   return toMatchDetails(fixture)
 }, {
   maxAge: 60,
+  swr: false,
   getKey: event => `match-${getRouterParam(event, 'id')}`,
 })

@@ -1,10 +1,10 @@
 import type { LiveScore, LiveScoresResponse, Match } from '~/types'
 
-type LiveMatch = Pick<Match, 'idEvent' | 'status' | 'timestamp' | 'homeScore' | 'awayScore' | 'progress'>
+type LiveMatch = Pick<Match, 'idEvent' | 'status' | 'timestamp' | 'homeScore' | 'awayScore' | 'homePenScore' | 'awayPenScore' | 'progress'>
 
 /**
- * Матчи со свежим счётом и минутой из /api/live поверх расписания. Пока по расписанию среди них есть идущий
- * или тот, что по времени уже должен идти (needsLiveScores), раз в минуту спрашиваем заново и зовём onUpdate
+ * Матчи со свежим счётом и минутой из /api/live поверх расписания. Пока по расписанию среди них есть идущие
+ * или те, что по времени уже должны идти (getDueMatchIds), раз в минуту спрашиваем о них заново и зовём onUpdate
  * (страница матча заодно обновляет хронику). Нет таких матчей — /api/live не спрашиваем вовсе.
  * Вкладку в фоне не обновляем: догонит на следующей минуте после возврата.
  *
@@ -12,16 +12,20 @@ type LiveMatch = Pick<Match, 'idEvent' | 'status' | 'timestamp' | 'homeScore' | 
  * а через мгновение — свежий
  */
 export async function useLiveScores<T extends LiveMatch>(
-  leagueId: MaybeRefOrGetter<string>,
   matches: MaybeRefOrGetter<T[]>,
   onUpdate?: () => unknown,
 ) {
-  const needsUpdates = () => needsLiveScores(toValue(matches), Date.now())
+  // Номера матчей, о которых спрашиваем. Зависят от времени, поэтому пересчитываем их перед каждым запросом
+  const dueIds = ref('')
+  const updateDueIds = () => {
+    dueIds.value = getDueMatchIds(toValue(matches), Date.now()).join(',')
+    return dueIds.value !== ''
+  }
 
-  // Сам запрос по смене лиги и матчей не повторяется (watch: false) — только когда идущие матчи есть
+  // Сам запрос по смене номеров не повторяется (watch: false) — только когда идущие матчи есть
   const request = useFetch<LiveScoresResponse>('/api/live', {
-    query: computed(() => ({ leagueId: toValue(leagueId) })),
-    immediate: needsUpdates(),
+    query: { ids: dueIds },
+    immediate: updateDueIds(),
     watch: false,
   })
   const { data, refresh } = request
@@ -29,11 +33,11 @@ export async function useLiveScores<T extends LiveMatch>(
   // Другие матчи (тур, дни, лига) — спросить сразу, если среди них есть идущие. По id, а не по самим матчам:
   // страница матча раз в минуту подменяет матч новым объектом, и запрос иначе ушёл бы второй раз
   watch(() => toValue(matches).map(match => match.idEvent).join(), () => {
-    if (needsUpdates()) refresh()
+    if (updateDueIds()) refresh()
   })
 
-  // Закончившийся матч через какое-то время пропадает из livescore, а расписание на открытой странице
-  // так и помнит «2-й тайм»: последнее, что пришло по матчу, не забываем
+  // Расписание на открытой странице может так и помнить «2-й тайм», а матч уже закончился:
+  // последнее, что пришло по матчу, не забываем
   const remembered = ref<Record<string, LiveScore>>({})
   watch(data, (value) => {
     remembered.value = { ...remembered.value, ...value?.scores }
@@ -45,7 +49,7 @@ export async function useLiveScores<T extends LiveMatch>(
   let timer: ReturnType<typeof setInterval> | undefined
   onMounted(() => {
     timer = setInterval(() => {
-      if (document.hidden || !needsUpdates()) return
+      if (document.hidden || !updateDueIds()) return
       refresh()
       onUpdate?.()
     }, 60_000)

@@ -30,7 +30,7 @@ async function updateMatch() {
   const fresh = await $fetch<MatchDetails>(`/api/match/${route.params.id}`).catch(() => null)
   if (fresh) match.value = fresh
 }
-const liveMatches = await useLiveScores(() => match.value?.leagueId ?? '', () => match.value ? [match.value] : [], updateMatch)
+const liveMatches = await useLiveScores(() => match.value ? [match.value] : [], updateMatch)
 const liveMatch = computed(() => liveMatches.value[0])
 
 // Составы API-Football отдаёт примерно за 20–40 минут до начала: пока их нет, за час до матча

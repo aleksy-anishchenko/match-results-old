@@ -55,6 +55,7 @@ export default cachedEventHandler(async (event) => {
   return { matches }
 }, {
   maxAge: 60,
+  swr: false,
   getKey: (event) => {
     const query = getQuery(event)
     return `matches-${query.leagueId}-${query.round ?? ''}-${query.dateFrom}-${query.dateTo}`

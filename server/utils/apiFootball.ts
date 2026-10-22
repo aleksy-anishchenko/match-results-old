@@ -2,9 +2,12 @@ import type { SeasonMatch } from '~/types'
 import type { ApiFootballFixture } from '#shared/utils/matchEvents'
 import { toSeasonMatch, type ApiFootballSeasonFixture } from './seasonMatch'
 import type { ApiFootballStandingRow } from './leagueTable'
+import type { ApiFootballLiveFixture } from './liveScores'
 
 // API-Football (api-sports.io) — источник всех данных сайта. Тариф Pro: 7 500 запросов в день,
-// счётчик обнуляется в 00:00 UTC. Ответы кэшируются, чтобы посетители не тратили лимит.
+// счётчик обнуляется в 00:00 UTC. Ответы кэшируются, чтобы посетители не тратили лимит. Здесь и в маршрутах
+// /api/… кэш без swr: старый ответ, пока считается новый, не отдаём. На сайт заходят редко, и первый посетитель
+// увидел бы данные многочасовой давности — матч, сыгранный вечером, утром был бы «не начался»
 
 const API = 'https://v3.football.api-sports.io'
 const TIMEOUT_MS = 10_000
@@ -27,7 +30,11 @@ function nextUtcMidnight(now: number): number {
  * Запрос к API-Football: список из поля response. Ошибка API (кончился лимит, нет доступа), нет ключа,
  * сбой сети — исключение: показать ошибку или обойтись без этих данных, решает вызывающий
  */
-export async function fetchApiFootball<T>(path: string, query: Record<string, string | number>): Promise<T[]> {
+export async function fetchApiFootball<T>(
+  path: string,
+  query: Record<string, string | number>,
+  timeout = TIMEOUT_MS,
+): Promise<T[]> {
   const apiKey = useRuntimeConfig().apiFootballKey
   if (!apiKey) throw new Error('Нет ключа API-Football')
   if (Date.now() < limitReachedUntil) throw new Error('Кончился дневной лимит API-Football')
@@ -35,7 +42,7 @@ export async function fetchApiFootball<T>(path: string, query: Record<string, st
   const data = await $fetch<ApiFootballResponse<T>>(`${API}/${path}`, {
     query,
     headers: { 'x-apisports-key': apiKey },
-    timeout: TIMEOUT_MS,
+    timeout,
   })
   const { errors } = data
   const messages = Array.isArray(errors) ? errors : Object.values(errors ?? {})
@@ -59,6 +66,7 @@ export const getLeagueSeason = defineCachedFunction(async (leagueId: string): Pr
 }, {
   name: 'api-football-season',
   maxAge: 24 * 60 * 60,
+  swr: false,
   getKey: (leagueId: string) => leagueId,
 })
 
@@ -72,6 +80,7 @@ export const getSeasonMatches = defineCachedFunction(async (leagueId: string, se
 }, {
   name: 'api-football-season-matches',
   maxAge: 5 * 60,
+  swr: false,
   getKey: (leagueId: string, season: number) => `${leagueId}-${season}`,
 })
 
@@ -85,6 +94,7 @@ export const getLeagueStandings = defineCachedFunction(async (leagueId: string, 
 }, {
   name: 'api-football-standings',
   maxAge: 10 * 60,
+  swr: false,
   getKey: (leagueId: string, season: number) => `${leagueId}-${season}`,
 })
 
@@ -114,4 +124,18 @@ export async function getMatchFixture(id: string): Promise<ApiFootballFixture | 
     await storage.setItem(fixtureKey(id), { fixture: info, league, teams, goals, score, events, statistics, lineups }).catch(() => {})
   }
   return fixture
+}
+
+/** Сколько номеров матчей API-Football принимает в одном запросе fixtures?ids= */
+const IDS_PER_REQUEST = 20
+/** Главная и страница матча ждут живой счёт, прежде чем показаться: долго ждать нельзя */
+const LIVE_TIMEOUT_MS = 5_000
+
+/** Свежие счёт, статус и минута матчей по номерам — по 20 номеров в запросе */
+export async function getFixturesByIds(ids: string[]): Promise<ApiFootballLiveFixture[]> {
+  const chunks = Array.from({ length: Math.ceil(ids.length / IDS_PER_REQUEST) }, (_, index) =>
+    ids.slice(index * IDS_PER_REQUEST, (index + 1) * IDS_PER_REQUEST))
+  const responses = await Promise.all(chunks.map(chunk =>
+    fetchApiFootball<ApiFootballLiveFixture>('fixtures', { ids: chunk.join('-') }, LIVE_TIMEOUT_MS)))
+  return responses.flat()
 }
