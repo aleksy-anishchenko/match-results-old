@@ -37,7 +37,7 @@ describe('MatchScore', () => {
 
   it('показывает пенальти под счётом', async () => {
     const wrapper = await mountSuspended(MatchScore, {
-      props: { homeScore: '1', awayScore: '1', homePenScore: 4, awayPenScore: 3, status: 'AP' },
+      props: { homeScore: '1', awayScore: '1', homePenScore: 4, awayPenScore: 3, status: 'PEN' },
     })
     expect(wrapper.find('.score__note').text()).toBe('пен. 4:3')
   })

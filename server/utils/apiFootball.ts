@@ -1,6 +1,6 @@
-import type { MatchEvent, MatchLineups, MatchStat, SeasonMatch, SeasonTeam } from '~/types'
+import type { MatchEvent, MatchLineups, MatchStat, SeasonMatch } from '~/types'
 import type { ApiFootballFixture } from '#shared/utils/matchEvents'
-import { getTeamName } from './teamNames'
+import { toSeasonMatch, type ApiFootballSeasonFixture } from './seasonMatch'
 
 // API-Football (api-sports.io). Тариф Pro: 7 500 запросов в день, счётчик обнуляется в 00:00 UTC.
 // Сайт переходит на него целиком; пока страницы на TheSportsDB, отсюда берутся только хроника, статистика
@@ -61,35 +61,6 @@ export const getLeagueSeason = defineCachedFunction(async (leagueId: string): Pr
   maxAge: 24 * 60 * 60,
   getKey: (leagueId: string) => leagueId,
 })
-
-type ApiFootballTeam = { id: number, name: string, logo: string }
-
-/** Матч из ответа fixtures?league&season: поля, нужные расписанию */
-export type ApiFootballSeasonFixture = {
-  fixture: { id: number, timestamp: number, status: { short: string } }
-  league: { round: string }
-  teams: { home: ApiFootballTeam, away: ApiFootballTeam }
-  goals: { home: number | null, away: number | null }
-  score: { penalty: { home: number | null, away: number | null } }
-}
-
-const toSeasonTeam = (team: ApiFootballTeam): SeasonTeam => ({ id: team.id, name: getTeamName(team.id, team.name), badge: team.logo })
-
-/** Матч расписания в общем виде: названия по-русски, время — UTC без смещения («2026-10-25T16:30:00») */
-export function toSeasonMatch({ fixture, league, teams, goals, score }: ApiFootballSeasonFixture): SeasonMatch {
-  return {
-    id: String(fixture.id),
-    round: league.round,
-    timestamp: new Date(fixture.timestamp * 1000).toISOString().slice(0, 19),
-    status: fixture.status.short,
-    home: toSeasonTeam(teams.home),
-    away: toSeasonTeam(teams.away),
-    homeScore: goals.home,
-    awayScore: goals.away,
-    homePenalties: score.penalty.home,
-    awayPenalties: score.penalty.away,
-  }
-}
 
 /**
  * Все матчи сезона по времени начала. Счёт идущих матчей и минуту страницы берут из живых данных,

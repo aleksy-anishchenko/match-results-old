@@ -1,44 +1,23 @@
-import type { BracketResponse, BracketRound, BracketTeam, BracketTie, Competition } from '~/types'
-import { FINISHED_MATCH_STATUSES, getRoundCounts, isPowerOfTwo } from './matches'
-
-/** Матч из расписания TheSportsDB: поля, нужные для сетки плей-офф */
-export type BracketScheduleMatch = {
-  idEvent: string
-  strHomeTeam: string
-  strAwayTeam: string
-  strHomeTeamBadge: string
-  strAwayTeamBadge: string
-  intHomeScore: string | null
-  intAwayScore: string | null
-  strStatus: string
-  strTimestamp: string
-  intRound: string
-}
-
-/** Счёт серии пенальти по idEvent (его отдаёт только lookupevent) */
-export type BracketPenaltyScores = Record<string, { home: number | null, away: number | null }>
+import type { BracketResponse, BracketRound, BracketTeam, BracketTie, Competition, SeasonMatch, SeasonTeam } from '~/types'
+import { FINISHED_MATCH_STATUSES } from './matches'
 
 /**
- * Матчи плей-офф из расписания сезона. У турниров с общим этапом (ЛЧ/ЛЕ) в расписании лежат
- * ещё и матчи квалификации — оставляем только раунды плей-офф (степени двойки: 16/8/4/2/1).
- * У турниров с группами плей-офф — всё, что не групповой этап.
+ * Раунды плей-офф турнира в API-Football. Названия тоже меняются от сезона к сезону: раунд плей-офф ЛЧ/ЛЕ
+ * перед 1/8 — «Knockout Round Play-offs» в 2024/25 и «Round of 32» в 2025/26, хотя пар в нём 8. Поэтому
+ * по названию только узнаём, что это плей-офф, а называем раунд по числу пар (getRoundName).
+ * Квалификация («1st Qualifying Round», «Play-offs»), общий и групповой этап, стыковые матчи между
+ * дивизионами Лиги наций («Play-offs A/B») сюда не входят
  */
-export function getPlayoffMatches<T extends BracketScheduleMatch>(
-  schedule: T[],
-  competition: Pick<Competition, 'groupRounds' | 'leaguePhase'>,
-): T[] {
-  if (competition.leaguePhase) {
-    const knockoutRounds = new Set(
-      [...getRoundCounts(schedule).entries()]
-        .filter(([, count]) => isPowerOfTwo(count))
-        .map(([round]) => round),
-    )
-    return schedule.filter(match => knockoutRounds.has(match.intRound))
-  }
+const KNOCKOUT_ROUND = /^(Knockout Round Play-offs|Round of \d+|Quarter-finals|Semi-finals|3rd Place Final|Final)$/
+const THIRD_PLACE_ROUND = '3rd Place Final'
 
-  const groupRounds = new Set(competition.groupRounds ?? [])
-  return schedule.filter(match => !groupRounds.has(match.intRound))
+/** Матчи плей-офф турнира из расписания сезона */
+export function getPlayoffMatches(schedule: SeasonMatch[]): SeasonMatch[] {
+  return schedule.filter(match => KNOCKOUT_ROUND.test(match.round))
 }
+
+/** Раунд API для адреса и ключей: «Round of 16» → «round-of-16» */
+export const getRoundSlug = (round: string) => round.toLowerCase().replace(/[^a-z0-9]+/g, '-')
 
 /** Сумма голов команды за сыгранные матчи пары; null — ни один матч ещё не завершён */
 export function getTieTotal(team: BracketTeam): number | null {
@@ -46,45 +25,25 @@ export function getTieTotal(team: BracketTeam): number | null {
   return played.length ? played.reduce((sum, goals) => sum + goals, 0) : null
 }
 
-const byTimestamp = (a: BracketScheduleMatch, b: BracketScheduleMatch) => a.strTimestamp.localeCompare(b.strTimestamp)
+const byTimestamp = (a: SeasonMatch, b: SeasonMatch) => a.timestamp.localeCompare(b.timestamp)
 
-const playsIn = (match: BracketScheduleMatch, team: string) => match.strHomeTeam === team || match.strAwayTeam === team
-
-function teamOfTie(legs: BracketScheduleMatch[], name: string, badge: string, penScoreMap: BracketPenaltyScores): BracketTeam {
-  const goals = legs.map((leg) => {
-    if (!FINISHED_MATCH_STATUSES.has(leg.strStatus)) return null
-    const score = leg.strHomeTeam === name ? leg.intHomeScore : leg.intAwayScore
-    return score == null ? null : Number(score)
-  })
+function teamOfTie(legs: SeasonMatch[], team: SeasonTeam): BracketTeam {
+  const isHome = (leg: SeasonMatch) => leg.home.id === team.id
+  const goals = legs.map(leg => FINISHED_MATCH_STATUSES.has(leg.status) ? (isHome(leg) ? leg.homeScore : leg.awayScore) : null)
   // Серия пенальти бывает только в последнем матче пары
   const lastLeg = legs.at(-1)!
-  const penalties = penScoreMap[lastLeg.idEvent]
   return {
-    name,
-    badge,
+    id: team.id,
+    name: team.name,
+    badge: team.badge,
     goals,
-    penalties: (lastLeg.strHomeTeam === name ? penalties?.home : penalties?.away) ?? null,
+    penalties: isHome(lastLeg) ? lastLeg.homePenalties : lastLeg.awayPenalties,
   }
 }
 
-/**
- * Кто прошёл дальше. Сначала смотрим, кто из двоих играл после пары: это надёжнее счёта,
- * потому что в ЛЧ 2024/25 у пар, решённых серией пенальти, статус FT и счёта серии нет.
- * Если после пары играли обе команды (полуфинал, потом финал и матч за 3-е место),
- * решает счёт: сумма, потом пенальти. Пока не все матчи пары завершены, победителя нет.
- */
-function tieWinner(
-  teams: [BracketTeam, BracketTeam],
-  legs: BracketScheduleMatch[],
-  playoffMatches: BracketScheduleMatch[],
-): 0 | 1 | null {
-  const [first, second] = teams
-  const lastTimestamp = legs.at(-1)!.strTimestamp
-  const playedLater = (team: BracketTeam) => team.name !== ''
-    && playoffMatches.some(match => match.strTimestamp > lastTimestamp && playsIn(match, team.name))
-  if (playedLater(first) !== playedLater(second)) return playedLater(first) ? 0 : 1
-
-  if (teams.some(team => team.goals.includes(null))) return null
+/** Кто прошёл дальше: по сумме голов, потом по серии пенальти. Пока не все матчи пары завершены, победителя нет */
+function tieWinner([first, second]: [BracketTeam, BracketTeam]): 0 | 1 | null {
+  if ([first, second].some(team => team.goals.includes(null))) return null
   const firstTotal = getTieTotal(first) ?? 0
   const secondTotal = getTieTotal(second) ?? 0
   if (firstTotal !== secondTotal) return firstTotal > secondTotal ? 0 : 1
@@ -95,29 +54,19 @@ function tieWinner(
 
 /**
  * Пары раунда: матчи одних и тех же двух команд — одна пара, один матч или два. Порядок пар —
- * по первому матчу, команды — как в первом матче (хозяин сверху). Матчи, где соперник ещё
- * не определён, не склеиваем: таких в раунде может быть несколько.
+ * по первому матчу, команды — как в первом матче (хозяин сверху)
  */
-export function buildTies(
-  roundMatches: BracketScheduleMatch[],
-  playoffMatches: BracketScheduleMatch[],
-  penScoreMap: BracketPenaltyScores,
-): BracketTie[] {
-  const legsByTie = new Map<string, BracketScheduleMatch[]>()
+export function buildTies(roundMatches: SeasonMatch[]): BracketTie[] {
+  const legsByTie = new Map<string, SeasonMatch[]>()
   for (const match of [...roundMatches].sort(byTimestamp)) {
-    const key = match.strHomeTeam && match.strAwayTeam
-      ? [match.strHomeTeam, match.strAwayTeam].sort().join('\n')
-      : match.idEvent
+    const key = [match.home.id, match.away.id].sort((a, b) => a - b).join('-')
     legsByTie.set(key, [...(legsByTie.get(key) ?? []), match])
   }
 
   return [...legsByTie.values()].map((legs) => {
     const first = legs[0]!
-    const teams: [BracketTeam, BracketTeam] = [
-      teamOfTie(legs, first.strHomeTeam, first.strHomeTeamBadge, penScoreMap),
-      teamOfTie(legs, first.strAwayTeam, first.strAwayTeamBadge, penScoreMap),
-    ]
-    return { id: first.idEvent, teams, winner: tieWinner(teams, legs, playoffMatches) }
+    const teams: [BracketTeam, BracketTeam] = [teamOfTie(legs, first.home), teamOfTie(legs, first.away)]
+    return { id: first.id, teams, winner: tieWinner(teams) }
   })
 }
 
@@ -134,15 +83,15 @@ function getRoundName(tieCount: number, isPreRound: boolean): string {
   return isPreRound ? 'Раунд плей-офф' : ROUND_NAMES[tieCount] ?? 'Раунд'
 }
 
-const EMPTY_TEAM: BracketTeam = { name: '', badge: '', goals: [], penalties: null }
+const EMPTY_TEAM: BracketTeam = { id: null, name: '', badge: '', goals: [], penalties: null }
 
 /** Команда будущей пары: победитель пары прошлого раунда или пустое место, пока он не известен */
 function winnerOf(tie: BracketTie): BracketTeam {
   const winner = tie.winner == null ? null : tie.teams[tie.winner]
-  return winner ? { ...EMPTY_TEAM, name: winner.name, badge: winner.badge } : EMPTY_TEAM
+  return winner ? { ...EMPTY_TEAM, id: winner.id, name: winner.name, badge: winner.badge } : EMPTY_TEAM
 }
 
-const hasTeam = (tie: BracketTie, name: string) => name !== '' && tie.teams.some(team => team.name === name)
+const hasTeam = (tie: BracketTie, id: number | null) => id != null && tie.teams.some(team => team.id === id)
 
 /**
  * Выстраивает пары раунда под следующий раунд, чтобы линии сетки вели куда надо.
@@ -154,58 +103,13 @@ function alignToNextRound(ties: BracketTie[], nextTies: BracketTie[], oneToOne: 
   const slots: Array<BracketTie | undefined> = new Array(ties.length)
   nextTies.forEach((next, nextIndex) => {
     next.teams.forEach((team, side) => {
-      const feeder = ties.find(tie => hasTeam(tie, team.name))
+      const feeder = ties.find(tie => hasTeam(tie, team.id))
       const slot = oneToOne ? nextIndex : 2 * nextIndex + side
       if (feeder && slot < slots.length && !slots.includes(feeder)) slots[slot] = feeder
     })
   })
   const rest = ties.filter(tie => !slots.includes(tie))
   return [...slots].map(slot => slot ?? rest.shift()!)
-}
-
-type DataRound = { round: string, start: string, ties: BracketTie[] }
-
-/**
- * Раунды сетки по порядку. Коды раундов в TheSportsDB меняются от сезона к сезону, поэтому
- * цепочка строится по датам и числу пар: от последнего раунда назад каждый предыдущий — тот,
- * где пар вдвое больше. Один раз, в самом начале, пар может быть столько же: это раунд плей-офф
- * ЛЧ/ЛЕ перед 1/8. Раунды, которые в цепочку не встают (стыковые матчи Лиги наций), отбрасываются.
- */
-function chainRounds(rounds: DataRound[]): DataRound[] {
-  const byDate = [...rounds].sort((a, b) => a.start.localeCompare(b.start))
-  const chain = byDate.splice(-1)
-  let hasPreRound = false
-  for (const round of byDate.reverse()) {
-    const first = chain[0]!
-    if (hasPreRound) break
-    if (round.ties.length === first.ties.length * 2) {
-      chain.unshift(round)
-    }
-    else if (round.ties.length === first.ties.length && first.ties.length > 1) {
-      chain.unshift(round)
-      hasPreRound = true
-    }
-  }
-  return chain
-}
-
-/**
- * Чужие пары в раунде. В Лиге наций у четвертьфиналов нет своего кода: они лежат в одном раунде
- * со стыковыми матчами между дивизионами (в 2024/25 — 4 пары из 14), и никакое поле их не отличает.
- * Отличить можно по следующему раунду: в нём играют победители четвертьфиналов. Поэтому если пар
- * в раунде больше, чем вдвое против следующего, остаются только те, чьи команды играют дальше.
- * Пока следующего раунда нет в API, такой раунд в сетку не попадает: число пар не степень двойки.
- */
-function withoutForeignTies(rounds: DataRound[]): DataRound[] {
-  return rounds.map((round) => {
-    const next = rounds
-      .filter(other => other.start > round.start)
-      .sort((a, b) => a.start.localeCompare(b.start))[0]
-    if (!next || round.ties.length <= next.ties.length * 2) return round
-
-    const nextTeams = next.ties.flatMap(tie => tie.teams.map(team => team.name))
-    return { ...round, ties: round.ties.filter(tie => tie.teams.some(team => team.name && nextTeams.includes(team.name))) }
-  })
 }
 
 /**
@@ -234,34 +138,26 @@ function buildProjectedRounds(lastTies: BracketTie[], afterPreRound: boolean): B
 }
 
 /**
- * Сетка плей-офф: известные раунды по порядку, после них — будущие раунды из победителей.
+ * Сетка плей-офф: известные раунды по датам, после них — будущие раунды из победителей.
  * Матч за 3-е место отдельно: в нём играют проигравшие в полуфиналах.
  * У турниров с общим этапом (ЛЧ/ЛЕ) первый раунд — раунд плей-офф: пока 1/8 нет в расписании,
  * это известно только по настройке турнира.
  */
-export function buildBracket(
-  playoffMatches: BracketScheduleMatch[],
-  penScoreMap: BracketPenaltyScores,
-  competition: Pick<Competition, 'leaguePhase'>,
-): BracketResponse {
-  const byRound = new Map<string, BracketScheduleMatch[]>()
+export function buildBracket(playoffMatches: SeasonMatch[], competition: Pick<Competition, 'leaguePhase'>): BracketResponse {
+  const byRound = new Map<string, SeasonMatch[]>()
   for (const match of playoffMatches) {
-    byRound.set(match.intRound, [...(byRound.get(match.intRound) ?? []), match])
+    byRound.set(match.round, [...(byRound.get(match.round) ?? []), match])
   }
-  const dataRounds: DataRound[] = withoutForeignTies([...byRound].map(([round, matches]) => ({
-    round,
-    start: matches.map(match => match.strTimestamp).sort()[0]!,
-    ties: buildTies(matches, playoffMatches, penScoreMap),
-  }))).filter(round => isPowerOfTwo(round.ties.length))
 
-  // Финал и матч за 3-е место — по одной паре; финал играют последним (бывает, в тот же день)
-  const singles = dataRounds.filter(round => round.ties.length === 1).sort((a, b) => a.start.localeCompare(b.start))
-  const semiFinalTeams = dataRounds.find(round => round.ties.length === 2)?.ties.flatMap(tie => tie.teams.map(team => team.name)) ?? []
-  const thirdPlaceRound = singles.length > 1
-    ? singles.slice(0, -1).find(round => round.ties[0]!.teams.every(team => team.name && semiFinalTeams.includes(team.name)))
-    : undefined
-
-  const chain = chainRounds(dataRounds.filter(round => round !== thirdPlaceRound))
+  const thirdPlace = byRound.get(THIRD_PLACE_ROUND)
+  const chain = [...byRound]
+    .filter(([round]) => round !== THIRD_PLACE_ROUND)
+    .map(([round, matches]) => ({
+      round: getRoundSlug(round),
+      start: matches.map(match => match.timestamp).sort()[0]!,
+      ties: buildTies(matches),
+    }))
+    .sort((a, b) => a.start.localeCompare(b.start))
   if (!chain.length) return { rounds: [], thirdPlace: null }
 
   const hasPreRound = chain.length > 1
@@ -281,5 +177,5 @@ export function buildBracket(
   }))
   rounds.push(...buildProjectedRounds(chain.at(-1)!.ties, hasPreRound && chain.length === 1))
 
-  return { rounds, thirdPlace: thirdPlaceRound?.ties[0] ?? null }
+  return { rounds, thirdPlace: thirdPlace ? buildTies(thirdPlace)[0]! : null }
 }

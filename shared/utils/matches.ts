@@ -1,12 +1,13 @@
 import type { LiveScore, Match, MatchStatusKind } from '~/types'
 
-// Коды strStatus из TheSportsDB. Серия пенальти — PEN (идёт) и AP (завершён по пенальти).
-export const FINISHED_MATCH_STATUSES = new Set(['FT', 'AET', 'AP'])
-export const LIVE_MATCH_STATUSES = new Set(['1H', 'HT', '2H', 'ET', 'BT', 'P', 'PEN', 'LIVE', 'INT'])
+// Коды статусов API-Football. Серия пенальти — P (идёт) и PEN (матч завершён по пенальти);
+// у TheSportsDB было наоборот: PEN — идёт, AP — завершён
+export const FINISHED_MATCH_STATUSES = new Set(['FT', 'AET', 'PEN'])
+export const LIVE_MATCH_STATUSES = new Set(['1H', 'HT', '2H', 'ET', 'BT', 'P', 'LIVE', 'INT'])
 /** Матч не состоится или остановлен: перенесён, отменён, прерван, техническое решение */
 export const INACTIVE_MATCH_STATUSES = new Set(['PST', 'CANC', 'ABD', 'SUSP', 'AWD', 'WO'])
-/** Статусы, при которых у матча есть серия пенальти: идёт (P, PEN) или завершён по пенальти (AP) */
-export const PENALTY_MATCH_STATUSES = new Set(['P', 'PEN', 'AP'])
+/** Статусы, при которых у матча есть серия пенальти: идёт (P) или завершён по пенальти (PEN) */
+export const PENALTY_MATCH_STATUSES = new Set(['P', 'PEN'])
 
 /**
  * Дата по Москве в виде YYYY-MM-DD. Строка — это timestamp из API: время UTC без смещения
@@ -149,7 +150,7 @@ export function getMatchWinnerSide(
   const awayScore = Number(match.awayScore ?? 0)
   if (homeScore > awayScore) return 'home'
   if (awayScore > homeScore) return 'away'
-  if (match.status === 'AP') {
+  if (match.status === 'PEN') {
     const homePenalties = match.homePenScore ?? 0
     const awayPenalties = match.awayPenScore ?? 0
     if (homePenalties > awayPenalties) return 'home'

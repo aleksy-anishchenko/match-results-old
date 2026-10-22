@@ -1,20 +1,6 @@
 import type { Match } from '~/types'
 
-type ApiMatch = {
-  idEvent: string
-  strHomeTeam: string
-  strAwayTeam: string
-  strHomeTeamBadge: string
-  strAwayTeamBadge: string
-  intHomeScore: string | null
-  intAwayScore: string | null
-  strStatus: string
-  strTimestamp: string
-  intRound: string
-  dateEvent: string
-  strGroup: string | null
-  strSeason: string
-}
+const toScore = (goals: number | null) => goals == null ? null : String(goals)
 
 export default cachedEventHandler(async (event) => {
   const query = getQuery(event)
@@ -29,45 +15,41 @@ export default cachedEventHandler(async (event) => {
   const dateFrom = String(query.dateFrom ?? today)
   const dateTo = String(query.dateTo ?? today)
 
-  const season = await getCurrentSeason(leagueId)
-  if (!season) return { matches: [] }
+  // Турниры не из списка не спрашиваем: каждый запрос к API-Football — из дневного лимита
+  const season = competition ? await getLeagueSeason(leagueId) : null
+  if (!competition || season == null) return { matches: [] }
 
-  const schedule = await getSeasonSchedule<ApiMatch>(leagueId, season)
+  const schedule = await getSeasonMatches(leagueId, season)
 
   // Тур нужен и при выборе по датам: в заголовке дня на главной пишем «· 5 тур»
-  const roundByMatch = competition ? getSeasonRounds(schedule, competition).roundByMatch : null
-  // Без туров (сезона нет в API) текущего тура нет — тогда матчи за сегодня
-  const round = requestedRound
-    ?? (hasDates || !roundByMatch ? null : getCurrentRound(schedule, roundByMatch, new Date()))
+  const { roundByMatch } = getSeasonRounds(schedule, competition)
+  const round = requestedRound ?? (hasDates ? null : getCurrentRound(schedule, roundByMatch, new Date()))
 
-  const filtered = schedule
-    .filter((match) => {
-      if (round) return roundByMatch?.get(match.idEvent) === round
-      const moscowDate = getMoscowDate(match.strTimestamp)
-      return moscowDate >= dateFrom && moscowDate <= dateTo
-    })
-    .sort((a, b) => a.strTimestamp.localeCompare(b.strTimestamp))
-
-  const penScoreMap = await getPenaltyScores(filtered)
+  // Расписание уже по времени начала
+  const filtered = schedule.filter((match) => {
+    if (round) return roundByMatch.get(match.id) === round
+    const moscowDate = getMoscowDate(match.timestamp)
+    return moscowDate >= dateFrom && moscowDate <= dateTo
+  })
 
   const matches: Match[] = filtered.map(match => ({
-    idEvent: match.idEvent,
-    homeTeam: match.strHomeTeam,
-    awayTeam: match.strAwayTeam,
-    homeBadge: match.strHomeTeamBadge,
-    awayBadge: match.strAwayTeamBadge,
-    homeScore: match.intHomeScore,
-    awayScore: match.intAwayScore,
-    homePenScore: penScoreMap[match.idEvent]?.home ?? null,
-    awayPenScore: penScoreMap[match.idEvent]?.away ?? null,
-    status: match.strStatus,
-    // Минуты в расписании нет: её и свежий счёт подставляет страница из /api/live (useLiveScores)
+    idEvent: match.id,
+    homeTeam: match.home.name,
+    awayTeam: match.away.name,
+    homeBadge: match.home.badge,
+    awayBadge: match.away.badge,
+    homeScore: toScore(match.homeScore),
+    awayScore: toScore(match.awayScore),
+    homePenScore: match.homePenalties,
+    awayPenScore: match.awayPenalties,
+    status: match.status,
+    // Минуту и свежий счёт идущего матча подставляет страница из /api/live (useLiveScores)
     progress: null,
-    timestamp: match.strTimestamp,
-    date: match.dateEvent,
-    group: match.strGroup,
-    season: match.strSeason,
-    round: roundByMatch?.get(match.idEvent) ?? null,
+    timestamp: match.timestamp,
+    date: match.timestamp.slice(0, 10),
+    group: null,
+    season: String(season),
+    round: roundByMatch.get(match.id) ?? null,
   }))
 
   return { matches }

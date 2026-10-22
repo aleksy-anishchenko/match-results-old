@@ -150,7 +150,7 @@ describe('calculateStandings', () => {
   it('матчи после доп. времени и пенальти тоже считаются завершёнными', () => {
     const [arsenal, chelsea] = calculateStandings([
       match('Arsenal', 'Chelsea', [2, 1], 'AET'),
-      match('Chelsea', 'Arsenal', [0, 0], 'AP'),
+      match('Chelsea', 'Arsenal', [0, 0], 'PEN'),
     ])
 
     expect(arsenal).toMatchObject({ played: 2, won: 1, drawn: 1, points: 4 })

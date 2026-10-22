@@ -105,10 +105,11 @@ describe('getMatchStatusKind', () => {
     expect(getMatchStatusKind('NS')).toBe('scheduled')
     expect(getMatchStatusKind('1H')).toBe('live')
     expect(getMatchStatusKind('HT')).toBe('live')
-    expect(getMatchStatusKind('PEN')).toBe('live')
+    // Коды API-Football: P — серия пенальти идёт, PEN — матч завершён по пенальти
+    expect(getMatchStatusKind('P')).toBe('live')
     expect(getMatchStatusKind('FT')).toBe('finished')
     expect(getMatchStatusKind('AET')).toBe('finished')
-    expect(getMatchStatusKind('AP')).toBe('finished')
+    expect(getMatchStatusKind('PEN')).toBe('finished')
     expect(getMatchStatusKind('PST')).toBe('inactive')
     expect(getMatchStatusKind('CANC')).toBe('inactive')
   })
@@ -150,7 +151,7 @@ describe('applyLiveScore', () => {
 
   it('в перерыве и серии пенальти минуты нет — подпись статуса', () => {
     expect(applyLiveScore(makeMatch({ status: '1H' }), { ...live, status: 'HT', progress: '45' }).progress).toBeNull()
-    expect(applyLiveScore(makeMatch({ status: 'ET' }), { ...live, status: 'PEN', progress: '120' }).progress).toBeNull()
+    expect(applyLiveScore(makeMatch({ status: 'ET' }), { ...live, status: 'P', progress: '120' }).progress).toBeNull()
     expect(applyLiveScore(makeMatch({ status: '2H' }), { ...live, status: 'ET', progress: '97' }).progress).toBe('97')
   })
 
@@ -275,12 +276,12 @@ describe('getMatchWinnerSide', () => {
     expect(getMatchWinnerSide(matchResult({ homeScore: '1', awayScore: '1' }))).toBeNull()
   })
 
-  it('после пенальти (AP) победитель по серии', () => {
-    expect(getMatchWinnerSide(matchResult({ homeScore: '1', awayScore: '1', status: 'AP', homePenScore: 3, awayPenScore: 4 }))).toBe('away')
+  it('после пенальти (PEN) победитель по серии', () => {
+    expect(getMatchWinnerSide(matchResult({ homeScore: '1', awayScore: '1', status: 'PEN', homePenScore: 3, awayPenScore: 4 }))).toBe('away')
   })
 
-  it('AP без счёта серии — победителя не угадываем', () => {
-    expect(getMatchWinnerSide(matchResult({ homeScore: '1', awayScore: '1', status: 'AP' }))).toBeNull()
+  it('PEN без счёта серии — победителя не угадываем', () => {
+    expect(getMatchWinnerSide(matchResult({ homeScore: '1', awayScore: '1', status: 'PEN' }))).toBeNull()
   })
 
   it('незавершённый матч — победителя нет, даже если кто-то ведёт', () => {

@@ -77,7 +77,7 @@ describe('MatchHeader', () => {
   it('после серии пенальти показывает счёт серии и кто проходит дальше', async () => {
     const wrapper = await mountSuspended(MatchHeader, {
       props: {
-        match: makeMatch({ homeScore: '1', awayScore: '1', homePenScore: 3, awayPenScore: 4, status: 'AP' }),
+        match: makeMatch({ homeScore: '1', awayScore: '1', homePenScore: 3, awayPenScore: 4, status: 'PEN' }),
       },
     })
     expect(wrapper.find('.score__penalties').text()).toBe('пенальти 3:4')

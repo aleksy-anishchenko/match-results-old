@@ -33,7 +33,7 @@ const teams = computed(() => (['home', 'away'] as const).map(side => ({
   result: winner.value ? (winner.value === side ? 'win' : 'lose') : null,
   // Победитель серии пенальти точно проходит дальше. Победитель в доп. время — не всегда:
   // в ответном матче дальше может пройти соперник по сумме двух встреч.
-  advances: props.match.status === 'AP' && winner.value === side,
+  advances: props.match.status === 'PEN' && winner.value === side,
 })))
 
 // Счёт серии только у матчей с пенальти: у обычного матча API может прислать в этих полях 0

@@ -1,11 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import {
-  fetchApiFootball,
-  getFallbackMatchData,
-  getLeagueSeason,
-  getSeasonMatches,
-  toSeasonMatch,
-} from '../../../server/utils/apiFootball'
+import { fetchApiFootball, getFallbackMatchData, getLeagueSeason, getSeasonMatches } from '../../../server/utils/apiFootball'
+import { toSeasonMatch } from '../../../server/utils/seasonMatch'
 import { getApiFootballEvents, goalsMatchScore } from '#shared/utils/matchEvents'
 import { getApiFootballStats } from '#shared/utils/matchStats'
 import { getApiFootballLineups } from '#shared/utils/lineups'

@@ -1,11 +1,11 @@
-import type { BracketTie, Competition, SeasonRound } from '~/types'
-import { buildBracket, getPlayoffMatches, type BracketScheduleMatch } from './bracket'
-import { getLeaguePhaseMatches, getMoscowDate } from './matches'
+import type { Competition, SeasonMatch, SeasonRound } from '~/types'
+import { buildBracket, getPlayoffMatches, getRoundSlug } from './bracket'
+import { getMoscowDate } from './matches'
 
 /** У лиг стыки и плей-офф в конце сезона — одна страница после последнего тура */
 export const LEAGUE_PLAYOFF_ROUND = 'playoff'
 
-/** Туры сезона по порядку и тур каждого матча (idEvent → id тура) */
+/** Туры сезона по порядку и тур каждого матча (номер матча → id тура) */
 export type SeasonRounds = {
   rounds: SeasonRound[]
   roundByMatch: Map<string, string>
@@ -29,19 +29,20 @@ const DAY_MS = 86_400_000
 
 const byNumber = (a: string, b: string) => Number(a) - Number(b)
 
-const isTieMatch = (tie: BracketTie, match: BracketScheduleMatch) =>
-  [match.strHomeTeam, match.strAwayTeam].every(team => team && tie.teams.some(side => side.name === team))
-
 /**
- * Туры лиги. Обычные туры в API под номерами 1–99 («5 тур»). В конце сезона бывают стыки
- * и плей-офф под кодами 0, 125, 160, 170, 180…: что они значат, зависит от лиги и сезона,
- * поэтому все они — одна страница «Плей-офф».
+ * Номер тура из названия раунда: «Regular Season - 5», «League Stage - 3», «League A - 2» → 5, 3, 2.
+ * У Бельгии после основного сезона группы «Championship Group - 31», «Relegation Group - 31»… — один тур 31.
+ * null — раунд без номера: квалификация, плей-офф, стыки
  */
-function getLeagueRounds(schedule: BracketScheduleMatch[]): NamedRounds {
+export function getRoundNumber(round: string): string | null {
+  return /\s-\s(\d+)$/.exec(round)?.[1] ?? null
+}
+
+/** Туры лиги по номерам («5 тур»). Стыки и плей-офф в конце сезона — одна страница «Плей-офф» */
+function getLeagueRounds(schedule: SeasonMatch[]): NamedRounds {
   const roundByMatch = new Map<string, string>()
   for (const match of schedule) {
-    const number = Number(match.intRound)
-    roundByMatch.set(match.idEvent, number >= 1 && number < 100 ? String(number) : LEAGUE_PLAYOFF_ROUND)
+    roundByMatch.set(match.id, getRoundNumber(match.round) ?? LEAGUE_PLAYOFF_ROUND)
   }
   const ids = [...new Set(roundByMatch.values())]
   const regular = ids.filter(id => id !== LEAGUE_PLAYOFF_ROUND).sort(byNumber)
@@ -52,39 +53,32 @@ function getLeagueRounds(schedule: BracketScheduleMatch[]): NamedRounds {
 
 /**
  * Туры турнира: туры общего или группового этапа («3 тур»), потом раунды плей-офф с названиями
- * из сетки («Раунд плей-офф», «1/8 финала»…) и матч за 3-е место перед финалом. Матчи вне них —
- * квалификация ЛЧ/ЛЕ, стыковые матчи Лиги наций — ни в один тур не попадают, их видно по датам.
+ * из сетки («Раунд плей-офф», «1/8 финала»…) и матч за 3-е место перед финалом. Квалификация ЛЧ/ЛЕ
+ * и стыковые матчи Лиги наций ни в один тур не попадают, их видно по датам.
  */
-function getTournamentRounds(
-  schedule: BracketScheduleMatch[],
-  competition: Pick<Competition, 'groupRounds' | 'leaguePhase'>,
-): NamedRounds {
+function getTournamentRounds(schedule: SeasonMatch[], competition: Pick<Competition, 'leaguePhase'>): NamedRounds {
   const roundByMatch = new Map<string, string>()
+  const numbers = new Set<string>()
+  for (const match of schedule) {
+    const number = getRoundNumber(match.round)
+    if (!number) continue
+    roundByMatch.set(match.id, number)
+    numbers.add(number)
+  }
+  const rounds: NamedRound[] = [...numbers].sort(byNumber).map(id => ({ id, name: `${id} тур` }))
 
-  const groupRounds = new Set(competition.groupRounds ?? [])
-  const stageMatches = competition.leaguePhase
-    ? getLeaguePhaseMatches(schedule)
-    : schedule.filter(match => groupRounds.has(match.intRound))
-  for (const match of stageMatches) roundByMatch.set(match.idEvent, match.intRound)
-  const rounds: NamedRound[] = [...new Set(stageMatches.map(match => match.intRound))]
-    .sort(byNumber)
-    .map(id => ({ id, name: `${id} тур` }))
-
-  const playoffMatches = getPlayoffMatches(schedule, competition)
-  const { rounds: bracketRounds, thirdPlace } = buildBracket(playoffMatches, {}, competition)
+  const playoffMatches = getPlayoffMatches(schedule)
+  const { rounds: bracketRounds, thirdPlace } = buildBracket(playoffMatches, competition)
   const knockout = bracketRounds
     .filter(round => !round.projected)
-    .map(round => ({ round: round.round, name: round.name, ties: round.ties }))
-  if (thirdPlace) {
-    const code = playoffMatches.find(match => match.idEvent === thirdPlace.id)?.intRound
-    if (code) knockout.splice(-1, 0, { round: code, name: 'Матч за 3-е место', ties: [thirdPlace] })
-  }
+    .map(round => ({ round: round.round, name: round.name }))
+  const thirdPlaceMatch = thirdPlace && playoffMatches.find(match => match.id === thirdPlace.id)
+  if (thirdPlaceMatch) knockout.splice(-1, 0, { round: getRoundSlug(thirdPlaceMatch.round), name: 'Матч за 3-е место' })
 
-  for (const { round, name, ties } of knockout) {
+  for (const { round, name } of knockout) {
     const id = `playoff-${round}`
-    // В одном раунде API бывают и чужие матчи (стыковые в Лиге наций): в тур только матчи пар сетки
     for (const match of playoffMatches) {
-      if (match.intRound === round && ties.some(tie => isTieMatch(tie, match))) roundByMatch.set(match.idEvent, id)
+      if (getRoundSlug(match.round) === round) roundByMatch.set(match.id, id)
     }
     rounds.push({ id, name })
   }
@@ -112,13 +106,13 @@ function getRoundDates(id: string, days: string[]): Pick<SeasonRound, 'from' | '
   return { from: best[0] ?? null, to: best.at(-1) ?? null }
 }
 
-function withDates(schedule: BracketScheduleMatch[], { rounds, roundByMatch }: NamedRounds): SeasonRounds {
+function withDates(schedule: SeasonMatch[], { rounds, roundByMatch }: NamedRounds): SeasonRounds {
   const daysByRound = new Map<string, string[]>()
   for (const match of schedule) {
-    const round = roundByMatch.get(match.idEvent)
-    if (!round || !match.strTimestamp) continue
+    const round = roundByMatch.get(match.id)
+    if (!round) continue
     const days = daysByRound.get(round) ?? []
-    days.push(getMoscowDate(match.strTimestamp))
+    days.push(getMoscowDate(match.timestamp))
     daysByRound.set(round, days)
   }
   return {
@@ -129,16 +123,16 @@ function withDates(schedule: BracketScheduleMatch[], { rounds, roundByMatch }: N
 
 /** Туры сезона для навигации на главной */
 export function getSeasonRounds(
-  schedule: BracketScheduleMatch[],
-  competition: Pick<Competition, 'type' | 'groupRounds' | 'leaguePhase'>,
+  schedule: SeasonMatch[],
+  competition: Pick<Competition, 'type' | 'leaguePhase'>,
 ): SeasonRounds {
   const named = competition.type === 'league' ? getLeagueRounds(schedule) : getTournamentRounds(schedule, competition)
   return withDates(schedule, named)
 }
 
 /** Дни сезона с матчами (YYYY-MM-DD по Москве, по порядку): точки в календаре на главной */
-export function getMatchDays(schedule: Array<{ strTimestamp: string }>): string[] {
-  const days = new Set(schedule.filter(match => match.strTimestamp).map(match => getMoscowDate(match.strTimestamp)))
+export function getMatchDays(schedule: Array<Pick<SeasonMatch, 'timestamp'>>): string[] {
+  const days = new Set(schedule.map(match => getMoscowDate(match.timestamp)))
   return [...days].sort()
 }
 
@@ -146,13 +140,13 @@ export function getMatchDays(schedule: Array<{ strTimestamp: string }>): string[
  * Текущий тур — тур матча, ближайшего по времени к now, прошедшего или будущего. Так во вторник
  * после тура видны его результаты, а в четверг перед следующим — уже расписание следующего.
  */
-export function getCurrentRound(schedule: BracketScheduleMatch[], roundByMatch: Map<string, string>, now: Date): string | null {
+export function getCurrentRound(schedule: SeasonMatch[], roundByMatch: Map<string, string>, now: Date): string | null {
   let current: string | null = null
   let nearest = Infinity
   for (const match of schedule) {
-    const round = roundByMatch.get(match.idEvent)
-    if (!round || !match.strTimestamp) continue
-    const distance = Math.abs(new Date(match.strTimestamp + 'Z').getTime() - now.getTime())
+    const round = roundByMatch.get(match.id)
+    if (!round) continue
+    const distance = Math.abs(new Date(match.timestamp + 'Z').getTime() - now.getTime())
     if (distance < nearest) {
       nearest = distance
       current = round
