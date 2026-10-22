@@ -1,0 +1,84 @@
+[
+  [
+    {"rank": 1, "team": {"id": 2, "name": "France", "logo": ""}, "points": 10, "goalsDiff": 5, "group": "League A - Group A", "description": "Play Offs: Quarter-finals", "all": {"played": 4, "win": 3, "draw": 1, "lose": 0, "goals": {"for": 7, "against": 2}}},
+    {"rank": 2, "team": {"id": 768, "name": "Italy", "logo": ""}, "points": 7, "goalsDiff": 3, "group": "League A - Group A", "description": "Play Offs: Quarter-finals", "all": {"played": 4, "win": 2, "draw": 1, "lose": 1, "goals": {"for": 8, "against": 5}}},
+    {"rank": 3, "team": {"id": 1, "name": "Belgium", "logo": ""}, "points": 6, "goalsDiff": 1, "group": "League A - Group A", "description": "Possible Play-off", "all": {"played": 4, "win": 2, "draw": 0, "lose": 2, "goals": {"for": 6, "against": 5}}},
+    {"rank": 4, "team": {"id": 777, "name": "Türkiye", "logo": ""}, "points": 0, "goalsDiff": -9, "group": "League A - Group A", "description": "Possible Play-off", "all": {"played": 4, "win": 0, "draw": 0, "lose": 4, "goals": {"for": 2, "against": 11}}}
+  ],
+  [
+    {"rank": 1, "team": {"id": 1118, "name": "Netherlands", "logo": ""}, "points": 8, "goalsDiff": 2, "group": "League A - Group B", "description": "Play Offs: Quarter-finals", "all": {"played": 4, "win": 2, "draw": 2, "lose": 0, "goals": {"for": 7, "against": 5}}},
+    {"rank": 2, "team": {"id": 1117, "name": "Greece", "logo": ""}, "points": 8, "goalsDiff": 2, "group": "League A - Group B", "description": "Play Offs: Quarter-finals", "all": {"played": 4, "win": 2, "draw": 2, "lose": 0, "goals": {"for": 5, "against": 3}}},
+    {"rank": 3, "team": {"id": 25, "name": "Germany", "logo": ""}, "points": 5, "goalsDiff": 1, "group": "League A - Group B", "description": "Possible Play-off", "all": {"played": 4, "win": 1, "draw": 2, "lose": 1, "goals": {"for": 3, "against": 2}}},
+    {"rank": 4, "team": {"id": 14, "name": "Serbia", "logo": ""}, "points": 0, "goalsDiff": -5, "group": "League A - Group B", "description": "Possible Play-off", "all": {"played": 4, "win": 0, "draw": 0, "lose": 4, "goals": {"for": 3, "against": 8}}}
+  ],
+  [
+    {"rank": 1, "team": {"id": 9, "name": "Spain", "logo": ""}, "points": 12, "goalsDiff": 7, "group": "League A - Group C", "description": "Play Offs: Quarter-finals", "all": {"played": 4, "win": 4, "draw": 0, "lose": 0, "goals": {"for": 12, "against": 5}}},
+    {"rank": 2, "team": {"id": 10, "name": "England", "logo": ""}, "points": 9, "goalsDiff": 11, "group": "League A - Group C", "description": "Play Offs: Quarter-finals", "all": {"played": 4, "win": 3, "draw": 0, "lose": 1, "goals": {"for": 14, "against": 3}}},
+    {"rank": 3, "team": {"id": 3, "name": "Croatia", "logo": ""}, "points": 3, "goalsDiff": -10, "group": "League A - Group C", "description": "Possible Play-off", "all": {"played": 4, "win": 1, "draw": 0, "lose": 3, "goals": {"for": 4, "against": 14}}},
+    {"rank": 4, "team": {"id": 770, "name": "Czechia", "logo": ""}, "points": 0, "goalsDiff": -8, "group": "League A - Group C", "description": "Possible Play-off", "all": {"played": 4, "win": 0, "draw": 0, "lose": 4, "goals": {"for": 2, "against": 10}}}
+  ],
+  [
+    {"rank": 1, "team": {"id": 27, "name": "Portugal", "logo": ""}, "points": 12, "goalsDiff": 5, "group": "League A - Group D", "description": "Play Offs: Quarter-finals", "all": {"played": 4, "win": 4, "draw": 0, "lose": 0, "goals": {"for": 9, "against": 4}}},
+    {"rank": 2, "team": {"id": 21, "name": "Denmark", "logo": ""}, "points": 6, "goalsDiff": 0, "group": "League A - Group D", "description": "Play Offs: Quarter-finals", "all": {"played": 4, "win": 2, "draw": 0, "lose": 2, "goals": {"for": 7, "against": 7}}},
+    {"rank": 3, "team": {"id": 767, "name": "Wales", "logo": ""}, "points": 3, "goalsDiff": -3, "group": "League A - Group D", "description": "Possible Play-off", "all": {"played": 4, "win": 1, "draw": 0, "lose": 3, "goals": {"for": 2, "against": 5}}},
+    {"rank": 4, "team": {"id": 1090, "name": "Norway", "logo": ""}, "points": 3, "goalsDiff": -2, "group": "League A - Group D", "description": "Possible Play-off", "all": {"played": 4, "win": 1, "draw": 0, "lose": 3, "goals": {"for": 6, "against": 8}}}
+  ],
+  [
+    {"rank": 1, "team": {"id": 15, "name": "Switzerland", "logo": ""}, "points": 12, "goalsDiff": 10, "group": "League B - Group A", "description": "Promotion", "all": {"played": 4, "win": 4, "draw": 0, "lose": 0, "goals": {"for": 11, "against": 1}}},
+    {"rank": 2, "team": {"id": 1091, "name": "Slovenia", "logo": ""}, "points": 7, "goalsDiff": 2, "group": "League B - Group A", "description": "Promotion Play-offs", "all": {"played": 4, "win": 2, "draw": 1, "lose": 1, "goals": {"for": 5, "against": 3}}},
+    {"rank": 3, "team": {"id": 1108, "name": "Scotland", "logo": ""}, "points": 4, "goalsDiff": -2, "group": "League B - Group A", "description": null, "all": {"played": 4, "win": 1, "draw": 1, "lose": 2, "goals": {"for": 3, "against": 5}}},
+    {"rank": 4, "team": {"id": 1105, "name": "FYR Macedonia", "logo": ""}, "points": 0, "goalsDiff": -10, "group": "League B - Group A", "description": "Relegation Playoffs", "all": {"played": 4, "win": 0, "draw": 0, "lose": 4, "goals": {"for": 0, "against": 10}}}
+  ],
+  [
+    {"rank": 1, "team": {"id": 771, "name": "Northern Ireland", "logo": ""}, "points": 8, "goalsDiff": 4, "group": "League B - Group B", "description": "Promotion", "all": {"played": 4, "win": 2, "draw": 2, "lose": 0, "goals": {"for": 4, "against": 0}}},
+    {"rank": 2, "team": {"id": 769, "name": "Hungary", "logo": ""}, "points": 7, "goalsDiff": 1, "group": "League B - Group B", "description": "Promotion Play-offs", "all": {"played": 4, "win": 2, "draw": 1, "lose": 1, "goals": {"for": 3, "against": 2}}},
+    {"rank": 3, "team": {"id": 772, "name": "Ukraine", "logo": ""}, "points": 4, "goalsDiff": -3, "group": "League B - Group B", "description": null, "all": {"played": 4, "win": 1, "draw": 1, "lose": 2, "goals": {"for": 2, "against": 5}}},
+    {"rank": 4, "team": {"id": 1104, "name": "Georgia", "logo": ""}, "points": 2, "goalsDiff": -2, "group": "League B - Group B", "description": "Relegation Playoffs", "all": {"played": 4, "win": 0, "draw": 2, "lose": 2, "goals": {"for": 0, "against": 2}}}
+  ],
+  [
+    {"rank": 1, "team": {"id": 775, "name": "Austria", "logo": ""}, "points": 8, "goalsDiff": 4, "group": "League B - Group C", "description": "Promotion", "all": {"played": 4, "win": 2, "draw": 2, "lose": 0, "goals": {"for": 9, "against": 5}}},
+    {"rank": 2, "team": {"id": 1111, "name": "Kosovo", "logo": ""}, "points": 5, "goalsDiff": -1, "group": "League B - Group C", "description": "Promotion Play-offs", "all": {"played": 4, "win": 1, "draw": 2, "lose": 1, "goals": {"for": 3, "against": 4}}},
+    {"rank": 3, "team": {"id": 776, "name": "Rep. Of Ireland", "logo": ""}, "points": 5, "goalsDiff": 2, "group": "League B - Group C", "description": null, "all": {"played": 4, "win": 1, "draw": 2, "lose": 1, "goals": {"for": 6, "against": 4}}},
+    {"rank": 4, "team": {"id": 1116, "name": "Israel", "logo": ""}, "points": 2, "goalsDiff": -5, "group": "League B - Group C", "description": "Relegation Playoffs", "all": {"played": 4, "win": 0, "draw": 2, "lose": 2, "goals": {"for": 2, "against": 7}}}
+  ],
+  [
+    {"rank": 1, "team": {"id": 5, "name": "Sweden", "logo": ""}, "points": 10, "goalsDiff": 4, "group": "League B - Group D", "description": "Promotion", "all": {"played": 4, "win": 3, "draw": 1, "lose": 0, "goals": {"for": 7, "against": 3}}},
+    {"rank": 2, "team": {"id": 1113, "name": "Bosnia & Herzegovina", "logo": ""}, "points": 8, "goalsDiff": 3, "group": "League B - Group D", "description": "Promotion Play-offs", "all": {"played": 4, "win": 2, "draw": 2, "lose": 0, "goals": {"for": 6, "against": 3}}},
+    {"rank": 3, "team": {"id": 24, "name": "Poland", "logo": ""}, "points": 4, "goalsDiff": 3, "group": "League B - Group D", "description": null, "all": {"played": 4, "win": 1, "draw": 1, "lose": 2, "goals": {"for": 7, "against": 4}}},
+    {"rank": 4, "team": {"id": 774, "name": "Romania", "logo": ""}, "points": 0, "goalsDiff": -10, "group": "League B - Group D", "description": "Relegation Playoffs", "all": {"played": 4, "win": 0, "draw": 0, "lose": 4, "goals": {"for": 3, "against": 13}}}
+  ],
+  [
+    {"rank": 1, "team": {"id": 778, "name": "Albania", "logo": ""}, "points": 9, "goalsDiff": 5, "group": "League C - Group A", "description": "Promotion", "all": {"played": 4, "win": 3, "draw": 0, "lose": 1, "goals": {"for": 8, "against": 3}}},
+    {"rank": 2, "team": {"id": 1100, "name": "Belarus", "logo": ""}, "points": 7, "goalsDiff": 3, "group": "League C - Group A", "description": "Promotion Play-offs", "all": {"played": 4, "win": 2, "draw": 1, "lose": 1, "goals": {"for": 5, "against": 2}}},
+    {"rank": 3, "team": {"id": 1099, "name": "Finland", "logo": ""}, "points": 7, "goalsDiff": 7, "group": "League C - Group A", "description": null, "all": {"played": 4, "win": 2, "draw": 1, "lose": 1, "goals": {"for": 9, "against": 2}}},
+    {"rank": 4, "team": {"id": 1115, "name": "San Marino", "logo": ""}, "points": 0, "goalsDiff": -15, "group": "League C - Group A", "description": null, "all": {"played": 4, "win": 0, "draw": 0, "lose": 4, "goals": {"for": 1, "against": 16}}}
+  ],
+  [
+    {"rank": 1, "team": {"id": 1109, "name": "Montenegro", "logo": ""}, "points": 10, "goalsDiff": 3, "group": "League C - Group B", "description": "Promotion", "all": {"played": 4, "win": 3, "draw": 1, "lose": 0, "goals": {"for": 7, "against": 4}}},
+    {"rank": 2, "team": {"id": 1106, "name": "Cyprus", "logo": ""}, "points": 7, "goalsDiff": 2, "group": "League C - Group B", "description": "Promotion Play-offs", "all": {"played": 4, "win": 2, "draw": 1, "lose": 1, "goals": {"for": 5, "against": 3}}},
+    {"rank": 3, "team": {"id": 1094, "name": "Armenia", "logo": ""}, "points": 4, "goalsDiff": -1, "group": "League C - Group B", "description": null, "all": {"played": 4, "win": 1, "draw": 1, "lose": 2, "goals": {"for": 4, "against": 5}}},
+    {"rank": 4, "team": {"id": 1092, "name": "Latvia", "logo": ""}, "points": 1, "goalsDiff": -4, "group": "League C - Group B", "description": null, "all": {"played": 4, "win": 0, "draw": 1, "lose": 3, "goals": {"for": 2, "against": 6}}}
+  ],
+  [
+    {"rank": 1, "team": {"id": 773, "name": "Slovakia", "logo": ""}, "points": 10, "goalsDiff": 7, "group": "League C - Group C", "description": "Promotion", "all": {"played": 4, "win": 3, "draw": 1, "lose": 0, "goals": {"for": 9, "against": 2}}},
+    {"rank": 2, "team": {"id": 1098, "name": "Faroe Islands", "logo": ""}, "points": 4, "goalsDiff": 0, "group": "League C - Group C", "description": "Promotion Play-offs", "all": {"played": 4, "win": 0, "draw": 4, "lose": 0, "goals": {"for": 5, "against": 5}}},
+    {"rank": 3, "team": {"id": 1114, "name": "Moldova", "logo": ""}, "points": 4, "goalsDiff": -5, "group": "League C - Group C", "description": null, "all": {"played": 4, "win": 1, "draw": 1, "lose": 2, "goals": {"for": 3, "against": 8}}},
+    {"rank": 4, "team": {"id": 1095, "name": "Kazakhstan", "logo": ""}, "points": 2, "goalsDiff": -2, "group": "League C - Group C", "description": null, "all": {"played": 4, "win": 0, "draw": 2, "lose": 2, "goals": {"for": 5, "against": 7}}}
+  ],
+  [
+    {"rank": 1, "team": {"id": 18, "name": "Iceland", "logo": ""}, "points": 8, "goalsDiff": 6, "group": "League C - Group D", "description": "Promotion", "all": {"played": 4, "win": 2, "draw": 2, "lose": 0, "goals": {"for": 7, "against": 1}}},
+    {"rank": 2, "team": {"id": 1101, "name": "Estonia", "logo": ""}, "points": 6, "goalsDiff": 1, "group": "League C - Group D", "description": "Promotion Play-offs", "all": {"played": 4, "win": 1, "draw": 3, "lose": 0, "goals": {"for": 2, "against": 1}}},
+    {"rank": 3, "team": {"id": 1103, "name": "Bulgaria", "logo": ""}, "points": 4, "goalsDiff": -2, "group": "League C - Group D", "description": null, "all": {"played": 4, "win": 1, "draw": 1, "lose": 2, "goals": {"for": 3, "against": 5}}},
+    {"rank": 4, "team": {"id": 1102, "name": "Luxembourg", "logo": ""}, "points": 3, "goalsDiff": -5, "group": "League C - Group D", "description": null, "all": {"played": 4, "win": 1, "draw": 0, "lose": 3, "goals": {"for": 2, "against": 7}}}
+  ],
+  [
+    {"rank": 1, "team": {"id": 1112, "name": "Malta", "logo": ""}, "points": 7, "goalsDiff": 2, "group": "League D - Group A", "description": "Promotion", "all": {"played": 3, "win": 2, "draw": 1, "lose": 0, "goals": {"for": 4, "against": 2}}},
+    {"rank": 2, "team": {"id": 1093, "name": "Gibraltar", "logo": ""}, "points": 2, "goalsDiff": 0, "group": "League D - Group A", "description": "Promotion", "all": {"played": 2, "win": 0, "draw": 2, "lose": 0, "goals": {"for": 1, "against": 1}}},
+    {"rank": 3, "team": {"id": 1110, "name": "Andorra", "logo": ""}, "points": 1, "goalsDiff": -2, "group": "League D - Group A", "description": "Promotion", "all": {"played": 3, "win": 0, "draw": 1, "lose": 2, "goals": {"for": 1, "against": 3}}}
+  ],
+  [
+    {"rank": 1, "team": {"id": 1096, "name": "Azerbaijan", "logo": ""}, "points": 5, "goalsDiff": 1, "group": "League D - Group B", "description": "Promotion", "all": {"played": 3, "win": 1, "draw": 2, "lose": 0, "goals": {"for": 2, "against": 1}}},
+    {"rank": 2, "team": {"id": 1097, "name": "Lithuania", "logo": ""}, "points": 4, "goalsDiff": 1, "group": "League D - Group B", "description": "Promotion", "all": {"played": 3, "win": 1, "draw": 1, "lose": 1, "goals": {"for": 3, "against": 2}}},
+    {"rank": 3, "team": {"id": 1107, "name": "Liechtenstein", "logo": ""}, "points": 1, "goalsDiff": -2, "group": "League D - Group B", "description": "Promotion", "all": {"played": 2, "win": 0, "draw": 1, "lose": 1, "goals": {"for": 0, "against": 2}}}
+  ]
+]

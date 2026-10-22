@@ -1,0 +1,22 @@
+[
+  [
+    {"rank": 1, "team": {"id": 80, "name": "Lyon", "logo": ""}, "points": 14, "goalsDiff": 8, "group": "Ligue 1", "description": "Champions League league stage", "all": {"played": 7, "win": 4, "draw": 2, "lose": 1, "goals": {"for": 13, "against": 5}}},
+    {"rank": 2, "team": {"id": 85, "name": "Paris Saint Germain", "logo": ""}, "points": 14, "goalsDiff": 5, "group": "Ligue 1", "description": "Champions League league stage", "all": {"played": 7, "win": 4, "draw": 2, "lose": 1, "goals": {"for": 14, "against": 9}}},
+    {"rank": 3, "team": {"id": 114, "name": "Paris FC", "logo": ""}, "points": 14, "goalsDiff": 5, "group": "Ligue 1", "description": "Champions League league stage", "all": {"played": 7, "win": 4, "draw": 2, "lose": 1, "goals": {"for": 12, "against": 7}}},
+    {"rank": 4, "team": {"id": 79, "name": "Lille", "logo": ""}, "points": 14, "goalsDiff": 5, "group": "Ligue 1", "description": " Qualifying", "all": {"played": 7, "win": 4, "draw": 2, "lose": 1, "goals": {"for": 10, "against": 5}}},
+    {"rank": 5, "team": {"id": 91, "name": "Monaco", "logo": ""}, "points": 14, "goalsDiff": 4, "group": "Ligue 1", "description": "Europa League league stage", "all": {"played": 7, "win": 4, "draw": 2, "lose": 1, "goals": {"for": 10, "against": 6}}},
+    {"rank": 6, "team": {"id": 94, "name": "Rennes", "logo": ""}, "points": 13, "goalsDiff": 1, "group": "Ligue 1", "description": "Play-offs", "all": {"played": 7, "win": 4, "draw": 1, "lose": 2, "goals": {"for": 15, "against": 14}}},
+    {"rank": 7, "team": {"id": 97, "name": "Lorient", "logo": ""}, "points": 11, "goalsDiff": 1, "group": "Ligue 1", "description": null, "all": {"played": 7, "win": 3, "draw": 2, "lose": 2, "goals": {"for": 7, "against": 6}}},
+    {"rank": 8, "team": {"id": 116, "name": "Lens", "logo": ""}, "points": 10, "goalsDiff": 3, "group": "Ligue 1", "description": null, "all": {"played": 7, "win": 3, "draw": 1, "lose": 3, "goals": {"for": 14, "against": 11}}},
+    {"rank": 9, "team": {"id": 81, "name": "Marseille", "logo": ""}, "points": 9, "goalsDiff": 4, "group": "Ligue 1", "description": null, "all": {"played": 7, "win": 3, "draw": 0, "lose": 4, "goals": {"for": 14, "against": 10}}},
+    {"rank": 10, "team": {"id": 106, "name": "Stade Brestois 29", "logo": ""}, "points": 9, "goalsDiff": 3, "group": "Ligue 1", "description": null, "all": {"played": 7, "win": 2, "draw": 3, "lose": 2, "goals": {"for": 13, "against": 10}}},
+    {"rank": 11, "team": {"id": 96, "name": "Toulouse", "logo": ""}, "points": 9, "goalsDiff": 1, "group": "Ligue 1", "description": null, "all": {"played": 7, "win": 2, "draw": 3, "lose": 2, "goals": {"for": 12, "against": 11}}},
+    {"rank": 12, "team": {"id": 108, "name": "Auxerre", "logo": ""}, "points": 9, "goalsDiff": -6, "group": "Ligue 1", "description": null, "all": {"played": 7, "win": 3, "draw": 0, "lose": 4, "goals": {"for": 11, "against": 17}}},
+    {"rank": 13, "team": {"id": 84, "name": "Nice", "logo": ""}, "points": 8, "goalsDiff": -3, "group": "Ligue 1", "description": null, "all": {"played": 7, "win": 2, "draw": 2, "lose": 3, "goals": {"for": 6, "against": 9}}},
+    {"rank": 14, "team": {"id": 95, "name": "Strasbourg", "logo": ""}, "points": 7, "goalsDiff": -3, "group": "Ligue 1", "description": null, "all": {"played": 7, "win": 2, "draw": 1, "lose": 4, "goals": {"for": 12, "against": 15}}},
+    {"rank": 15, "team": {"id": 77, "name": "Angers", "logo": ""}, "points": 7, "goalsDiff": -6, "group": "Ligue 1", "description": null, "all": {"played": 7, "win": 2, "draw": 1, "lose": 4, "goals": {"for": 9, "against": 15}}},
+    {"rank": 16, "team": {"id": 1298, "name": "Le Mans", "logo": ""}, "points": 6, "goalsDiff": -5, "group": "Ligue 1", "description": "Relegation Playoffs", "all": {"played": 7, "win": 1, "draw": 3, "lose": 3, "goals": {"for": 10, "against": 15}}},
+    {"rank": 17, "team": {"id": 110, "name": "Estac Troyes", "logo": ""}, "points": 4, "goalsDiff": -11, "group": "Ligue 1", "description": "Relegation", "all": {"played": 7, "win": 1, "draw": 1, "lose": 5, "goals": {"for": 5, "against": 16}}},
+    {"rank": 18, "team": {"id": 111, "name": "Le Havre", "logo": ""}, "points": 2, "goalsDiff": -6, "group": "Ligue 1", "description": "Relegation", "all": {"played": 7, "win": 0, "draw": 2, "lose": 5, "goals": {"for": 5, "against": 11}}}
+  ]
+]
