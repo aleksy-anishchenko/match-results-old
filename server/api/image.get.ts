@@ -9,12 +9,17 @@ export default defineEventHandler(async (event) => {
   const url = String(query.url ?? '')
 
   if (!IMAGE_URL.test(url)) {
-    throw createError({ statusCode: 400, message: 'Invalid image URL' })
+    throw createError({ statusCode: 400, statusMessage: 'Bad Request', message: 'Invalid image URL' })
   }
 
   const response = await fetch(url, { signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS) }).catch((error: unknown) => {
     const timedOut = error instanceof DOMException && error.name === 'TimeoutError'
-    throw createError({ statusCode: timedOut ? 504 : 502, message: timedOut ? 'Источник картинки не ответил' : 'Источник картинки недоступен' })
+    // statusMessage — для строки статуса HTTP, там только латиница; текст по-русски — в message
+    throw createError({
+      statusCode: timedOut ? 504 : 502,
+      statusMessage: timedOut ? 'Gateway Timeout' : 'Bad Gateway',
+      message: timedOut ? 'Источник картинки не ответил' : 'Источник картинки недоступен',
+    })
   })
 
   // Ошибку отдаём ошибкой и без кэша. Раньше она уходила как картинка с кодом 200,
@@ -22,6 +27,7 @@ export default defineEventHandler(async (event) => {
   if (!response.ok) {
     throw createError({
       statusCode: response.status === 404 ? 404 : 502,
+      statusMessage: response.status === 404 ? 'Not Found' : 'Bad Gateway',
       message: response.status === 404 ? 'Картинка не найдена' : 'Источник картинки недоступен',
     })
   }
