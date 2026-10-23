@@ -143,6 +143,12 @@ export default defineNuxtConfig({
       },
     },
   },
+  // Тесты чистых функций — в проверку типов (nuxt typecheck): tests/nuxt туда добавляет сам @nuxt/test-utils.
+  // Серверные — в tsconfig сервера, где известны глобальные функции Nitro ($fetch, defineCachedFunction…)
+  typescript: {
+    appTsConfig: { include: ['../tests/unit/utils/**/*', '../tests/helpers/**/*'] },
+    serverTsConfig: { include: ['../tests/unit/server/**/*'] },
+  },
   eslint: {
     config: {
       stylistic: true,

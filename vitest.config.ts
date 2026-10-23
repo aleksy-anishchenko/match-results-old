@@ -18,9 +18,6 @@ export default defineConfig({
           include: ['tests/unit/**/*.test.ts'],
           environment: 'node',
           globals: true,
-          typecheck: {
-            tsconfig: './tsconfig.test.json',
-          },
         },
       },
       // Компоненты и страницы: окружение Nuxt, работают авто-импорты, useFetch, роутер
