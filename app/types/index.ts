@@ -17,7 +17,8 @@ export type Competition = {
 }
 
 export type Match = {
-  idEvent: string
+  /** Номер матча в API-Football: по нему адрес страницы матча и живой счёт */
+  id: string
   homeTeam: string
   awayTeam: string
   homeBadge: string
@@ -108,7 +109,8 @@ export type DateRange = {
 }
 
 export type MatchDetails = {
-  idEvent: string
+  /** Номер матча в API-Football */
+  id: string
   homeTeam: string
   awayTeam: string
   homeBadge: string

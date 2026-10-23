@@ -9,7 +9,7 @@ describe('toMatchDetails', () => {
   it('шапка: команды по-русски, счёт строками, время UTC без смещения, тур, стадион', () => {
     const details = toMatchDetails(afSpartakRubin)
     expect(details).toMatchObject({
-      idEvent: '1561417',
+      id: '1561417',
       homeTeam: 'Спартак',
       awayTeam: 'Рубин',
       homeScore: '4',

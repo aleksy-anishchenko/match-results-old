@@ -22,8 +22,8 @@ const ROUNDS: RoundsResponse = {
   matchDays: [yesterday, today],
 }
 
-function match(idEvent: string, homeTeam: string, awayTeam: string, round: string): Match {
-  return makeMatch({ idEvent, homeTeam, awayTeam, round, timestamp: '2026-10-17T14:00:00' })
+function match(id: string, homeTeam: string, awayTeam: string, round: string): Match {
+  return makeMatch({ id, homeTeam, awayTeam, round, timestamp: '2026-10-17T14:00:00' })
 }
 
 // Сервер подменён: в 6 туре «Челси – Арсенал», в 7 «Эвертон – Ливерпуль», по датам — «Фулхэм – Брентфорд» из 7 тура.

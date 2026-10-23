@@ -69,7 +69,7 @@ export function toMatchDetails(fixture: ApiFootballFixture): MatchDetails {
   const eventsFit = !FINISHED_MATCH_STATUSES.has(info.status.short) || goalsMatchScore(events, homeScore, awayScore)
 
   return {
-    idEvent: String(info.id),
+    id: String(info.id),
     homeTeam: getTeamName(teams.home.id, teams.home.name),
     awayTeam: getTeamName(teams.away.id, teams.away.name),
     homeBadge: teams.home.logo,

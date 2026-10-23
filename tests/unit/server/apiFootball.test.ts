@@ -178,7 +178,7 @@ describe('toMatch', () => {
     const final = toSeasonMatch(championsLeague2526.find(fixture => fixture.league.round === 'Final')!)
 
     expect(toMatch(final, 'playoff-final')).toEqual({
-      idEvent: '1544371',
+      id: '1544371',
       homeTeam: 'ПСЖ',
       awayTeam: 'Арсенал',
       homeBadge: '',

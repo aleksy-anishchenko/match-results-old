@@ -37,9 +37,9 @@ describe('groupMatchesByDate', () => {
 
   it('матчи разных дней группируются отдельно', () => {
     const matches = [
-      makeMatch({ idEvent: '1', timestamp: '2026-06-22T12:00:00' }),
-      makeMatch({ idEvent: '2', timestamp: '2026-06-23T12:00:00' }),
-      makeMatch({ idEvent: '3', timestamp: '2026-06-23T15:00:00' }),
+      makeMatch({ id: '1', timestamp: '2026-06-22T12:00:00' }),
+      makeMatch({ id: '2', timestamp: '2026-06-23T12:00:00' }),
+      makeMatch({ id: '3', timestamp: '2026-06-23T15:00:00' }),
     ]
     const result = groupMatchesByDate(matches)
     expect(Object.keys(result)).toHaveLength(2)
@@ -178,11 +178,11 @@ describe('getDueMatchIds', () => {
   it('из списка — номера только тех, кого пора обновлять', () => {
     const now = kickoff + minutes(30)
     const matches = [
-      makeMatch({ idEvent: '1', status: '1H', timestamp }),
-      makeMatch({ idEvent: '2', status: 'FT', timestamp }),
-      makeMatch({ idEvent: '3', status: 'PST', timestamp }),
-      makeMatch({ idEvent: '4', status: 'NS', timestamp: '2026-06-24T10:00:00' }),
-      makeMatch({ idEvent: '5', status: 'NS', timestamp }),
+      makeMatch({ id: '1', status: '1H', timestamp }),
+      makeMatch({ id: '2', status: 'FT', timestamp }),
+      makeMatch({ id: '3', status: 'PST', timestamp }),
+      makeMatch({ id: '4', status: 'NS', timestamp: '2026-06-24T10:00:00' }),
+      makeMatch({ id: '5', status: 'NS', timestamp }),
     ]
     expect(getDueMatchIds(matches, now)).toEqual(['1', '5'])
     expect(getDueMatchIds([], now)).toEqual([])

@@ -72,7 +72,7 @@ const LIVE_WINDOW_MS = 3 * 60 * 60 * 1000
  * данным: по ним матч заканчивается раньше, чем страница успевает получить его итоговые хронику и составы.
  * now — миллисекунды, как Date.now()
  */
-export function getDueMatchIds(matches: Array<Pick<Match, 'idEvent' | 'status' | 'timestamp'>>, now: number): string[] {
+export function getDueMatchIds(matches: Array<Pick<Match, 'id' | 'status' | 'timestamp'>>, now: number): string[] {
   return matches.filter((match) => {
     const kind = getMatchStatusKind(match.status)
     if (kind !== 'live' && kind !== 'scheduled') return false
@@ -80,7 +80,7 @@ export function getDueMatchIds(matches: Array<Pick<Match, 'idEvent' | 'status' |
     // Без времени начала окна не посчитать: идущий матч всё равно обновляем
     if (Number.isNaN(startsAt)) return kind === 'live'
     return startsAt <= now && now - startsAt < LIVE_WINDOW_MS
-  }).map(match => match.idEvent)
+  }).map(match => match.id)
 }
 
 export function getMatchWinnerSide(

@@ -41,7 +41,7 @@ const MATCH = makeMatchDetails({
 registerEndpoint('/api/rounds', () => ROUNDS)
 registerEndpoint('/api/match/1', () => MATCH)
 // Матч без ленты событий, статистики и составов
-registerEndpoint('/api/match/2', () => ({ ...MATCH, idEvent: '2', events: [], stats: [], lineups: null }))
+registerEndpoint('/api/match/2', () => ({ ...MATCH, id: '2', events: [], stats: [], lineups: null }))
 // Идущие матчи начались полчаса назад: livescore спрашиваем не дольше 3 часов от начала
 const halfHourAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString().slice(0, 19)
 // Идущий матч: по расписанию 1-й тайм 0:0, по livescore — 2-й тайм, 52-я минута, 1:0
@@ -49,7 +49,7 @@ const matchRequests: Record<string, number> = {}
 function liveMatch(id: string, details: Partial<MatchDetails>) {
   registerEndpoint(`/api/match/${id}`, () => {
     matchRequests[id] = (matchRequests[id] ?? 0) + 1
-    return { ...MATCH, idEvent: id, timestamp: halfHourAgo, events: [], stats: [], lineups: null, ...details }
+    return { ...MATCH, id, timestamp: halfHourAgo, events: [], stats: [], lineups: null, ...details }
   })
 }
 liveMatch('3', { status: '1H', homeScore: '0', awayScore: '0' })

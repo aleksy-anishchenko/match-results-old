@@ -27,7 +27,7 @@ defineProps<{
       <ul class="day__card">
         <li
           v-for="match in dayMatches"
-          :key="match.idEvent"
+          :key="match.id"
           class="day__row"
         >
           <MatchItem :match="match" />

@@ -32,7 +32,7 @@ const subLabel = computed(() => {
 
 <template>
   <NuxtLink
-    :to="`/match/${match.idEvent}`"
+    :to="`/match/${match.id}`"
     class="match"
     :class="`match--${kind}`"
   >

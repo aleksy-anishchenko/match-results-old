@@ -1,6 +1,6 @@
 import type { LiveScore, LiveScoresResponse, Match } from '~/types'
 
-type LiveMatch = Pick<Match, 'idEvent' | 'status' | 'timestamp' | 'homeScore' | 'awayScore' | 'homePenScore' | 'awayPenScore' | 'progress'>
+type LiveMatch = Pick<Match, 'id' | 'status' | 'timestamp' | 'homeScore' | 'awayScore' | 'homePenScore' | 'awayPenScore' | 'progress'>
 
 /**
  * Матчи со свежим счётом и минутой из /api/live поверх расписания. Пока по расписанию среди них есть идущие
@@ -44,11 +44,11 @@ export async function useLiveScores<T extends LiveMatch>(
 
   // Другие матчи (тур, дни, лига) — спросить сразу, если среди них есть идущие. По id, а не по самим матчам:
   // страница матча раз в минуту подменяет матч новым объектом, и запрос иначе ушёл бы второй раз
-  watch(() => toValue(matches).map(match => match.idEvent).join(), () => {
+  watch(() => toValue(matches).map(match => match.id).join(), () => {
     if (updateDueIds() && dueIds.value) refresh()
   })
 
-  const liveMatches = computed(() => toValue(matches).map(match => applyLiveScore(match, scores.value[match.idEvent])))
+  const liveMatches = computed(() => toValue(matches).map(match => applyLiveScore(match, scores.value[match.id])))
 
   let timer: ReturnType<typeof setInterval> | undefined
   onMounted(() => {

@@ -3,7 +3,7 @@ import type { Match, MatchDetails } from '~/types'
 /** Матч для тестов: ещё не начался, счёта нет. Всё, от чего зависит проверка, тест передаёт сам */
 export function makeMatch(overrides: Partial<Match> = {}): Match {
   return {
-    idEvent: '1',
+    id: '1',
     homeTeam: 'Спартак',
     awayTeam: 'Рубин',
     homeBadge: '',

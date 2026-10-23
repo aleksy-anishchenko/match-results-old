@@ -40,7 +40,7 @@ export function toSeasonMatch({ fixture, league, teams, goals, score }: ApiFootb
 /** Матч расписания для списка матчей на главной. round — тур матча из getSeasonRounds; null — матч вне туров */
 export function toMatch(match: SeasonMatch, round: string | null): Match {
   return {
-    idEvent: match.id,
+    id: match.id,
     homeTeam: match.home.name,
     awayTeam: match.away.name,
     homeBadge: match.home.badge,
