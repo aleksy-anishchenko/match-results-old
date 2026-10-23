@@ -11,7 +11,7 @@ const fixture = (status: string, elapsed: number | null, extra: number | null, o
 
 describe('toLiveScore', () => {
   // Лиллестрём – Реал Сосьедад, Лига Европы 22 октября 2026
-  it('идущий матч: счёт строками и минута', () => {
+  it('идущий матч: счёт и минута', () => {
     expect(toLiveScore(fixture('2H', 67, null))).toEqual({
       status: '2H', progress: '67', homeScore: 0, awayScore: 4, homePenScore: null, awayPenScore: null,
     })
@@ -25,6 +25,11 @@ describe('toLiveScore', () => {
   it('решён по пенальти — счёт серии', () => {
     const shootout = fixture('PEN', 120, null, { goals: { home: 1, away: 1 }, score: { penalty: { home: 4, away: 3 } } })
     expect(toLiveScore(shootout)).toMatchObject({ status: 'PEN', progress: null, homePenScore: 4, awayPenScore: 3 })
+  })
+
+  it('у обычного матча нули в полях пенальти — не серия', () => {
+    const regular = fixture('FT', 90, null, { score: { penalty: { home: 0, away: 0 } } })
+    expect(toLiveScore(regular)).toMatchObject({ homePenScore: null, awayPenScore: null })
   })
 
   it('матч не начался — счёта нет', () => {

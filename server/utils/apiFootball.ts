@@ -106,12 +106,16 @@ export const getLeagueSeason = defineCachedFunction(async (leagueId: string): Pr
 /** Турнир сайта и его текущий сезон */
 export type CompetitionSeason = { competition: Competition, season: number }
 
+/** Турнир по номеру из адреса (?leagueId=; без него — турнир по умолчанию). undefined — турнира нет в списке сайта */
+export const getRequestedCompetition = (leagueId: unknown): Competition | undefined =>
+  getCompetition(String(leagueId ?? DEFAULT_COMPETITION_ID))
+
 /**
- * Турнир по номеру из адреса (?leagueId=; без него — турнир по умолчанию) и его текущий сезон. null — турнира
- * нет в списке сайта или текущего сезона нет в API. Турниры не из списка не спрашиваем: каждый запрос — из лимита
+ * Турнир по номеру из адреса и его текущий сезон. null — турнира нет в списке сайта или текущего сезона нет в API.
+ * Турниры не из списка не спрашиваем: каждый запрос — из лимита
  */
 export async function getCompetitionSeason(leagueId: unknown): Promise<CompetitionSeason | null> {
-  const competition = getCompetition(String(leagueId ?? DEFAULT_COMPETITION_ID))
+  const competition = getRequestedCompetition(leagueId)
   if (!competition) return null
   const season = await getLeagueSeason(competition.id)
   return season == null ? null : { competition, season }

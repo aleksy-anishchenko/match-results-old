@@ -171,6 +171,14 @@ describe('toSeasonMatch', () => {
       homePenalties: null,
     })
   })
+
+  // Счёт серии бывает только у статусов P и PEN: иначе карточка сетки показала бы «2⁰»
+  it('у обычного матча нули в полях пенальти — не серия', () => {
+    const final = championsLeague2526.find(fixture => fixture.league.round === 'Final')!
+    const regular = { ...final, fixture: { ...final.fixture, status: { ...final.fixture.status, short: 'FT' } } }
+
+    expect(toSeasonMatch({ ...regular, score: { penalty: { home: 0, away: 0 } } })).toMatchObject({ homePenalties: null, awayPenalties: null })
+  })
 })
 
 describe('toMatch', () => {

@@ -82,13 +82,6 @@ describe('MatchHeader', () => {
     expect(wrapper.find('.team__advance').exists()).toBe(false)
   })
 
-  it('у обычного матча нули в полях пенальти не показываются', async () => {
-    const wrapper = await mountSuspended(MatchHeader, {
-      props: { match: makeMatch({ homePenScore: 0, awayPenScore: 0, status: 'FT' }) },
-    })
-    expect(wrapper.find('.score__penalties').exists()).toBe(false)
-  })
-
   it('время не назначено (TBD): только дата', async () => {
     const wrapper = await mountSuspended(MatchHeader, {
       props: { match: makeMatch({ status: 'TBD', homeScore: null, awayScore: null, timestamp: '2026-10-11T00:00:00' }) },

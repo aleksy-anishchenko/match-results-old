@@ -6,8 +6,6 @@ export const FINISHED_MATCH_STATUSES = new Set(['FT', 'AET', 'PEN'])
 export const LIVE_MATCH_STATUSES = new Set(['1H', 'HT', '2H', 'ET', 'BT', 'P', 'LIVE', 'INT'])
 /** Матч не состоится или остановлен: перенесён, отменён, прерван, техническое решение */
 export const INACTIVE_MATCH_STATUSES = new Set(['PST', 'CANC', 'ABD', 'SUSP', 'AWD', 'WO'])
-/** Статусы, при которых у матча есть серия пенальти: идёт (P) или завершён по пенальти (PEN) */
-const PENALTY_MATCH_STATUSES = new Set(['P', 'PEN'])
 
 /**
  * Дата по Москве в виде YYYY-MM-DD. Строка — это timestamp из API: время UTC без смещения
@@ -53,14 +51,10 @@ export function applyLiveScore<T extends LiveFields>(match: T, live: LiveScore |
   }
 }
 
-/**
- * Счёт серии пенальти: «4:3». null — серии нет. Только у статусов P и PEN:
- * нули в этих полях у обычного матча — не серия
- */
-export function formatPenaltyScore(match: Pick<Match, 'status' | 'homePenScore' | 'awayPenScore'>): string | null {
-  const { status, homePenScore, awayPenScore } = match
-  if (!PENALTY_MATCH_STATUSES.has(status) || homePenScore == null || awayPenScore == null) return null
-  return `${homePenScore}:${awayPenScore}`
+/** Счёт серии пенальти: «4:3». null — серии нет: сервер оставляет её счёт только у статусов P и PEN (toPenalties) */
+export function formatPenaltyScore(match: Pick<Match, 'homePenScore' | 'awayPenScore'>): string | null {
+  const { homePenScore, awayPenScore } = match
+  return homePenScore == null || awayPenScore == null ? null : `${homePenScore}:${awayPenScore}`
 }
 
 /** Сколько ждём начала матча после времени из расписания: за 3 часа закончится и матч с доп. временем */
@@ -100,10 +94,13 @@ export function getMatchWinnerSide(
   return null
 }
 
-const GOAL_EVENT_KINDS = new Set<MatchEvent['kind']>(['goal', 'penalty', 'own-goal'])
+/** Виды гола в хронике. Перевод из API (server/utils/matchEvents.ts) берёт виды отсюда: новый вид без этого списка не пройдёт проверку типов */
+export const GOAL_EVENT_KINDS = ['goal', 'penalty', 'own-goal'] as const satisfies ReadonlyArray<MatchEvent['kind']>
+export type GoalEventKind = typeof GOAL_EVENT_KINDS[number]
+const goalEventKinds = new Set<MatchEvent['kind']>(GOAL_EVENT_KINDS)
 
 /** Гол: обычный, с пенальти или автогол */
-export const isGoalEvent = (event: Pick<MatchEvent, 'kind'>) => GOAL_EVENT_KINDS.has(event.kind)
+export const isGoalEvent = (event: Pick<MatchEvent, 'kind'>) => goalEventKinds.has(event.kind)
 
 /**
  * Голы хроники сходятся со счётом. Хроника бывает неполной, а во время матча может отставать

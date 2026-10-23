@@ -223,14 +223,10 @@ describe('getMatchWinnerSide', () => {
 })
 
 describe('formatPenaltyScore', () => {
-  it('серия идёт (P) или матч решён по пенальти (PEN) — её счёт', () => {
-    expect(formatPenaltyScore({ status: 'PEN', homePenScore: 4, awayPenScore: 3 })).toBe('4:3')
-    expect(formatPenaltyScore({ status: 'P', homePenScore: 0, awayPenScore: 1 })).toBe('0:1')
-  })
-
-  it('у обычного матча нули в полях — не серия; без счёта серии — ничего', () => {
-    expect(formatPenaltyScore({ status: 'FT', homePenScore: 0, awayPenScore: 0 })).toBeNull()
-    expect(formatPenaltyScore({ status: 'PEN', homePenScore: null, awayPenScore: null })).toBeNull()
+  it('счёт серии — «4:3»; без счёта серии — ничего', () => {
+    expect(formatPenaltyScore({ homePenScore: 4, awayPenScore: 3 })).toBe('4:3')
+    expect(formatPenaltyScore({ homePenScore: 0, awayPenScore: 1 })).toBe('0:1')
+    expect(formatPenaltyScore({ homePenScore: null, awayPenScore: null })).toBeNull()
   })
 })
 

@@ -15,11 +15,21 @@ export type ApiFootballSeasonFixture = {
 
 const toSeasonTeam = (team: ApiFootballTeam): SeasonTeam => ({ id: team.id, name: getTeamName(team.id, team.name), badge: team.logo ?? '' })
 
+/** Статусы с серией пенальти: идёт (P) или матч решён по пенальти (PEN) */
+const PENALTY_STATUSES = new Set(['P', 'PEN'])
+
+type Penalties = { home: number | null, away: number | null }
+
+/** Счёт серии пенальти из API — только у статусов P и PEN: нули в этих полях у обычного матча — не серия */
+export const toPenalties = (status: string, penalty: Penalties): Penalties =>
+  PENALTY_STATUSES.has(status) ? penalty : { home: null, away: null }
+
 /** Время из API (секунды Unix) в UTC без смещения: «2026-10-25T16:30:00» — такое ждут getMoscowDate и formatMoscowTime */
 export const toUtcTimestamp = (seconds: number) => new Date(seconds * 1000).toISOString().slice(0, 19)
 
 /** Матч расписания в общем виде: названия по-русски, время — UTC без смещения («2026-10-25T16:30:00») */
 export function toSeasonMatch({ fixture, league, teams, goals, score }: ApiFootballSeasonFixture): SeasonMatch {
+  const penalties = toPenalties(fixture.status.short, score.penalty)
   return {
     id: String(fixture.id),
     round: league.round,
@@ -29,8 +39,8 @@ export function toSeasonMatch({ fixture, league, teams, goals, score }: ApiFootb
     away: toSeasonTeam(teams.away),
     homeScore: goals.home,
     awayScore: goals.away,
-    homePenalties: score.penalty.home,
-    awayPenalties: score.penalty.away,
+    homePenalties: penalties.home,
+    awayPenalties: penalties.away,
   }
 }
 

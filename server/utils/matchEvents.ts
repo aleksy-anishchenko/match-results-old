@@ -1,5 +1,5 @@
 import type { MatchEvent } from '~/types'
-import { isGoalEvent } from '#shared/utils/matches'
+import { isGoalEvent, type GoalEventKind } from '#shared/utils/matches'
 import type { ApiFootballFixture } from './matchDetails'
 import { decodeEntities } from './text'
 
@@ -15,7 +15,7 @@ type RawEvent = {
   assist: string | null
 }
 
-const GOAL_KINDS: Record<string, MatchEvent['kind']> = {
+const GOAL_KINDS: Record<string, GoalEventKind> = {
   'Normal Goal': 'goal',
   'Penalty': 'penalty',
   'Own Goal': 'own-goal',

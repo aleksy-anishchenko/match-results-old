@@ -4,7 +4,7 @@ import { getRoundNumber } from '#shared/utils/rounds'
 import { getApiFootballLineups } from './lineups'
 import { getApiFootballEvents } from './matchEvents'
 import { getApiFootballStats } from './matchStats'
-import { toUtcTimestamp } from './seasonMatch'
+import { toPenalties, toUtcTimestamp } from './seasonMatch'
 import { getTeamName } from './teamNames'
 import { decodeEntities } from './text'
 
@@ -64,6 +64,7 @@ export type ApiFootballLineupPlayer = {
 export function toMatchDetails(fixture: ApiFootballFixture): MatchDetails {
   const { fixture: info, league, teams, goals, score } = fixture
   const events = getApiFootballEvents(fixture)
+  const penalties = toPenalties(info.status.short, score.penalty)
   const eventsFit = !FINISHED_MATCH_STATUSES.has(info.status.short) || goalsMatchScore(events, goals.home, goals.away)
 
   return {
@@ -74,8 +75,8 @@ export function toMatchDetails(fixture: ApiFootballFixture): MatchDetails {
     awayBadge: teams.away.logo,
     homeScore: goals.home,
     awayScore: goals.away,
-    homePenScore: score.penalty.home,
-    awayPenScore: score.penalty.away,
+    homePenScore: penalties.home,
+    awayPenScore: penalties.away,
     status: info.status.short,
     // Минуту идущего матча подставляет страница из /api/live (useLiveScores)
     progress: null,

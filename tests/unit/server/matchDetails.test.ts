@@ -6,7 +6,7 @@ import afChampionsLeagueFinal from '../../fixtures/api-football/psg-arsenal-fina
 import afBragantinoCruzeiro from '../../fixtures/api-football/bragantino-cruzeiro.json'
 
 describe('toMatchDetails', () => {
-  it('шапка: команды по-русски, счёт строками, время UTC без смещения, тур, стадион', () => {
+  it('шапка: команды по-русски, счёт, время UTC без смещения, тур, стадион', () => {
     const details = toMatchDetails(afSpartakRubin)
     expect(details).toMatchObject({
       id: '1561417',
@@ -52,6 +52,11 @@ describe('toMatchDetails', () => {
   })
 
   // Хроника неполная: неполный список голов выглядит как ошибка
+  it('у обычного матча нули в полях пенальти — не серия', () => {
+    const details = toMatchDetails({ ...afSpartakRubin, score: { ...afSpartakRubin.score, penalty: { home: 0, away: 0 } } })
+    expect(details).toMatchObject({ homePenScore: null, awayPenScore: null })
+  })
+
   it('сыгранный матч: голы хроники не сходятся со счётом — хроники нет, статистика и составы остаются', () => {
     const details = toMatchDetails({ ...afSpartakRubin, goals: { home: 5, away: 0 } })
     expect(details.events).toEqual([])
