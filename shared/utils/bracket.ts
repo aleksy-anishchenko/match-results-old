@@ -81,7 +81,7 @@ const ROUND_NAMES: Record<number, string> = {
   16: '1/16 финала',
 }
 
-/** Название раунда по числу пар. Раунд плей-офф ЛЧ/ЛЕ — пар столько же, сколько в 1/8 */
+/** Название раунда по числу пар. Раунд плей-офф ЛЧ/ЛЕ/ЛК — пар столько же, сколько в 1/8 */
 function getRoundName(tieCount: number, isPreRound: boolean): string {
   return isPreRound ? 'Раунд плей-офф' : ROUND_NAMES[tieCount] ?? 'Раунд'
 }
@@ -99,7 +99,7 @@ const hasTeam = (tie: BracketTie, id: number | null) => id != null && tie.teams.
 /**
  * Выстраивает пары раунда под следующий раунд, чтобы линии сетки вели куда надо.
  * Обычно в пару i следующего раунда приходят победители пар 2i (сверху) и 2i + 1 (снизу).
- * После раунда плей-офф ЛЧ/ЛЕ (oneToOne) пар столько же: победитель пары i играет в паре i 1/8
+ * После раунда плей-офф ЛЧ/ЛЕ/ЛК (oneToOne) пар столько же: победитель пары i играет в паре i 1/8
  * против команды с 1–8 места. Пары, чьих победителей ещё нет в следующем раунде, — на свободные места по дате.
  */
 function alignToNextRound(ties: BracketTie[], nextTies: BracketTie[], oneToOne: boolean): BracketTie[] {
@@ -143,7 +143,7 @@ function buildProjectedRounds(lastTies: BracketTie[], afterPreRound: boolean): B
 /**
  * Сетка плей-офф: известные раунды по датам, после них — будущие раунды из победителей.
  * Матч за 3-е место отдельно: в нём играют проигравшие в полуфиналах.
- * У турниров с общим этапом (ЛЧ/ЛЕ) первый раунд — раунд плей-офф: пока 1/8 нет в расписании,
+ * У турниров с общим этапом (ЛЧ/ЛЕ/ЛК) первый раунд — раунд плей-офф: пока 1/8 нет в расписании,
  * это известно только по настройке турнира.
  */
 export function buildBracket(playoffMatches: SeasonMatch[], competition: Pick<Competition, 'leaguePhase'>): BracketResponse {

@@ -84,6 +84,7 @@ const TEAM_NAMES: Record<number, string> = {
   1113: 'Босния и Герцеговина', // Bosnia & Herzegovina
   120: 'Ботафого', // Botafogo
   35: 'Борнмут', // Bournemouth
+  319: 'Бранн', // Brann
   6: 'Бразилия', // Brazil
   55: 'Брентфорд', // Brentford
   51: 'Брайтон', // Brighton
@@ -161,10 +162,13 @@ const TEAM_NAMES: Record<number, string> = {
   1098: 'Фарерские острова', // Faroe Islands
   170: 'Аугсбург', // FC Augsburg
   2242: 'Цинциннати', // FC Cincinnati
+  400: 'Копенгаген', // FC Copenhagen
   1597: 'Даллас', // FC Dallas
   3502: 'Иберия 1999', // FC Iberia 1999
   621: 'Краснодар', // FC Krasnodar
+  606: 'Лугано', // FC Lugano
   397: 'Мидтьюлланн', // FC Midtjylland
+  398: 'Норшелланн', // FC Nordsjaelland
   1080: 'Оренбург', // FC Orenburg
   212: 'Порту', // FC Porto
   779: 'Ростов', // FC Rostov
@@ -177,6 +181,7 @@ const TEAM_NAMES: Record<number, string> = {
   1099: 'Финляндия', // Finland
   502: 'Фиорентина', // Fiorentina
   598: 'Црвена Звезда', // FK Crvena Zvezda
+  1122: 'Яблонец', // FK Jablonec
   127: 'Фламенго', // Flamengo
   687: 'Флора Таллин', // Flora Tallinn
   4625: 'Флориана', // Floriana
@@ -324,6 +329,7 @@ const TEAM_NAMES: Record<number, string> = {
   3403: 'Пафос', // Pafos
   121: 'Палмейрас', // Palmeiras
   11: 'Панама', // Panama
+  617: 'Панатинаикос', // Panathinaikos
   619: 'ПАОК', // PAOK
   2380: 'Парагвай', // Paraguay
   114: 'Париж ФК', // Paris FC

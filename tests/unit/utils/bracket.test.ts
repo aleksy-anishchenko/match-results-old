@@ -5,10 +5,12 @@ import { toSeasonMatch } from '../../../server/utils/seasonMatch'
 // Настоящие расписания сезонов из API-Football (fixtures?league&season), только поля для сетки, без эмблем
 import championsLeague2425Fixtures from '../../fixtures/api-football/seasons/champions-league-2024-25.json'
 import championsLeague2526Fixtures from '../../fixtures/api-football/seasons/champions-league-2025-26.json'
+import conferenceLeague2526Fixtures from '../../fixtures/api-football/seasons/conference-league-2025-26.json'
 import nationsLeague2425Fixtures from '../../fixtures/api-football/seasons/nations-league-2024-25.json'
 
 const championsLeague2425 = championsLeague2425Fixtures.map(toSeasonMatch)
 const championsLeague2526 = championsLeague2526Fixtures.map(toSeasonMatch)
+const conferenceLeague2526 = conferenceLeague2526Fixtures.map(toSeasonMatch)
 const nationsLeague2425 = nationsLeague2425Fixtures.map(toSeasonMatch)
 
 const LEAGUE_PHASE: Pick<Competition, 'leaguePhase'> = { leaguePhase: true }
@@ -149,6 +151,7 @@ describe('buildBracket', () => {
   describe.each([
     ['ЛЧ 2024/25', championsLeague2425],
     ['ЛЧ 2025/26', championsLeague2526],
+    ['ЛК 2025/26', conferenceLeague2526],
   ])('%s', (_, schedule) => {
     it('раунды по порядку, финал не теряется, будущих раундов нет', () => {
       const { rounds, thirdPlace } = bracketOf(schedule, LEAGUE_PHASE)

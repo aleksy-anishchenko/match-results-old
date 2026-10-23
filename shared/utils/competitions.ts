@@ -67,6 +67,14 @@ export const COMPETITIONS: Competition[] = [
     leaguePhase: true,
   },
   {
+    id: '848',
+    name: 'Лига конференций',
+    country: 'Европа',
+    type: 'tournament',
+    category: 'Еврокубки',
+    leaguePhase: true,
+  },
+  {
     id: '88',
     name: 'Эредивизи',
     country: 'Нидерланды',

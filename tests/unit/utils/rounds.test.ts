@@ -6,11 +6,13 @@ import { toSeasonMatch } from '../../../server/utils/seasonMatch'
 import bundesliga2526Fixtures from '../../fixtures/api-football/seasons/bundesliga-2025-26.json'
 import championsLeague2425Fixtures from '../../fixtures/api-football/seasons/champions-league-2024-25.json'
 import championsLeague2526Fixtures from '../../fixtures/api-football/seasons/champions-league-2025-26.json'
+import conferenceLeague2526Fixtures from '../../fixtures/api-football/seasons/conference-league-2025-26.json'
 import nationsLeague2425Fixtures from '../../fixtures/api-football/seasons/nations-league-2024-25.json'
 
 const bundesliga2526 = bundesliga2526Fixtures.map(toSeasonMatch)
 const championsLeague2425 = championsLeague2425Fixtures.map(toSeasonMatch)
 const championsLeague2526 = championsLeague2526Fixtures.map(toSeasonMatch)
+const conferenceLeague2526 = conferenceLeague2526Fixtures.map(toSeasonMatch)
 const nationsLeague2425 = nationsLeague2425Fixtures.map(toSeasonMatch)
 
 type RoundsCompetition = Pick<Competition, 'type' | 'leaguePhase'>
@@ -99,6 +101,18 @@ describe('getSeasonRounds: турнир', () => {
     expect(matchesOf(championsLeague2526, LEAGUE_PHASE, 'playoff-round-of-32')).toHaveLength(16)
     const qualifying = championsLeague2526.filter(match => /Qualifying|^Play-offs$/.test(match.round))
     expect(qualifying).toHaveLength(92)
+    expect(qualifying.some(match => roundByMatch.has(match.id))).toBe(false)
+  })
+
+  // У ЛК туров общего этапа шесть, а квалификационный раунд плей-офф называется «Playoff round», не «Play-offs»
+  it('ЛК 2025/26: шесть туров общего этапа, потом раунды плей-офф; квалификация — ни в одном туре', () => {
+    expect(namesOf(conferenceLeague2526, LEAGUE_PHASE)).toEqual([
+      '1 тур', '2 тур', '3 тур', '4 тур', '5 тур', '6 тур',
+      'Раунд плей-офф', '1/8 финала', 'Четвертьфинал', 'Полуфинал', 'Финал',
+    ])
+    const { roundByMatch } = getSeasonRounds(conferenceLeague2526, LEAGUE_PHASE)
+    const qualifying = conferenceLeague2526.filter(match => /Qualifying|^Playoff round$/.test(match.round))
+    expect(qualifying).toHaveLength(256)
     expect(qualifying.some(match => roundByMatch.has(match.id))).toBe(false)
   })
 

@@ -31,7 +31,7 @@ const totalHeight = computed(() => Math.max(
 
 // Карточка встаёт посередине между парами, откуда в неё приходят победители: в раунде, где пар вдвое
 // меньше, чем в первом, на пару приходится две строки первого раунда, где вчетверо меньше — четыре.
-// После раунда плей-офф ЛЧ/ЛЕ в 1/8 пар столько же, и карточки стоят друг напротив друга.
+// После раунда плей-офф ЛЧ/ЛЕ/ЛК в 1/8 пар столько же, и карточки стоят друг напротив друга.
 function tieTopOffset(roundIndex: number, tieIndex: number): number {
   const rowsPerTie = firstRoundTieCount.value / (props.rounds[roundIndex]?.ties.length || 1)
   return ((rowsPerTie - 1) / 2 + tieIndex * rowsPerTie) * ROW_HEIGHT
