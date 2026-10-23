@@ -1,7 +1,9 @@
 import { describe, it, expect } from 'vitest'
+import { getCompetition } from '#shared/utils/competitions'
 import { toLeagueTable } from '../../../server/utils/leagueTable'
 // Настоящие таблицы из API-Football (standings), только нужные поля
 import championsLeague2627 from '../../fixtures/api-football/standings/champions-league-2026-27.json'
+import conferenceLeague2627 from '../../fixtures/api-football/standings/conference-league-2026-27.json'
 import nationsLeague2627 from '../../fixtures/api-football/standings/nations-league-2026-27.json'
 import mls2026 from '../../fixtures/api-football/standings/mls-2026.json'
 import ligue12627 from '../../fixtures/api-football/standings/ligue-1-2026-27.json'
@@ -48,6 +50,17 @@ describe('toLeagueTable', () => {
       ['Комо', 'Раунд плей-офф'],
       // В таблице API у этой команды нет номера — перевести не по чему
       ['Sabah FC', 'Выбывание'],
+    ])
+  })
+
+  // Настоящая запись турнира: без leaguePhase зоны брались бы из описания API («Promotion - Conference League …»)
+  it('общий этап ЛК: 36 команд по-русски, зоны по месту', () => {
+    const table = toLeagueTable(conferenceLeague2627, getCompetition('848')!)
+    const [rows] = Object.values(table)
+    expect(rows).toHaveLength(36)
+    expect(rows!.filter(row => /[A-Za-z]/.test(row.team))).toEqual([])
+    expect(rows!.map(row => row.zone?.label)).toEqual([
+      ...Array(8).fill('1/8 финала'), ...Array(16).fill('Раунд плей-офф'), ...Array(12).fill('Выбывание'),
     ])
   })
 

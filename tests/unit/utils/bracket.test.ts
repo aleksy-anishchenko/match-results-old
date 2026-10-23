@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import type { BracketResponse, BracketRound, Competition, SeasonMatch } from '~/types'
 import { buildBracket, buildTies, getPlayoffMatches, getRoundSlug, getTieTotal } from '#shared/utils/bracket'
+import { getCompetition } from '#shared/utils/competitions'
 import { toSeasonMatch } from '../../../server/utils/seasonMatch'
 // Настоящие расписания сезонов из API-Football (fixtures?league&season), только поля для сетки, без эмблем
 import championsLeague2425Fixtures from '../../fixtures/api-football/seasons/champions-league-2024-25.json'
@@ -149,23 +150,23 @@ describe('buildBracket', () => {
   })
 
   describe.each([
-    ['ЛЧ 2024/25', championsLeague2425],
-    ['ЛЧ 2025/26', championsLeague2526],
-    ['ЛК 2025/26', conferenceLeague2526],
-  ])('%s', (_, schedule) => {
+    ['ЛЧ 2024/25', championsLeague2425, getCompetition('2')!],
+    ['ЛЧ 2025/26', championsLeague2526, getCompetition('2')!],
+    ['ЛК 2025/26', conferenceLeague2526, getCompetition('848')!],
+  ])('%s', (_, schedule, competition) => {
     it('раунды по порядку, финал не теряется, будущих раундов нет', () => {
-      const { rounds, thirdPlace } = bracketOf(schedule, LEAGUE_PHASE)
+      const { rounds, thirdPlace } = bracketOf(schedule, competition)
       expect(rounds.map(round => round.name)).toEqual(['Раунд плей-офф', '1/8 финала', 'Четвертьфинал', 'Полуфинал', 'Финал'])
       expect(rounds.some(round => round.projected)).toBe(false)
       expect(thirdPlace).toBeNull()
     })
 
     it('пара из двух матчей — одна карточка', () => {
-      expect(bracketOf(schedule, LEAGUE_PHASE).rounds.map(round => round.ties.length)).toEqual([8, 8, 4, 2, 1])
+      expect(bracketOf(schedule, competition).rounds.map(round => round.ties.length)).toEqual([8, 8, 4, 2, 1])
     })
 
     it('линии ведут к правильным парам', () => {
-      expectLinesMatch(bracketOf(schedule, LEAGUE_PHASE).rounds)
+      expectLinesMatch(bracketOf(schedule, competition).rounds)
     })
   })
 
@@ -193,6 +194,18 @@ describe('buildBracket', () => {
       const winner = playoff.ties[index]!
       expect(tie.teams.map(item => item.name)).toEqual([winner.teams[winner.winner!]!.name, ''])
     })
+  })
+
+  // Пока 1/8 нет в API, что первый раунд — раунд плей-офф, сетка узнаёт только из настройки турнира (leaguePhase)
+  it('ЛК 2025/26 до 1/8: раунд плей-офф, дальше будущие раунды', () => {
+    const { rounds } = bracketOf(conferenceLeague2526, getCompetition('848')!, '2026-03-01')
+    expect(rounds.map(round => [round.name, round.ties.length, Boolean(round.projected)])).toEqual([
+      ['Раунд плей-офф', 8, false],
+      ['1/8 финала', 8, true],
+      ['Четвертьфинал', 4, true],
+      ['Полуфинал', 2, true],
+      ['Финал', 1, true],
+    ])
   })
 
   // Март 2026: 1/8 сыграны, четвертьфиналов в API ещё нет. Соседние по дате пары 1/8 в четвертьфинале

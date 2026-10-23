@@ -2,10 +2,10 @@ import type { BracketResponse, BracketRound, BracketTeam, BracketTie, Competitio
 import { FINISHED_MATCH_STATUSES } from './matches'
 
 /**
- * Раунды плей-офф турнира в API-Football. Названия тоже меняются от сезона к сезону: раунд плей-офф ЛЧ/ЛЕ
- * перед 1/8 — «Knockout Round Play-offs» в 2024/25 и «Round of 32» в 2025/26, хотя пар в нём 8. Поэтому
+ * Раунды плей-офф турнира в API-Football. Названия тоже меняются от сезона к сезону: раунд плей-офф ЛЧ/ЛЕ/ЛК
+ * перед 1/8 у ЛЧ — «Knockout Round Play-offs» в 2024/25 и «Round of 32» в 2025/26, хотя пар в нём 8. Поэтому
  * по названию только узнаём, что это плей-офф, а называем раунд по числу пар (getRoundName).
- * Квалификация («1st Qualifying Round», «Play-offs»), общий и групповой этап, стыковые матчи между
+ * Квалификация («1st Qualifying Round», «Play-offs», у ЛК «Playoff round»), общий и групповой этап, стыковые матчи между
  * дивизионами Лиги наций («Play-offs A/B») сюда не входят
  */
 const KNOCKOUT_ROUND = /^(Knockout Round Play-offs|Round of \d+|Quarter-finals|Semi-finals|3rd Place Final|Final)$/

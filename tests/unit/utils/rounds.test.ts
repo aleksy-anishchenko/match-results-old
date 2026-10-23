@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import type { Competition, SeasonMatch } from '~/types'
+import { getCompetition } from '#shared/utils/competitions'
 import { getCurrentRound, getMatchDays, getRoundNumber, getSeasonRounds, LEAGUE_PLAYOFF_ROUND } from '#shared/utils/rounds'
 import { toSeasonMatch } from '../../../server/utils/seasonMatch'
 // Настоящие расписания сезонов из API-Football (fixtures?league&season), только нужные поля
@@ -106,11 +107,12 @@ describe('getSeasonRounds: турнир', () => {
 
   // У ЛК туров общего этапа шесть, а квалификационный раунд плей-офф называется «Playoff round», не «Play-offs»
   it('ЛК 2025/26: шесть туров общего этапа, потом раунды плей-офф; квалификация — ни в одном туре', () => {
-    expect(namesOf(conferenceLeague2526, LEAGUE_PHASE)).toEqual([
+    const conferenceLeague = getCompetition('848')!
+    expect(namesOf(conferenceLeague2526, conferenceLeague)).toEqual([
       '1 тур', '2 тур', '3 тур', '4 тур', '5 тур', '6 тур',
       'Раунд плей-офф', '1/8 финала', 'Четвертьфинал', 'Полуфинал', 'Финал',
     ])
-    const { roundByMatch } = getSeasonRounds(conferenceLeague2526, LEAGUE_PHASE)
+    const { roundByMatch } = getSeasonRounds(conferenceLeague2526, conferenceLeague)
     const qualifying = conferenceLeague2526.filter(match => /Qualifying|^Playoff round$/.test(match.round))
     expect(qualifying).toHaveLength(256)
     expect(qualifying.some(match => roundByMatch.has(match.id))).toBe(false)
