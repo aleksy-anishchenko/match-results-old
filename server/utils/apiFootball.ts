@@ -1,10 +1,11 @@
 import type { Competition, SeasonMatch } from '~/types'
 import { DEFAULT_COMPETITION_ID, getCompetition } from '#shared/utils/competitions'
-import { getApiFootballEvents, goalsMatchScore, type ApiFootballFixture } from '#shared/utils/matchEvents'
-import { FINISHED_MATCH_STATUSES } from '#shared/utils/matches'
+import { FINISHED_MATCH_STATUSES, goalsMatchScore } from '#shared/utils/matches'
 import { toSeasonMatch, toScoreText, type ApiFootballSeasonFixture } from './seasonMatch'
 import type { ApiFootballStandingRow } from './leagueTable'
 import type { ApiFootballLiveFixture } from './liveScores'
+import type { ApiFootballFixture } from './matchDetails'
+import { getApiFootballEvents } from './matchEvents'
 
 // API-Football (api-sports.io) — источник всех данных сайта. Тариф Pro: 7 500 запросов в день,
 // счётчик обнуляется в 00:00 UTC. Ответы кэшируются здесь, в функциях, а маршруты /api/… без кэша: у кэша

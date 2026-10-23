@@ -1,5 +1,5 @@
 import type { LineupPlayer, MatchLineups, TeamLineup } from '~/types'
-import type { ApiFootballFixture, ApiFootballLineupPlayer } from './matchEvents'
+import type { ApiFootballFixture, ApiFootballLineupPlayer } from './matchDetails'
 import { decodeEntities } from './text'
 
 /** Порядок линий, если у игроков нет grid: вратарь, защитники, полузащитники, нападающие */

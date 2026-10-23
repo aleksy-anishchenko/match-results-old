@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { getApiFootballStats } from '#shared/utils/matchStats'
+import { getApiFootballStats } from '../../../server/utils/matchStats'
 // Финал ЛЧ 2026 ПСЖ – Арсенал и Спартак – Рубин из API-Football (fixtures?id=)
 import afChampionsLeagueFinal from '../../fixtures/api-football/psg-arsenal-final-2026.json'
 import afSpartakRubin from '../../fixtures/api-football/spartak-rubin.json'

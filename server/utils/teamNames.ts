@@ -1,4 +1,4 @@
-import { decodeEntities } from '#shared/utils/text'
+import { decodeEntities } from './text'
 
 // Названия команд по-русски. Ключ — номер команды в API-Football (teams.home.id в ответе), в комментарии —
 // её название там. Команды нет в списке — показываем название из API как есть, латиницей

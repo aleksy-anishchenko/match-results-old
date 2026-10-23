@@ -1,5 +1,5 @@
 import type { MatchStat } from '~/types'
-import type { ApiFootballFixture } from './matchEvents'
+import type { ApiFootballFixture } from './matchDetails'
 
 /** Что показываем и в каком порядке: названия показателей из API-Football */
 const MATCH_STATS: Array<{ name: string, label: string, format: MatchStat['format'] }> = [

@@ -1,4 +1,4 @@
-import type { LiveScore, Match, MatchStatusKind } from '~/types'
+import type { LiveScore, Match, MatchEvent, MatchStatusKind } from '~/types'
 
 // Коды статусов API-Football. Серия пенальти — P (идёт) и PEN (матч завершён по пенальти);
 // у TheSportsDB было наоборот: PEN — идёт, AP — завершён
@@ -98,4 +98,18 @@ export function getMatchWinnerSide(
     if (awayPenalties > homePenalties) return 'away'
   }
   return null
+}
+
+const GOAL_EVENT_KINDS = new Set<MatchEvent['kind']>(['goal', 'penalty', 'own-goal'])
+
+/** Гол: обычный, с пенальти или автогол */
+export const isGoalEvent = (event: Pick<MatchEvent, 'kind'>) => GOAL_EVENT_KINDS.has(event.kind)
+
+/**
+ * Голы хроники сходятся со счётом. Хроника бывает неполной, а во время матча может отставать
+ * от счёта — тогда её не показываем: неполный список голов выглядит как ошибка.
+ */
+export function goalsMatchScore(events: MatchEvent[], homeScore: string | null, awayScore: string | null): boolean {
+  const count = (side: MatchEvent['side']) => events.filter(event => event.side === side && isGoalEvent(event)).length
+  return count('home') === Number(homeScore ?? 0) && count('away') === Number(awayScore ?? 0)
 }

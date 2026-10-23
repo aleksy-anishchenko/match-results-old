@@ -32,8 +32,8 @@
 
 ## Где что в коде
 
-- `shared/utils/` — общее для сервера и браузера: `bracket.ts` (сетка плей-офф), `rounds.ts` (туры главной и их даты), `matchEvents.ts` (хроника матча), `matchStats.ts`, `lineups.ts`, `standings.ts` (таблицы, зоны), `matches.ts` (статусы, даты по Москве), `competitions.ts` (список турниров: номера API-Football, `leaguePhase`).
-- `server/utils/`: `apiFootball.ts` (клиент и кэшируемые загрузки: сезон, расписание, таблица, матч, живой счёт; турнир из адреса с сезоном — `getCompetitionSeason`), переводчики ответов в типы страниц — `seasonMatch.ts`, `matchDetails.ts`, `leagueTable.ts`, `liveScores.ts`, словарь `teamNames.ts`.
+- `shared/utils/` — общее для сервера и браузера: `bracket.ts` (сетка плей-офф), `rounds.ts` (туры главной и их даты), `standings.ts` (таблицы, зоны), `matches.ts` (статусы, даты по Москве, сверка голов хроники со счётом), `competitions.ts` (список турниров: номера API-Football, `leaguePhase`).
+- `server/utils/`: `apiFootball.ts` (клиент и кэшируемые загрузки: сезон, расписание, таблица, матч, живой счёт; турнир из адреса с сезоном — `getCompetitionSeason`), переводчики ответов в типы страниц — `seasonMatch.ts`, `matchDetails.ts` (хроника, статистика и составы — `matchEvents.ts`, `matchStats.ts`, `lineups.ts`), `leagueTable.ts`, `liveScores.ts`, словарь `teamNames.ts`, `decodeEntities` в `text.ts`.
 - `server/api/`: `bracket`, `rounds` (туры, текущий тур, дни с матчами), `matches` (тур, даты или, без них, текущий тур), `match/[id]` (шапка, хроника, статистика, составы — один запрос к API-Football), `live` (счёт и минута матчей по номерам), `standings`, `image` (прокси эмблем). Эмблема лиги — по номеру (`getCompetitionBadge`), без запроса.
 - `app/`: страницы `index`, `standings` (таблица и сетка), `match/[id]`, `about`. Над матчами и таблицей — `CompetitionBar` (`LeagueSelect` и разделы). Поля «Тур» и «Дата» — `RoundSelect`, `DateSelect` на общем `FilterDropdown`: на компьютере PrimeVue `Popover`, на телефоне `Drawer`. Выбор главной хранится в адресе (`utils/homeQuery.ts`). Лига — `useCompetition`, «сегодня» по Москве — `useMoscowToday`, живой счёт поверх расписания — `useLiveScores`.
 

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { decodeEntities } from '#shared/utils/text'
+import { decodeEntities } from '../../../server/utils/text'
 
 describe('decodeEntities', () => {
   // Так API-Football прислал игрока Брагантино и стадионы Болоньи и Интер Майами

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { getApiFootballLineups } from '#shared/utils/lineups'
+import { getApiFootballLineups } from '../../../server/utils/lineups'
 // Настоящие ответы API-Football (fixtures?id=), только нужные поля
 import afSpartakRubin from '../../fixtures/api-football/spartak-rubin.json'
 import afChampionsLeagueFinal from '../../fixtures/api-football/psg-arsenal-final-2026.json'

@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { getApiFootballEvents, goalsMatchScore, isGoalEvent } from '#shared/utils/matchEvents'
+import { goalsMatchScore, isGoalEvent } from '#shared/utils/matches'
+import { getApiFootballEvents } from '../../../server/utils/matchEvents'
 import type { MatchEvent } from '~/types'
 // Настоящие ответы API-Football (fixtures?id=), только поля для страницы матча
 import afSpartakRubin from '../../fixtures/api-football/spartak-rubin.json'
