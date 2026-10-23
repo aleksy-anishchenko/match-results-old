@@ -9,7 +9,7 @@
 - `npm run dev` — dev-сервер, `.env` читает сам.
 - `npm run check` — lint, typecheck и тесты. Его же запускает pre-commit хук — по всему рабочему дереву, а не только по тому, что попадает в коммит.
 - Production-сборка локально: `npm run build`, потом `PORT=3001 node --env-file=.env .output/server/index.mjs`. Без `--env-file` нет ключа API, и страницы показывают ошибку загрузки.
-- Ключ API-Football — `NUXT_API_FOOTBALL_KEY` в `.env`. Ключ TheSportsDB (`NUXT_THE_SPORTS_DB_API_KEY`) код больше не читает.
+- Ключ API-Football — `NUXT_API_FOOTBALL_KEY` в `.env`.
 - Пуш в `main` — это деплой на прод: GitHub Actions проверяет, собирает, копирует на сервер и перезапускает pm2. Кэш API на проде в памяти, деплой его сбрасывает.
 
 ## Данные API-Football

@@ -17,19 +17,12 @@ describe('useCompetition', () => {
     expect(competition.value.name).toBe('РПЛ')
   })
 
-  it('выбор, сохранённый под номером TheSportsDB, переводит в номер API-Football', async () => {
+  // 4355 — РПЛ под номером TheSportsDB, на данных которого сайт работал до перехода на API-Football
+  it('турнира нет в списке — турнир по умолчанию, и он же в cookie', async () => {
     document.cookie = `${cookieOf('4355')}; path=/`
 
-    const { selectedId, competition } = useCompetition()
-    expect(selectedId.value).toBe('235')
-    expect(competition.value.name).toBe('РПЛ')
-    await nextTick()
-    expect(document.cookie).toContain(cookieOf('235'))
-  })
-
-  it('турнира нет в списке — турнир по умолчанию', () => {
-    document.cookie = `${cookieOf('4429')}; path=/`
-
     expect(useCompetition().selectedId.value).toBe(DEFAULT_COMPETITION_ID)
+    await nextTick()
+    expect(document.cookie).toContain(cookieOf(DEFAULT_COMPETITION_ID))
   })
 })

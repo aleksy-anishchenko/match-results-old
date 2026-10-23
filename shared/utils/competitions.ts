@@ -129,29 +129,6 @@ export const DEFAULT_COMPETITION_ID = '39'
 /** Эмблема турнира у API-Football: адрес известен по номеру, спрашивать его не нужно. Тёмная на прозрачном фоне */
 export const getCompetitionBadge = (id: string) => `https://media.api-sports.io/football/leagues/${id}.png`
 
-/**
- * Номера турниров в TheSportsDB, на данных которого сайт работал до перехода на API-Football: под ними лежит
- * выбор лиги в cookie у тех, кто заходил раньше. Cookie живёт год — потом этот список можно убрать
- */
-export const THE_SPORTS_DB_COMPETITION_IDS: Record<string, string> = {
-  4328: '39',
-  4335: '140',
-  4332: '135',
-  4331: '78',
-  4334: '61',
-  4355: '235',
-  4480: '2',
-  4481: '3',
-  4337: '88',
-  4344: '94',
-  4338: '144',
-  4339: '203',
-  4346: '253',
-  4668: '307',
-  4351: '71',
-  4490: '5',
-}
-
 export function getCompetition(id: string | number | null | undefined): Competition | undefined {
   return COMPETITIONS.find(competition => competition.id === String(id))
 }
