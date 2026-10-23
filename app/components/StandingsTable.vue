@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { GroupStanding } from '~/types'
-import { getBadgeUrl } from '~/utils/images'
 
 defineProps<{
   rows: GroupStanding[]
@@ -98,17 +97,10 @@ function formatGoalDiff(goalDiff: number): string {
             </td>
             <td class="table__team">
               <span class="table__team-inner">
-                <img
-                  v-if="row.badge"
-                  :src="getBadgeUrl(row.badge)"
-                  alt=""
-                  width="26"
-                  height="26"
+                <TeamBadge
+                  :badge="row.badge"
+                  :size="26"
                   class="table__badge"
-                >
-                <span
-                  v-else
-                  class="table__badge table__badge--empty"
                 />
                 <span class="table__name">{{ row.team }}</span>
               </span>
@@ -242,14 +234,6 @@ th.table__team {
 .table__badge {
   width: 20px;
   height: 20px;
-  flex-shrink: 0;
-  object-fit: contain;
-
-  &--empty {
-    border-radius: 50%;
-    background: $color-badge-bg;
-    border: 1px solid $color-border;
-  }
 }
 
 .table__name {

@@ -23,17 +23,10 @@ defineProps<{
         'tie-card__team--tbd': !team.name,
       }"
     >
-      <img
-        v-if="team.badge"
-        :src="getBadgeUrl(team.badge)"
-        alt=""
-        width="18"
-        height="18"
+      <TeamBadge
+        :badge="team.badge"
+        :size="18"
         class="tie-card__badge"
-      >
-      <span
-        v-else
-        class="tie-card__badge tie-card__badge--empty"
       />
       <span class="tie-card__name">{{ team.name || 'Не определен' }}</span>
       <!-- В паре из двух матчей: мелко голы в каждом сыгранном матче, крупно сумма -->
@@ -114,14 +107,6 @@ defineProps<{
 .tie-card__badge {
   width: 18px;
   height: 18px;
-  flex-shrink: 0;
-  object-fit: contain;
-
-  &--empty {
-    border-radius: 50%;
-    background: $color-badge-bg;
-    border: 1px solid $color-border;
-  }
 }
 
 .tie-card__name {

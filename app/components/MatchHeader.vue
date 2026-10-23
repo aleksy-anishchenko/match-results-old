@@ -2,7 +2,6 @@
 import type { MatchDetails } from '~/types'
 import { getCompetition } from '#shared/utils/competitions'
 import { formatPenaltyScore, getMatchStatusKind, getMatchWinnerSide, getMoscowDate } from '#shared/utils/matches'
-import { getBadgeUrl } from '~/utils/images'
 import { formatMatchStatus, formatMoscowTime, formatReadableDate } from '~/utils/matches'
 
 const props = defineProps<{ match: MatchDetails }>()
@@ -71,17 +70,10 @@ const venue = computed(() => props.match.venue || props.match.city)
         :key="team.side"
       >
         <div class="team">
-          <img
-            v-if="team.badge"
-            :src="getBadgeUrl(team.badge)"
-            alt=""
-            width="72"
-            height="72"
+          <TeamBadge
+            :badge="team.badge"
+            :size="72"
             class="team__badge"
-          >
-          <span
-            v-else
-            class="team__badge team__badge--empty"
           />
           <span
             class="team__name"
@@ -186,14 +178,6 @@ const venue = computed(() => props.match.venue || props.match.city)
 .team__badge {
   width: 52px;
   height: 52px;
-  flex-shrink: 0;
-  object-fit: contain;
-
-  &--empty {
-    border-radius: 50%;
-    background: $color-badge-bg;
-    border: 1px solid $color-border;
-  }
 }
 
 .team__name {

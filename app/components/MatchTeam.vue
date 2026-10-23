@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const props = defineProps<{
+defineProps<{
   name: string
   badge: string
   side: 'home' | 'away'
@@ -8,10 +8,6 @@ const props = defineProps<{
   /** Матч не состоится: название приглушено */
   muted?: boolean
 }>()
-
-const badgeUrl = computed(() =>
-  props.badge ? getBadgeUrl(props.badge) : '',
-)
 </script>
 
 <template>
@@ -19,17 +15,10 @@ const badgeUrl = computed(() =>
     class="team"
     :class="`team--${side}`"
   >
-    <img
-      v-if="badgeUrl"
-      :src="badgeUrl"
-      alt=""
-      width="28"
-      height="28"
+    <TeamBadge
+      :badge="badge"
+      :size="28"
       class="team__badge"
-    >
-    <span
-      v-else
-      class="team__badge team__badge--empty"
     />
     <span
       class="team__name"
@@ -52,14 +41,6 @@ const badgeUrl = computed(() =>
 .team__badge {
   width: 22px;
   height: 22px;
-  flex-shrink: 0;
-  object-fit: contain;
-
-  &--empty {
-    border-radius: 50%;
-    background: $color-badge-bg;
-    border: 1px solid $color-border;
-  }
 }
 
 .team__name {
