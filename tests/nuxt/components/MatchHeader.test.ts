@@ -8,8 +8,8 @@ import { makeMatchDetails } from '../../helpers/matches'
 const makeMatch = (overrides: Partial<MatchDetails> = {}) => makeMatchDetails({
   homeTeam: 'Ливерпуль',
   awayTeam: 'Манчестер Сити',
-  homeScore: '2',
-  awayScore: '1',
+  homeScore: 2,
+  awayScore: 1,
   status: 'FT',
   timestamp: '2026-10-11T15:30:00',
   leagueId: '39',
@@ -64,7 +64,7 @@ describe('MatchHeader', () => {
   it('после серии пенальти показывает счёт серии и кто проходит дальше', async () => {
     const wrapper = await mountSuspended(MatchHeader, {
       props: {
-        match: makeMatch({ leagueId: '2', homeScore: '1', awayScore: '1', homePenScore: 3, awayPenScore: 4, status: 'PEN' }),
+        match: makeMatch({ leagueId: '2', homeScore: 1, awayScore: 1, homePenScore: 3, awayPenScore: 4, status: 'PEN' }),
       },
     })
     expect(wrapper.find('.score__penalties').text()).toBe('пенальти 3:4')
@@ -76,7 +76,7 @@ describe('MatchHeader', () => {
   // В плей-офф МЛС первый раунд — серии до двух побед: пенальти решают один матч, а не пару
   it('у лиги после серии пенальти «проходит дальше» не пишет', async () => {
     const wrapper = await mountSuspended(MatchHeader, {
-      props: { match: makeMatch({ leagueId: '253', homeScore: '2', awayScore: '2', homePenScore: 4, awayPenScore: 2, status: 'PEN' }) },
+      props: { match: makeMatch({ leagueId: '253', homeScore: 2, awayScore: 2, homePenScore: 4, awayPenScore: 2, status: 'PEN' }) },
     })
     expect(wrapper.find('.score__penalties').text()).toBe('пенальти 4:2')
     expect(wrapper.find('.team__advance').exists()).toBe(false)

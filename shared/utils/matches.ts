@@ -87,8 +87,8 @@ export function getMatchWinnerSide(
   match: Pick<Match, 'homeScore' | 'awayScore' | 'homePenScore' | 'awayPenScore' | 'status'>,
 ): 'home' | 'away' | null {
   if (!FINISHED_MATCH_STATUSES.has(match.status)) return null
-  const homeScore = Number(match.homeScore ?? 0)
-  const awayScore = Number(match.awayScore ?? 0)
+  const homeScore = match.homeScore ?? 0
+  const awayScore = match.awayScore ?? 0
   if (homeScore > awayScore) return 'home'
   if (awayScore > homeScore) return 'away'
   if (match.status === 'PEN') {
@@ -109,7 +109,7 @@ export const isGoalEvent = (event: Pick<MatchEvent, 'kind'>) => GOAL_EVENT_KINDS
  * Голы хроники сходятся со счётом. Хроника бывает неполной, а во время матча может отставать
  * от счёта — тогда её не показываем: неполный список голов выглядит как ошибка.
  */
-export function goalsMatchScore(events: MatchEvent[], homeScore: string | null, awayScore: string | null): boolean {
+export function goalsMatchScore(events: MatchEvent[], homeScore: number | null, awayScore: number | null): boolean {
   const count = (side: MatchEvent['side']) => events.filter(event => event.side === side && isGoalEvent(event)).length
-  return count('home') === Number(homeScore ?? 0) && count('away') === Number(awayScore ?? 0)
+  return count('home') === (homeScore ?? 0) && count('away') === (awayScore ?? 0)
 }

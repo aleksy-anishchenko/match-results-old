@@ -1,6 +1,5 @@
 import type { LiveScore } from '~/types'
 import { formatMatchProgress } from '#shared/utils/matches'
-import { toScoreText } from './seasonMatch'
 
 /** Матч из ответа fixtures?ids=: поля для живого счёта */
 export type ApiFootballLiveFixture = {
@@ -15,8 +14,8 @@ export function toLiveScore({ fixture, goals, score }: ApiFootballLiveFixture): 
   return {
     status: fixture.status.short,
     progress: formatMatchProgress(fixture.status.short, fixture.status.elapsed, fixture.status.extra),
-    homeScore: toScoreText(goals.home),
-    awayScore: toScoreText(goals.away),
+    homeScore: goals.home,
+    awayScore: goals.away,
     homePenScore: score.penalty.home,
     awayPenScore: score.penalty.away,
   }

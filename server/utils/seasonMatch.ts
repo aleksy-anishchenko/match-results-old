@@ -18,9 +18,6 @@ const toSeasonTeam = (team: ApiFootballTeam): SeasonTeam => ({ id: team.id, name
 /** Время из API (секунды Unix) в UTC без смещения: «2026-10-25T16:30:00» — такое ждут getMoscowDate и formatMoscowTime */
 export const toUtcTimestamp = (seconds: number) => new Date(seconds * 1000).toISOString().slice(0, 19)
 
-/** Голы из API строкой, как счёт у страниц: «2»; null — матч не начался */
-export const toScoreText = (goals: number | null) => goals == null ? null : String(goals)
-
 /** Матч расписания в общем виде: названия по-русски, время — UTC без смещения («2026-10-25T16:30:00») */
 export function toSeasonMatch({ fixture, league, teams, goals, score }: ApiFootballSeasonFixture): SeasonMatch {
   return {
@@ -45,8 +42,8 @@ export function toMatch(match: SeasonMatch, round: string | null): Match {
     awayTeam: match.away.name,
     homeBadge: match.home.badge,
     awayBadge: match.away.badge,
-    homeScore: toScoreText(match.homeScore),
-    awayScore: toScoreText(match.awayScore),
+    homeScore: match.homeScore,
+    awayScore: match.awayScore,
     homePenScore: match.homePenalties,
     awayPenScore: match.awayPenalties,
     status: match.status,

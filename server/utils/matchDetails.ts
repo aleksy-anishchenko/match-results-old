@@ -4,7 +4,7 @@ import { getRoundNumber } from '#shared/utils/rounds'
 import { getApiFootballLineups } from './lineups'
 import { getApiFootballEvents } from './matchEvents'
 import { getApiFootballStats } from './matchStats'
-import { toScoreText, toUtcTimestamp } from './seasonMatch'
+import { toUtcTimestamp } from './seasonMatch'
 import { getTeamName } from './teamNames'
 import { decodeEntities } from './text'
 
@@ -63,10 +63,8 @@ export type ApiFootballLineupPlayer = {
  */
 export function toMatchDetails(fixture: ApiFootballFixture): MatchDetails {
   const { fixture: info, league, teams, goals, score } = fixture
-  const homeScore = toScoreText(goals.home)
-  const awayScore = toScoreText(goals.away)
   const events = getApiFootballEvents(fixture)
-  const eventsFit = !FINISHED_MATCH_STATUSES.has(info.status.short) || goalsMatchScore(events, homeScore, awayScore)
+  const eventsFit = !FINISHED_MATCH_STATUSES.has(info.status.short) || goalsMatchScore(events, goals.home, goals.away)
 
   return {
     id: String(info.id),
@@ -74,8 +72,8 @@ export function toMatchDetails(fixture: ApiFootballFixture): MatchDetails {
     awayTeam: getTeamName(teams.away.id, teams.away.name),
     homeBadge: teams.home.logo,
     awayBadge: teams.away.logo,
-    homeScore,
-    awayScore,
+    homeScore: goals.home,
+    awayScore: goals.away,
     homePenScore: score.penalty.home,
     awayPenScore: score.penalty.away,
     status: info.status.short,

@@ -45,7 +45,7 @@ const liveRequestIds: string[] = []
 registerEndpoint('/api/live', (event) => {
   liveRequests++
   liveRequestIds.push(new URL(event.path, 'http://localhost').searchParams.get('ids') ?? '')
-  return { scores: { 2: { status: '2H', progress: '52', homeScore: '1', awayScore: '0', homePenScore: null, awayPenScore: null } } }
+  return { scores: { 2: { status: '2H', progress: '52', homeScore: 1, awayScore: 0, homePenScore: null, awayPenScore: null } } }
 })
 registerEndpoint('/api/matches', (event) => {
   const query = new URL(event.path, 'http://localhost').searchParams

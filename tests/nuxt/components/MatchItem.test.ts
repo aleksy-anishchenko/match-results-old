@@ -5,7 +5,7 @@ import type { Match } from '~/types'
 import { makeMatch } from '../../helpers/matches'
 
 // Идущий матч 1:2, начался в 22:00 по Москве
-const liveMatch = (overrides: Partial<Match>) => makeMatch({ status: '2H', homeScore: '1', awayScore: '2', timestamp: '2026-10-20T19:00:00', ...overrides })
+const liveMatch = (overrides: Partial<Match>) => makeMatch({ status: '2H', homeScore: 1, awayScore: 2, timestamp: '2026-10-20T19:00:00', ...overrides })
 
 // Левая колонка строки: [верхняя строка, мелкая подпись под ней]
 async function stateColumn(match: Match) {

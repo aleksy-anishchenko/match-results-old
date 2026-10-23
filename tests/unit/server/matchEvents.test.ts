@@ -48,7 +48,7 @@ describe('getApiFootballEvents', () => {
     )
     expect(events.map(event => [event.minute, event.extra])).toEqual([[13, null], [21, null], [30, null], [44, null], [89, null], [90, 1]])
     expect(events.some(event => event.player === 'Fernando dos Santos Pedro')).toBe(false)
-    expect(goalsMatchScore(events, '4', '2')).toBe(true)
+    expect(goalsMatchScore(events, 4, 2)).toBe(true)
   })
 
   it('событие в добавленное время идёт после 90-й минуты', () => {
@@ -80,17 +80,17 @@ describe('getApiFootballEvents', () => {
 
 describe('goalsMatchScore', () => {
   it('голы сходятся со счётом, карточки и замены не считаются', () => {
-    expect(goalsMatchScore(getApiFootballEvents(afSpartakRubin), '4', '0')).toBe(true)
-    expect(goalsMatchScore(getApiFootballEvents(afChampionsLeagueFinal), '1', '1')).toBe(true)
+    expect(goalsMatchScore(getApiFootballEvents(afSpartakRubin), 4, 0)).toBe(true)
+    expect(goalsMatchScore(getApiFootballEvents(afChampionsLeagueFinal), 1, 1)).toBe(true)
   })
 
   it('хроника отстала от счёта или её нет — не сходится', () => {
-    expect(goalsMatchScore(getApiFootballEvents(afBragantinoCruzeiro), '5', '2')).toBe(false)
-    expect(goalsMatchScore([], '3', '0')).toBe(false)
+    expect(goalsMatchScore(getApiFootballEvents(afBragantinoCruzeiro), 5, 2)).toBe(false)
+    expect(goalsMatchScore([], 3, 0)).toBe(false)
   })
 
   it('0:0 и не начавшийся матч — пустой список сходится', () => {
-    expect(goalsMatchScore([], '0', '0')).toBe(true)
+    expect(goalsMatchScore([], 0, 0)).toBe(true)
     expect(goalsMatchScore([], null, null)).toBe(true)
   })
 })

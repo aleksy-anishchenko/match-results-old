@@ -114,15 +114,15 @@ describe('formatMatchProgress', () => {
 })
 
 describe('applyLiveScore', () => {
-  const live = { status: '2H', progress: '52', homeScore: '1', awayScore: '0', homePenScore: null, awayPenScore: null }
+  const live = { status: '2H', progress: '52', homeScore: 1, awayScore: 0, homePenScore: null, awayPenScore: null }
 
   it('идущий матч: счёт, статус и минута из живых данных', () => {
-    const match = makeMatch({ status: '1H', homeScore: '0', awayScore: '0' })
-    expect(applyLiveScore(match, live)).toEqual({ ...match, status: '2H', homeScore: '1', awayScore: '0', progress: '52' })
+    const match = makeMatch({ status: '1H', homeScore: 0, awayScore: 0 })
+    expect(applyLiveScore(match, live)).toEqual({ ...match, status: '2H', homeScore: 1, awayScore: 0, progress: '52' })
   })
 
   it('матч начался, а расписание ещё пишет «не начался»', () => {
-    expect(applyLiveScore(makeMatch({ status: 'NS' }), { ...live, status: '1H', progress: '3', homeScore: '0' })).toMatchObject({ status: '1H', progress: '3' })
+    expect(applyLiveScore(makeMatch({ status: 'NS' }), { ...live, status: '1H', progress: '3', homeScore: 0 })).toMatchObject({ status: '1H', progress: '3' })
   })
 
   it('в перерыве и серии пенальти минуты нет — подпись статуса', () => {
@@ -133,12 +133,12 @@ describe('applyLiveScore', () => {
 
   // Расписание хранится несколько минут: матч там ещё идёт, а по живым данным уже решён по пенальти
   it('матч закончился по пенальти — статус и счёт серии из живых данных', () => {
-    const shootout = { ...live, status: 'PEN', progress: null, homeScore: '1', awayScore: '1', homePenScore: 4, awayPenScore: 3 }
+    const shootout = { ...live, status: 'PEN', progress: null, homeScore: 1, awayScore: 1, homePenScore: 4, awayPenScore: 3 }
     expect(applyLiveScore(makeMatch({ status: 'P' }), shootout)).toMatchObject({ status: 'PEN', homePenScore: 4, awayPenScore: 3, progress: null })
   })
 
   it('по расписанию матч закончен или перенесён — верим расписанию', () => {
-    const finished = makeMatch({ status: 'FT', homeScore: '2', awayScore: '0' })
+    const finished = makeMatch({ status: 'FT', homeScore: 2, awayScore: 0 })
     expect(applyLiveScore(finished, live)).toBe(finished)
     const postponed = makeMatch({ status: 'PST' })
     expect(applyLiveScore(postponed, live)).toBe(postponed)
@@ -200,24 +200,24 @@ describe('getMatchWinnerSide', () => {
   })
 
   it('победитель по счёту', () => {
-    expect(getMatchWinnerSide(matchResult({ homeScore: '2', awayScore: '1' }))).toBe('home')
-    expect(getMatchWinnerSide(matchResult({ homeScore: '0', awayScore: '1', status: 'AET' }))).toBe('away')
+    expect(getMatchWinnerSide(matchResult({ homeScore: 2, awayScore: 1 }))).toBe('home')
+    expect(getMatchWinnerSide(matchResult({ homeScore: 0, awayScore: 1, status: 'AET' }))).toBe('away')
   })
 
   it('ничья без пенальти — победителя нет', () => {
-    expect(getMatchWinnerSide(matchResult({ homeScore: '1', awayScore: '1' }))).toBeNull()
+    expect(getMatchWinnerSide(matchResult({ homeScore: 1, awayScore: 1 }))).toBeNull()
   })
 
   it('после пенальти (PEN) победитель по серии', () => {
-    expect(getMatchWinnerSide(matchResult({ homeScore: '1', awayScore: '1', status: 'PEN', homePenScore: 3, awayPenScore: 4 }))).toBe('away')
+    expect(getMatchWinnerSide(matchResult({ homeScore: 1, awayScore: 1, status: 'PEN', homePenScore: 3, awayPenScore: 4 }))).toBe('away')
   })
 
   it('PEN без счёта серии — победителя не угадываем', () => {
-    expect(getMatchWinnerSide(matchResult({ homeScore: '1', awayScore: '1', status: 'PEN' }))).toBeNull()
+    expect(getMatchWinnerSide(matchResult({ homeScore: 1, awayScore: 1, status: 'PEN' }))).toBeNull()
   })
 
   it('незавершённый матч — победителя нет, даже если кто-то ведёт', () => {
-    expect(getMatchWinnerSide(matchResult({ homeScore: '2', awayScore: '0', status: '2H' }))).toBeNull()
+    expect(getMatchWinnerSide(matchResult({ homeScore: 2, awayScore: 0, status: '2H' }))).toBeNull()
     expect(getMatchWinnerSide(matchResult({ status: 'NS' }))).toBeNull()
   })
 })

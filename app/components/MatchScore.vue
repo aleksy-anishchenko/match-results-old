@@ -2,8 +2,8 @@
 import { formatPenaltyScore, getMatchStatusKind } from '#shared/utils/matches'
 
 const props = withDefaults(defineProps<{
-  homeScore: string | null
-  awayScore: string | null
+  homeScore: number | null
+  awayScore: number | null
   homePenScore?: number | null
   awayPenScore?: number | null
   status?: string

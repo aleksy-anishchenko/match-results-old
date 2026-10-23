@@ -23,8 +23,9 @@ export type Match = {
   awayTeam: string
   homeBadge: string
   awayBadge: string
-  homeScore: string | null
-  awayScore: string | null
+  /** Голы с дополнительным временем, без серии пенальти; null — матч не начался */
+  homeScore: number | null
+  awayScore: number | null
   homePenScore: number | null
   awayPenScore: number | null
   status: string
@@ -70,8 +71,8 @@ export type LiveScore = {
   status: string
   /** Минута: «52», «45+2»; null — время не идёт (перерыв, пенальти, матч закончен) */
   progress: string | null
-  homeScore: string | null
-  awayScore: string | null
+  homeScore: number | null
+  awayScore: number | null
   /** Счёт серии пенальти; null — серии нет */
   homePenScore: number | null
   awayPenScore: number | null
@@ -115,8 +116,8 @@ export type MatchDetails = {
   awayTeam: string
   homeBadge: string
   awayBadge: string
-  homeScore: string | null
-  awayScore: string | null
+  homeScore: number | null
+  awayScore: number | null
   homePenScore: number | null
   awayPenScore: number | null
   status: string

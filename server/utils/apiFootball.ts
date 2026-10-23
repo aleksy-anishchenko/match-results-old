@@ -1,7 +1,7 @@
 import type { Competition, SeasonMatch } from '~/types'
 import { DEFAULT_COMPETITION_ID, getCompetition } from '#shared/utils/competitions'
 import { FINISHED_MATCH_STATUSES, goalsMatchScore } from '#shared/utils/matches'
-import { toSeasonMatch, toScoreText, type ApiFootballSeasonFixture } from './seasonMatch'
+import { toSeasonMatch, type ApiFootballSeasonFixture } from './seasonMatch'
 import type { ApiFootballStandingRow } from './leagueTable'
 import type { ApiFootballLiveFixture } from './liveScores'
 import type { ApiFootballFixture } from './matchDetails'
@@ -168,7 +168,7 @@ const loadFixture = defineCachedFunction(async (id: string): Promise<ApiFootball
 function isSettled({ fixture, goals, ...rest }: ApiFootballFixture, now: number): boolean {
   if (!FINISHED_MATCH_STATUSES.has(fixture.status.short) || now - fixture.timestamp * 1000 < SETTLED_AFTER_MS) return false
   const events = getApiFootballEvents({ fixture, goals, ...rest })
-  return events.length > 0 && goalsMatchScore(events, toScoreText(goals.home), toScoreText(goals.away))
+  return events.length > 0 && goalsMatchScore(events, goals.home, goals.away)
 }
 
 /**

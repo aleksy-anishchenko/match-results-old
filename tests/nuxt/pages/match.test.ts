@@ -20,8 +20,8 @@ const ROUNDS: RoundsResponse = {
 const MATCH = makeMatchDetails({
   homeTeam: 'Спартак',
   awayTeam: 'Рубин',
-  homeScore: '1',
-  awayScore: '0',
+  homeScore: 1,
+  awayScore: 0,
   status: 'FT',
   timestamp: '2026-10-18T15:45:00',
   leagueId: '235',
@@ -52,23 +52,23 @@ function liveMatch(id: string, details: Partial<MatchDetails>) {
     return { ...MATCH, id, timestamp: halfHourAgo, events: [], stats: [], lineups: null, ...details }
   })
 }
-liveMatch('3', { status: '1H', homeScore: '0', awayScore: '0' })
+liveMatch('3', { status: '1H', homeScore: 0, awayScore: 0 })
 // По живым данным матч уже закончен, а по странице матча ещё идёт: итоговую хронику и составы ещё ждём
-liveMatch('5', { status: '2H', homeScore: '1', awayScore: '0' })
+liveMatch('5', { status: '2H', homeScore: 1, awayScore: 0 })
 // Ещё один идущий матч: в ленте один гол, а по livescore уже 2:0 — второго гола в ленте пока нет
 liveMatch('4', {
   status: '2H',
-  homeScore: '1',
-  awayScore: '0',
+  homeScore: 1,
+  awayScore: 0,
   events: [{ minute: 18, extra: null, side: 'home', kind: 'goal', player: 'Pablo Solari', assist: null, playerOut: null }],
 })
 const noPenalties = { homePenScore: null, awayPenScore: null }
 let liveRequests = 0
 registerEndpoint('/api/live', () => (liveRequests++, {
   scores: {
-    3: { status: '2H', progress: '52', homeScore: '1', awayScore: '0', ...noPenalties },
-    4: { status: '2H', progress: '70', homeScore: '2', awayScore: '0', ...noPenalties },
-    5: { status: 'FT', progress: null, homeScore: '1', awayScore: '0', ...noPenalties },
+    3: { status: '2H', progress: '52', homeScore: 1, awayScore: 0, ...noPenalties },
+    4: { status: '2H', progress: '70', homeScore: 2, awayScore: 0, ...noPenalties },
+    5: { status: 'FT', progress: null, homeScore: 1, awayScore: 0, ...noPenalties },
   },
 }))
 
