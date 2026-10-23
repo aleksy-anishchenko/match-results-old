@@ -14,7 +14,7 @@ export default defineEventHandler(async (event) => {
 
   const response = await fetch(url, { signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS) }).catch((error: unknown) => {
     const timedOut = error instanceof DOMException && error.name === 'TimeoutError'
-    throw createError({ statusCode: timedOut ? 504 : 502, statusMessage: timedOut ? 'Источник картинки не ответил' : 'Источник картинки недоступен' })
+    throw createError({ statusCode: timedOut ? 504 : 502, message: timedOut ? 'Источник картинки не ответил' : 'Источник картинки недоступен' })
   })
 
   // Ошибку отдаём ошибкой и без кэша. Раньше она уходила как картинка с кодом 200,
@@ -22,7 +22,7 @@ export default defineEventHandler(async (event) => {
   if (!response.ok) {
     throw createError({
       statusCode: response.status === 404 ? 404 : 502,
-      statusMessage: response.status === 404 ? 'Картинка не найдена' : 'Источник картинки недоступен',
+      message: response.status === 404 ? 'Картинка не найдена' : 'Источник картинки недоступен',
     })
   }
 

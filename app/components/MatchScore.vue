@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { getMatchStatusKind } from '#shared/utils/matches'
+import { formatPenaltyScore, getMatchStatusKind } from '#shared/utils/matches'
 
 const props = withDefaults(defineProps<{
   homeScore: string | null
@@ -18,9 +18,8 @@ const hasScore = computed(() => props.homeScore != null || props.awayScore != nu
 
 // Пометка под счётом: серия пенальти или победа в дополнительное время
 const note = computed(() => {
-  if (props.homePenScore != null && props.awayPenScore != null) {
-    return `пен. ${props.homePenScore}:${props.awayPenScore}`
-  }
+  const penalties = formatPenaltyScore(props)
+  if (penalties) return `пен. ${penalties}`
   if (props.status === 'AET') return 'после ДВ'
   return ''
 })

@@ -7,7 +7,7 @@ export const LIVE_MATCH_STATUSES = new Set(['1H', 'HT', '2H', 'ET', 'BT', 'P', '
 /** Матч не состоится или остановлен: перенесён, отменён, прерван, техническое решение */
 export const INACTIVE_MATCH_STATUSES = new Set(['PST', 'CANC', 'ABD', 'SUSP', 'AWD', 'WO'])
 /** Статусы, при которых у матча есть серия пенальти: идёт (P) или завершён по пенальти (PEN) */
-export const PENALTY_MATCH_STATUSES = new Set(['P', 'PEN'])
+const PENALTY_MATCH_STATUSES = new Set(['P', 'PEN'])
 
 /**
  * Дата по Москве в виде YYYY-MM-DD. Строка — это timestamp из API: время UTC без смещения
@@ -51,6 +51,16 @@ export function applyLiveScore<T extends LiveFields>(match: T, live: LiveScore |
     awayPenScore: live.awayPenScore,
     progress: RUNNING_MATCH_STATUSES.has(live.status) ? live.progress : null,
   }
+}
+
+/**
+ * Счёт серии пенальти: «4:3». null — серии нет. Только у статусов P и PEN:
+ * нули в этих полях у обычного матча — не серия
+ */
+export function formatPenaltyScore(match: Pick<Match, 'status' | 'homePenScore' | 'awayPenScore'>): string | null {
+  const { status, homePenScore, awayPenScore } = match
+  if (!PENALTY_MATCH_STATUSES.has(status) || homePenScore == null || awayPenScore == null) return null
+  return `${homePenScore}:${awayPenScore}`
 }
 
 /** Сколько ждём начала матча после времени из расписания: за 3 часа закончится и матч с доп. временем */

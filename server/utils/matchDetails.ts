@@ -17,7 +17,6 @@ export function toMatchDetails(fixture: ApiFootballFixture): MatchDetails {
   const { fixture: info, league, teams, goals, score } = fixture
   const homeScore = toScoreText(goals.home)
   const awayScore = toScoreText(goals.away)
-  const timestamp = toUtcTimestamp(info.timestamp)
   const events = getApiFootballEvents(fixture)
   const eventsFit = !FINISHED_MATCH_STATUSES.has(info.status.short) || goalsMatchScore(events, homeScore, awayScore)
 
@@ -34,11 +33,9 @@ export function toMatchDetails(fixture: ApiFootballFixture): MatchDetails {
     status: info.status.short,
     // Минуту идущего матча подставляет страница из /api/live (useLiveScores)
     progress: null,
-    timestamp,
-    date: timestamp.slice(0, 10),
+    timestamp: toUtcTimestamp(info.timestamp),
     leagueId: String(league.id),
     league: league.name,
-    season: String(league.season),
     round: getRoundNumber(league.round),
     venue: info.venue.name && decodeEntities(info.venue.name),
     city: info.venue.city && decodeEntities(info.venue.city),

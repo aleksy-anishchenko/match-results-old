@@ -30,8 +30,6 @@ export type Match = {
   /** Минута идущего матча («52», «45+2») из /api/live; null — время не идёт или минуты нет */
   progress: string | null
   timestamp: string
-  date: string
-  season: string
   /** Тур матча — id из /api/rounds; null, если матч вне туров (квалификация ЛЧ/ЛЕ) */
   round: string | null
 }
@@ -123,10 +121,8 @@ export type MatchDetails = {
   /** Минута идущего матча, как у Match: сервер отдаёт null, на странице её подставляет useLiveScores */
   progress: string | null
   timestamp: string
-  date: string
   leagueId: string
   league: string
-  season: string
   round: string | null
   venue: string | null
   city: string | null

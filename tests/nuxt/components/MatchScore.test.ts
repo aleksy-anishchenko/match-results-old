@@ -42,6 +42,13 @@ describe('MatchScore', () => {
     expect(wrapper.find('.score__note').text()).toBe('пен. 4:3')
   })
 
+  it('у обычного матча нули в полях пенальти не показываются', async () => {
+    const wrapper = await mountSuspended(MatchScore, {
+      props: { homeScore: '2', awayScore: '1', homePenScore: 0, awayPenScore: 0, status: 'FT' },
+    })
+    expect(wrapper.find('.score__note').exists()).toBe(false)
+  })
+
   it('помечает победу в дополнительное время', async () => {
     const wrapper = await mountSuspended(MatchScore, {
       props: { homeScore: '2', awayScore: '1', status: 'AET' },

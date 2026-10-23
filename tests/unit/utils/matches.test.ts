@@ -6,6 +6,7 @@ import {
   getMatchWinnerSide,
   getMoscowDate,
   formatMatchProgress,
+  formatPenaltyScore,
   getDueMatchIds,
 } from '#shared/utils/matches'
 import type { Match } from '~/types'
@@ -23,8 +24,6 @@ const makeMatch = (overrides: Partial<Match>): Match => ({
   status: 'NS',
   progress: null,
   timestamp: '2026-06-23T10:00:00',
-  date: '2026-06-23',
-  season: '2026',
   round: null,
   ...overrides,
 })
@@ -235,6 +234,18 @@ describe('getMatchWinnerSide', () => {
   it('незавершённый матч — победителя нет, даже если кто-то ведёт', () => {
     expect(getMatchWinnerSide(matchResult({ homeScore: '2', awayScore: '0', status: '2H' }))).toBeNull()
     expect(getMatchWinnerSide(matchResult({ status: 'NS' }))).toBeNull()
+  })
+})
+
+describe('formatPenaltyScore', () => {
+  it('серия идёт (P) или матч решён по пенальти (PEN) — её счёт', () => {
+    expect(formatPenaltyScore({ status: 'PEN', homePenScore: 4, awayPenScore: 3 })).toBe('4:3')
+    expect(formatPenaltyScore({ status: 'P', homePenScore: 0, awayPenScore: 1 })).toBe('0:1')
+  })
+
+  it('у обычного матча нули в полях — не серия; без счёта серии — ничего', () => {
+    expect(formatPenaltyScore({ status: 'FT', homePenScore: 0, awayPenScore: 0 })).toBeNull()
+    expect(formatPenaltyScore({ status: 'PEN', homePenScore: null, awayPenScore: null })).toBeNull()
   })
 })
 

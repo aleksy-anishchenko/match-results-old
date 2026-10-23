@@ -1,6 +1,6 @@
 import type { MatchDetails } from '~/types'
 
-const notFound = () => createError({ statusCode: 404, statusMessage: 'Матч не найден' })
+const notFound = () => createError({ statusCode: 404, message: 'Матч не найден' })
 
 export default defineEventHandler(async (event): Promise<MatchDetails> => {
   const id = getRouterParam(event, 'id') ?? ''
@@ -9,7 +9,7 @@ export default defineEventHandler(async (event): Promise<MatchDetails> => {
 
   // Сбой API-Football (кончился лимит, сеть) — это 502, а не «матч не найден»
   const fixture = await getMatchFixture(id).catch(() => {
-    throw createError({ statusCode: 502, statusMessage: 'API-Football недоступен' })
+    throw createError({ statusCode: 502, message: 'API-Football недоступен' })
   })
   if (!fixture) throw notFound()
   return toMatchDetails(fixture)

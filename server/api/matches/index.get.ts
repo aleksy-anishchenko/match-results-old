@@ -46,8 +46,6 @@ export default defineEventHandler(async (event) => {
     // Минуту и свежий счёт идущего матча подставляет страница из /api/live (useLiveScores)
     progress: null,
     timestamp: match.timestamp,
-    date: match.timestamp.slice(0, 10),
-    season: String(season),
     round: roundByMatch.get(match.id) ?? null,
   }))
 

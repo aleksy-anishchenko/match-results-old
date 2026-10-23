@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { MatchDetails } from '~/types'
 import { getCompetition } from '#shared/utils/competitions'
-import { PENALTY_MATCH_STATUSES, getMatchStatusKind, getMatchWinnerSide, getMoscowDate } from '#shared/utils/matches'
+import { formatPenaltyScore, getMatchStatusKind, getMatchWinnerSide, getMoscowDate } from '#shared/utils/matches'
 import { getBadgeUrl } from '~/utils/images'
 import { formatMatchStatus, formatMoscowTime, formatReadableDate } from '~/utils/matches'
 
@@ -36,11 +36,9 @@ const teams = computed(() => (['home', 'away'] as const).map(side => ({
   advances: competition.value?.type === 'tournament' && props.match.status === 'PEN' && winner.value === side,
 })))
 
-// Счёт серии только у матчей с пенальти: у обычного матча API может прислать в этих полях 0
 const penalties = computed(() => {
-  const { homePenScore, awayPenScore, status } = props.match
-  if (!PENALTY_MATCH_STATUSES.has(status) || homePenScore == null || awayPenScore == null) return ''
-  return `пенальти ${homePenScore}:${awayPenScore}`
+  const score = formatPenaltyScore(props.match)
+  return score ? `пенальти ${score}` : ''
 })
 
 const when = computed(() => {
