@@ -12,6 +12,8 @@ const TEAM_NAMES: Record<number, string> = {
   238: 'Академико Визеу', // Academico Viseu
   198: 'АДО Ден Хааг', // ADO Den Haag
   575: 'АЕК', // AEK Athens FC
+  614: 'АЕК Ларнака', // AEK Larnaca
+  20406: 'Эльбасани', // AF Elbasani
   194: 'Аякс', // Ajax
   1085: 'Ахмат', // Akhmat
   6786: 'Акрон', // Akron
@@ -32,6 +34,7 @@ const TEAM_NAMES: Record<number, string> = {
   2939: 'Аль-Наср', // Al-Nassr
   2933: 'Аль-Кадсия', // Al-Qadisiyah FC
   996: 'Аланьяспор', // Alanyaspor
+  582: 'Алашкерт', // Alashkert
   542: 'Алавес', // Alaves
   778: 'Албания', // Albania
   1532: 'Алжир', // Algeria
@@ -44,6 +47,7 @@ const TEAM_NAMES: Record<number, string> = {
   1110: 'Андорра', // Andorra
   77: 'Анже', // Angers
   740: 'Антверпен', // Antwerp
+  602: 'Аполлон', // Apollon Limassol
   3683: 'Арарат-Армения', // Ararat-Armenia
   26: 'Аргентина', // Argentina
   458: 'Архентинос Хуниорс', // Argentinos JRS
@@ -59,24 +63,31 @@ const TEAM_NAMES: Record<number, string> = {
   530: 'Атлетико Мадрид', // Atletico Madrid
   134: 'Атлетико Паранаэнсе', // Atletico Paranaense
   1062: 'Атлетико Минейро', // Atletico-MG
+  3345: 'Атлетик Эскальдес', // Atlètic Club d'Escaldes
+  4135: 'Ауда', // Auda
   16489: 'Остин', // Austin
   20: 'Австралия', // Australia
   775: 'Австрия', // Austria
+  601: 'Аустрия Вена', // Austria Vienna
   108: 'Осер', // Auxerre
   201: 'АЗ Алкмар', // AZ Alkmaar
   1096: 'Азербайджан', // Azerbaijan
   118: 'Баия', // Bahia
+  12733: 'Баллкани', // Ballkani
   2006: 'Балтика', // Baltika
   529: 'Барселона', // Barcelona
   1152: 'Барселона Гуаякиль', // Barcelona SC
+  388: 'БАТЭ', // Bate Borisov
   168: 'Байер Леверкузен', // Bayer Leverkusen
   157: 'Бавария', // Bayern München
   564: 'Истанбул Башакшехир', // Başakşehir
+  657: 'Бейтар', // Beitar Jerusalem
   1100: 'Беларусь', // Belarus
   1: 'Бельгия', // Belgium
   211: 'Бенфика', // Benfica
   549: 'Бешикташ', // Beşiktaş
   327: 'Будё-Глимт', // Bodo/Glimt
+  3840: 'Богемианс', // Bohemians
   500: 'Болонья', // Bologna
   3364: 'Борац Баня-Лука', // Borac Banja Luka
   165: 'Боруссия Дортмунд', // Borussia Dortmund
@@ -85,10 +96,12 @@ const TEAM_NAMES: Record<number, string> = {
   120: 'Ботафого', // Botafogo
   35: 'Борнмут', // Bournemouth
   319: 'Бранн', // Brann
+  4359: 'Браво', // Bravo
   6: 'Бразилия', // Brazil
   55: 'Брентфорд', // Brentford
   51: 'Брайтон', // Brighton
   1103: 'Болгария', // Bulgaria
+  356: 'Карнарвон Таун', // Caernarfon Town
   490: 'Кальяри', // Cagliari
   420: 'Камбюр', // Cambuur
   5529: 'Канада', // Canada
@@ -101,6 +114,7 @@ const TEAM_NAMES: Record<number, string> = {
   741: 'Серкль Брюгге', // Cercle Brugge
   1176: 'Серро Портеньо', // Cerro Porteno
   1614: 'КФ Монреаль', // CF Montreal
+  2246: 'ЧФР Клуж', // CFR 1907 Cluj
   132: 'Шапекоэнсе', // Chapecoense-sc
   736: 'Шарлеруа', // Charleroi
   18310: 'Шарлотт', // Charlotte
@@ -110,6 +124,7 @@ const TEAM_NAMES: Record<number, string> = {
   569: 'Брюгге', // Club Brugge KV
   1174: 'Гуарани', // Club Guarani
   2356: 'Насьональ Монтевидео', // Club Nacional
+  669: 'Колрейн', // Coleraine FC
   8: 'Колумбия', // Colombia
   1610: 'Колорадо Рэпидз', // Colorado Rapids
   1613: 'Коламбус Крю', // Columbus Crew
@@ -123,6 +138,7 @@ const TEAM_NAMES: Record<number, string> = {
   3: 'Хорватия', // Croatia
   135: 'Крузейро', // Cruzeiro
   52: 'Кристал Пэлас', // Crystal Palace
+  1426: 'ЦСКА 1948', // CSKA 1948
   555: 'ЦСКА', // CSKA Moscow
   853: 'ЦСКА София', // CSKA Sofia
   5530: 'Кюрасао', // Curaçao
@@ -130,15 +146,23 @@ const TEAM_NAMES: Record<number, string> = {
   1106: 'Кипр', // Cyprus
   770: 'Чехия', // Czechia
   1615: 'Ди-Си Юнайтед', // DC United
+  2392: 'Дебрецен', // Debreceni VSC
   21: 'Дания', // Denmark
   1142: 'Депортес Толима', // Deportes Tolima
   544: 'Депортиво Ла-Корунья', // Deportivo La Coruna
   2813: 'Депортиво Ла Гуайра', // Deportivo La Guaira
   2807: 'Депортиво Тачира', // Deportivo Tachira FC
   670: 'Дерри Сити', // Derry City
+  3745: 'Дечич', // Dečić
+  3499: 'Дила', // Dila
   6813: 'Динамо Махачкала', // Dinamo Makhachkala
+  394: 'Динамо Минск', // Dinamo Minsk
+  2262: 'Динамо Тбилиси', // Dinamo Tbilisi
+  3326: 'Динамо Тирана', // Dinamo Tirana
   620: 'Динамо Загреб', // Dinamo Zagreb
   14281: 'Дрита', // Drita
+  14393: 'Дукаджини', // Dukagjini
+  2257: 'Дунайска-Стреда', // Dunajska Streda
   1088: 'Динамо', // Dynamo
   572: 'Динамо Киев', // Dynamo Kyiv
   2382: 'Эквадор', // Ecuador
@@ -154,27 +178,36 @@ const TEAM_NAMES: Record<number, string> = {
   230: 'Эшторил Прая', // Estoril
   15130: 'Эштрела Амадора', // Estrela
   450: 'Эстудиантес', // Estudiantes L.P.
+  10125: 'Европа', // Europa
   45: 'Эвертон', // Everton
   196: 'Эксельсиор', // Excelsior
   3588: 'Эюпспор', // Eyüpspor
   1993: 'Факел', // Fakel
   242: 'Фамаликан', // Famalicao
   1098: 'Фарерские острова', // Faroe Islands
+  562: 'Астана', // FC Astana
   170: 'Аугсбург', // FC Augsburg
   2242: 'Цинциннати', // FC Cincinnati
   400: 'Копенгаген', // FC Copenhagen
   1597: 'Даллас', // FC Dallas
+  684: 'Дифферданж 03', // FC Differdange 03
   3502: 'Иберия 1999', // FC Iberia 1999
   621: 'Краснодар', // FC Krasnodar
+  2273: 'Левадия', // FC Levadia Tallinn
   606: 'Лугано', // FC Lugano
   397: 'Мидтьюлланн', // FC Midtjylland
+  3684: 'Ноах', // FC Noah
   398: 'Норшелланн', // FC Nordsjaelland
   1080: 'Оренбург', // FC Orenburg
   212: 'Порту', // FC Porto
   779: 'Ростов', // FC Rostov
+  591: 'Санта-Колома', // FC Santa Coloma
   174: 'Шальке 04', // FC Schalke 04
+  630: 'Сьон', // FC Sion
   1011: 'Санкт-Галлен', // FC ST. Gallen
   1012: 'Тун', // FC Thun
+  660: 'Вадуц', // FC Vaduz
+  559: 'ФКСБ', // FCSB
   611: 'Фенербахче', // Fenerbahçe
   651: 'Ференцварош', // Ferencvarosi TC
   209: 'Фейеноорд', // Feyenoord
@@ -182,6 +215,11 @@ const TEAM_NAMES: Record<number, string> = {
   502: 'Фиорентина', // Fiorentina
   598: 'Црвена Звезда', // FK Crvena Zvezda
   1122: 'Яблонец', // FK Jablonec
+  661: 'Лиепая', // FK Liepaja
+  573: 'Партизан', // FK Partizan
+  679: 'Сараево', // FK Sarajevo
+  2259: 'Тобол', // FK Tobol Kostanay
+  586: 'Жальгирис', // FK Zalgiris Vilnius
   127: 'Фламенго', // Flamengo
   687: 'Флора Таллин', // Flora Tallinn
   4625: 'Флориана', // Floriana
@@ -192,7 +230,9 @@ const TEAM_NAMES: Record<number, string> = {
   164: 'Майнц', // FSV Mainz 05
   36: 'Фулхэм', // Fulham
   1105: 'Северная Македония', // FYR Macedonia
+  2170: 'ГАИС', // Gais
   645: 'Галатасарай', // Galatasaray
+  357: 'Коннас-Ки', // GAP Connah S Quay FC
   3573: 'Газиантеп', // Gaziantep FK
   742: 'Генк', // Genk
   495: 'Дженоа', // Genoa
@@ -204,6 +244,8 @@ const TEAM_NAMES: Record<number, string> = {
   1504: 'Гана', // Ghana
   1093: 'Гибралтар', // Gibraltar
   762: 'Жил Висенте', // GIL Vicente
+  3484: 'ГКС Катовице', // GKS Katowice
+  5352: 'Гленторан', // Glentoran
   410: 'Гоу Эхед Иглз', // GO Ahead Eagles
   340: 'Гурник Забже', // Gornik Zabrze
   1117: 'Греция', // Greece
@@ -214,22 +256,32 @@ const TEAM_NAMES: Record<number, string> = {
   2386: 'Гаити', // Haiti
   175: 'Гамбург', // Hamburger SV
   363: 'Хаммарбю', // Hammarby FF
+  4626: 'Хамрун Спартанс', // Hamrun Spartans
   563: 'Хапоэль Беэр-Шева', // Hapoel Beer Sheva
+  4501: 'Хапоэль Тель-Авив', // Hapoel Tel Aviv
+  4133: 'ХБ Торсхавн', // HB Torshavn
   254: 'Хартс', // Heart Of Midlothian
   210: 'Херенвен', // Heerenveen
+  3861: 'Хегельманн', // Hegelmann Litauen
+  249: 'Хиберниан', // Hibernian
+  649: 'ХИК', // HJK Helsinki
   608: 'Хайдук Сплит', // HNK Hajduk Split
+  561: 'Риека', // HNK Rijeka
   1600: 'Хьюстон Динамо', // Houston Dynamo
   3723: 'Градец-Кралове', // Hradec Králové
   2328: 'Уачипато', // Huachipato
   64: 'Халл Сити', // Hull City
   769: 'Венгрия', // Hungary
   18: 'Исландия', // Iceland
+  366: 'Гётеборг', // IFK Goteborg
+  1163: 'Ильвес', // Ilves
   473: 'Индепендьенте Ривадавия', // Independ. Rivadavia
   1153: 'Индепендьенте дель Валье', // Independiente del Valle
   1128: 'Индепендьенте Медельин', // Independiente Medellin
   505: 'Интер', // Inter
   3342: 'Интер Эскальдес', // Inter Club d'Escaldes
   9568: 'Интер Майами', // Inter Miami
+  1164: 'Интер Турку', // Inter Turku
   119: 'Интернасьонал', // Internacional
   57: 'Ипсвич Таун', // Ipswich
   22: 'Иран', // Iran
@@ -245,18 +297,21 @@ const TEAM_NAMES: Record<number, string> = {
   2353: 'Хувентуд Лас-Пьедрас', // Juventud
   496: 'Ювентус', // Juventus
   664: 'Кайрат', // Kairat Almaty
+  662: 'Нымме Калью', // Kalju Nomme
   1004: 'Касымпаша', // Kasımpaşa
   3872: 'Кауно Жальгирис', // Kauno Žalgiris
   1095: 'Казахстан', // Kazakhstan
   701: 'КИ Клаксвик', // KI Klaksvik
   7411: 'Коджаэлиспор', // Kocaelispor
   607: 'Коньяспор', // Konyaspor
+  4374: 'Копер', // Koper
   734: 'Кортрейк', // Kortrijk
   1111: 'Косово', // Kosovo
   1079: 'Крылья Советов', // Krylia Sovetov
   1165: 'КуПС', // KuPS
   266: 'Мехелен', // KV Mechelen
   261: 'Вестерло', // KVC Westerlo
+  2249: 'Ла Фиорита', // La Fiorita
   446: 'Ланус', // Lanus
   5354: 'Ларн', // Larne
   1026: 'ЛАСК', // Lask Linz
@@ -276,24 +331,30 @@ const TEAM_NAMES: Record<number, string> = {
   79: 'Лилль', // Lille
   321: 'Лиллестрём', // Lillestrom
   667: 'Линкольн Ред Импс', // Lincoln Red Imps FC
+  583: 'Линфилд', // Linfield
   1097: 'Литва', // Lithuania
   40: 'Ливерпуль', // Liverpool
   2358: 'Ливерпуль Монтевидео', // Liverpool Montevideo
+  17161: 'ЛНЗ', // LNZ Cherkasy
   597: 'Локомотив', // Lokomotiv
   259: 'Ломмел', // Lommel United
   97: 'Лорьян', // Lorient
   1616: 'Лос-Анджелес', // Los Angeles FC
   1605: 'ЛА Гэлакси', // Los Angeles Galaxy
+  566: 'Лудогорец', // Ludogorets
   1102: 'Люксембург', // Luxembourg
   80: 'Лион', // Lyon
   604: 'Маккаби Тель-Авив', // Maccabi Tel Aviv
   535: 'Малага', // Malaga
+  15576: 'Малишева', // Malisheva
   1112: 'Мальта', // Malta
   50: 'Манчестер Сити', // Manchester City
   33: 'Манчестер Юнайтед', // Manchester United
   214: 'Маритиму', // Maritimo
+  14507: 'Марсашлокк', // Marsaxlokk
   81: 'Марсель', // Marseille
   16: 'Мексика', // Mexico
+  691: 'Милсами', // Milsami Orhei
   1612: 'Миннесота Юнайтед', // Minnesota United FC
   7848: 'Мирасол', // Mirassol
   2240: 'Мьельбю', // Mjallby AIF
@@ -303,11 +364,14 @@ const TEAM_NAMES: Record<number, string> = {
   1109: 'Черногория', // Montenegro
   1579: 'Монца', // Monza
   215: 'Морейренсе', // Moreirense
+  3740: 'Морнар', // Mornar
   31: 'Марокко', // Morocco
+  256: 'Мазервелл', // Motherwell
   225: 'Насьонал', // Nacional
   492: 'Наполи', // Napoli
   9569: 'Нэшвилл', // Nashville SC
   413: 'НЕК Неймеген', // NEC Nijmegen
+  2270: 'Нефтчи', // Neftchi Baku
   10513: 'Неом', // NEOM
   1118: 'Нидерланды', // Netherlands
   1609: 'Нью-Ингленд Революшн', // New England Revolution
@@ -316,9 +380,11 @@ const TEAM_NAMES: Record<number, string> = {
   4673: 'Новая Зеландия', // New Zealand
   34: 'Ньюкасл Юнайтед', // Newcastle
   84: 'Ницца', // Nice
+  1483: 'Вараждин', // NK Varazdin
   771: 'Северная Ирландия', // Northern Ireland
   1090: 'Норвегия', // Norway
   65: 'Ноттингем Форест', // Nottingham Forest
+  682: 'НСИ Рунавик', // NSI Runavik
   2320: 'О\'Хиггинс', // O'Higgins
   1124: 'ОФИ', // OFI
   260: 'Ауд-Хеверле Лёвен', // OH Leuven
@@ -327,9 +393,12 @@ const TEAM_NAMES: Record<number, string> = {
   1598: 'Орландо Сити', // Orlando City SC
   727: 'Осасуна', // Osasuna
   3403: 'Пафос', // Pafos
+  3528: 'Пайде', // Paide
+  2390: 'Пакш', // Paks
   121: 'Палмейрас', // Palmeiras
   11: 'Панама', // Panama
   617: 'Панатинаикос', // Panathinaikos
+  3874: 'Паневежис', // Panevėžys
   619: 'ПАОК', // PAOK
   2380: 'Парагвай', // Paraguay
   114: 'Париж ФК', // Paris FC
@@ -337,20 +406,26 @@ const TEAM_NAMES: Record<number, string> = {
   523: 'Парма', // Parma
   193: 'ПЕК Зволле', // PEC Zwolle
   2348: 'Пеньяроль', // Penarol
+  2191: 'Пенибонт', // Penybont
   30: 'Перу', // Peru
   2271: 'Петрокуб', // Petrocub
+  3741: 'Петровац', // Petrovac
   1599: 'Филадельфия Юнион', // Philadelphia Union
   1064: 'Платенсе', // Platense
   567: 'Виктория Пльзень', // Plzen
   24: 'Польша', // Poland
+  6496: 'Полесье', // Polessya
   1617: 'Портленд Тимберс', // Portland Timbers
   27: 'Португалия', // Portugal
   197: 'ПСВ', // PSV Eindhoven
+  709: 'Пюник', // Pyunik Yerevan
   556: 'Карабах', // Qarabag
   1569: 'Катар', // Qatar
   5902: 'Ла-Лувьер', // RAAL La Louvière
   4665: 'Расинг Сантандер', // Racing Santander
+  3491: 'Ракув', // Raków Częstochowa
   257: 'Рейнджерс', // Rangers
+  781: 'Рапид Вена', // Rapid Vienna
   728: 'Райо Вальекано', // Rayo Vallecano
   794: 'Брагантино', // RB Bragantino
   173: 'РБ Лейпциг', // RB Leipzig
@@ -370,6 +445,7 @@ const TEAM_NAMES: Record<number, string> = {
   774: 'Румыния', // Romania
   437: 'Росарио Сентраль', // Rosario Central
   1083: 'Рубин', // Rubin
+  4160: 'РФШ', // Rīgas FS
   13976: 'Сабах', // Sabah FA
   3603: 'Самсунспор', // Samsunspor
   25484: 'Сан-Диего', // San Diego
@@ -390,7 +466,10 @@ const TEAM_NAMES: Record<number, string> = {
   536: 'Севилья', // Sevilla
   550: 'Шахтёр', // Shakhtar Donetsk
   652: 'Шемрок Роверс', // Shamrock Rovers
+  3854: 'Шелбурн', // Shelbourne
   568: 'Шериф', // Sheriff Tiraspol
+  609: 'Шкендия', // Shkendija
+  4331: 'Силекс', // Sileks
   738: 'Беверен', // SK Beveren
   560: 'Славия', // Slavia Praha
   773: 'Словакия', // Slovakia
@@ -405,10 +484,12 @@ const TEAM_NAMES: Record<number, string> = {
   1120: 'Спартак Трнава', // Spartak Trnava
   228: 'Спортинг', // Sporting CP
   1611: 'Спортинг Канзас-Сити', // Sporting Kansas City
+  698: 'Сент-Джозефс', // St Joseph S Fc
   20787: 'Сент-Луис Сити', // St. Louis City
   735: 'Синт-Трёйден', // St. Truiden
   106: 'Брест', // Stade Brestois 29
   733: 'Стандард Льеж', // Standard Liege
+  275: 'Стьярнан', // Stjarnan
   95: 'Страсбур', // Strasbourg
   637: 'Штурм', // Sturm Graz
   746: 'Сандерленд', // Sunderland
@@ -421,6 +502,7 @@ const TEAM_NAMES: Record<number, string> = {
   3711: 'Стронгест', // The Strongest
   503: 'Торино', // Torino
   1601: 'Торонто', // Toronto FC
+  685: 'Торпедо Кутаиси', // Torpedo Kutaisi
   4799: 'Торренсе', // Torreense
   47: 'Тоттенхэм Хотспур', // Tottenham
   96: 'Тулуза', // Toulouse
@@ -432,6 +514,7 @@ const TEAM_NAMES: Record<number, string> = {
   777: 'Турция', // Türkiye
   494: 'Удинезе', // Udinese
   772: 'Украина', // Ukraine
+  2036: 'УНА Штрассен', // UNA Strassen
   182: 'Унион Берлин', // Union Berlin
   1393: 'Юнион Сент-Жиллуаз', // Union St. Gilloise
   1157: 'Универсидад Католика Эквадор', // Universidad Catolica
@@ -439,29 +522,41 @@ const TEAM_NAMES: Record<number, string> = {
   2599: 'Университатя Клуж', // Universitatea Cluj
   632: 'Университатя Крайова', // Universitatea Craiova
   7: 'Уругвай', // Uruguay
+  2037: 'Мондорф-ле-Бен', // US Mondorf-les-bains
   2384: 'США', // USA
   207: 'Утрехт', // Utrecht
   1568: 'Узбекистан', // Uzbekistan
   532: 'Валенсия', // Valencia
+  659: 'Валлетта', // Valletta FC
+  274: 'Валюр', // Valur Reykjavik
   1603: 'Ванкувер Уайткэпс', // Vancouver Whitecaps
   574: 'Вардар', // Vardar Skopje
   133: 'Васко да Гама', // Vasco DA Gama
+  3381: 'Вележ', // Velež
   517: 'Венеция', // Venezia
   2379: 'Венесуэла', // Venezuela
   4165: 'Вестри', // Vestri
   172: 'Штутгарт', // VfB Stuttgart
   759: 'Викинг', // Viking
+  580: 'Викингур Гёта', // Vikingur Gota
   278: 'Викингур Рейкьявик', // Vikingur Reykjavik
   533: 'Вильярреал', // Villarreal
+  5308: 'Виртус', // Virtus
   136: 'Витория', // Vitoria
   224: 'Витория Гимарайнш', // Vitória SC
+  3339: 'Влазния', // Vllaznia Shkodër
   702: 'Воеводина', // Vojvodina
   767: 'Уэльс', // Wales
   162: 'Вердер', // Werder Bremen
   195: 'Виллем II', // Willem II
+  21011: 'Елимай', // Yelimay Semey
   596: 'Зенит', // Zenit
+  4633: 'Зимбру', // Zimbru
+  648: 'Зиря', // Zira
+  588: 'Зриньски', // Zrinjski
   600: 'Зюлте-Варегем', // Zulte Waregem
   6343: 'Чорум', // Çorum FK
+  12360: 'Железничар Панчево', // Železničar Pančevo
   3554: 'Жилина', // Žilina
 }
 
