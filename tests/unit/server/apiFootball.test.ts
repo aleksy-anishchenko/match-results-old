@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { fetchApiFootball, getFixturesByIds, getLeagueSeason, getMatchFixture, getSeasonMatches } from '../../../server/utils/apiFootball'
-import { toSeasonMatch } from '../../../server/utils/seasonMatch'
+import { fetchApiFootball, getCompetitionSeason, getFixturesByIds, getLeagueSeason, getMatchFixture, getSeasonMatches } from '../../../server/utils/apiFootball'
+import { toMatch, toSeasonMatch } from '../../../server/utils/seasonMatch'
 import afSpartakRubin from '../../fixtures/api-football/spartak-rubin.json'
 import championsLeague2526 from '../../fixtures/api-football/seasons/champions-league-2025-26.json'
 import championsLeague2627 from '../../fixtures/api-football/seasons/champions-league-2026-27.json'
@@ -115,6 +115,30 @@ describe('getLeagueSeason', () => {
   })
 })
 
+describe('getCompetitionSeason', () => {
+  it('турнир сайта и его сезон; без номера — турнир по умолчанию', async () => {
+    stubNitro('key', async () => ({ response: [{ seasons: [{ year: 2026, current: true }] }], errors: [] }))
+
+    expect(await getCompetitionSeason('2')).toMatchObject({ competition: { id: '2', name: 'Лига чемпионов' }, season: 2026 })
+    expect(await getCompetitionSeason(undefined)).toMatchObject({ competition: { id: '39' }, season: 2026 })
+  })
+
+  // Каждый запрос к API-Football — из дневного лимита
+  it('турнир не из списка сайта — null, API не спрашиваем', async () => {
+    stubNitro('key', respond())
+
+    expect(await getCompetitionSeason('999')).toBeNull()
+    expect(await getCompetitionSeason('39abc')).toBeNull()
+    expect($fetch).not.toHaveBeenCalled()
+  })
+
+  it('текущего сезона нет в API — null', async () => {
+    stubNitro('key', async () => ({ response: [], errors: [] }))
+
+    expect(await getCompetitionSeason('39')).toBeNull()
+  })
+})
+
 describe('toSeasonMatch', () => {
   it('финал по пенальти: названия по-русски, счёт серии, время UTC без смещения', () => {
     const final = championsLeague2526.find(fixture => fixture.league.round === 'Final')!
@@ -145,6 +169,28 @@ describe('toSeasonMatch', () => {
       homeScore: null,
       awayScore: null,
       homePenalties: null,
+    })
+  })
+})
+
+describe('toMatch', () => {
+  it('матч для главной: тур из навигации, минуту подставит страница', () => {
+    const final = toSeasonMatch(championsLeague2526.find(fixture => fixture.league.round === 'Final')!)
+
+    expect(toMatch(final, 'playoff-final')).toEqual({
+      idEvent: '1544371',
+      homeTeam: 'ПСЖ',
+      awayTeam: 'Арсенал',
+      homeBadge: '',
+      awayBadge: '',
+      homeScore: '1',
+      awayScore: '1',
+      homePenScore: 4,
+      awayPenScore: 3,
+      status: 'PEN',
+      progress: null,
+      timestamp: '2026-05-30T16:00:00',
+      round: 'playoff-final',
     })
   })
 })

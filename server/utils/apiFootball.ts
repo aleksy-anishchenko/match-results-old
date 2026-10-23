@@ -1,5 +1,5 @@
-import type { SeasonMatch } from '~/types'
-import { getCompetition } from '#shared/utils/competitions'
+import type { Competition, SeasonMatch } from '~/types'
+import { DEFAULT_COMPETITION_ID, getCompetition } from '#shared/utils/competitions'
 import { getApiFootballEvents, goalsMatchScore, type ApiFootballFixture } from '#shared/utils/matchEvents'
 import { FINISHED_MATCH_STATUSES } from '#shared/utils/matches'
 import { toSeasonMatch, toScoreText, type ApiFootballSeasonFixture } from './seasonMatch'
@@ -101,6 +101,20 @@ export const getLeagueSeason = defineCachedFunction(async (leagueId: string): Pr
   validate: entry => entry.value != null,
   getKey: (leagueId: string) => leagueId,
 })
+
+/** Турнир сайта и его текущий сезон */
+export type CompetitionSeason = { competition: Competition, season: number }
+
+/**
+ * Турнир по номеру из адреса (?leagueId=; без него — турнир по умолчанию) и его текущий сезон. null — турнира
+ * нет в списке сайта или текущего сезона нет в API. Турниры не из списка не спрашиваем: каждый запрос — из лимита
+ */
+export async function getCompetitionSeason(leagueId: unknown): Promise<CompetitionSeason | null> {
+  const competition = getCompetition(String(leagueId ?? DEFAULT_COMPETITION_ID))
+  if (!competition) return null
+  const season = await getLeagueSeason(competition.id)
+  return season == null ? null : { competition, season }
+}
 
 /**
  * Все матчи сезона по времени начала. Счёт идущих матчей и минуту страницы берут из живых данных,

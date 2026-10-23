@@ -1,17 +1,14 @@
 import type { RoundsResponse } from '~/types'
 
 export default defineEventHandler(async (event): Promise<RoundsResponse> => {
-  const leagueId = String(getQuery(event).leagueId ?? DEFAULT_COMPETITION_ID)
-  const competition = getCompetition(leagueId)
-  // Турниры не из списка не спрашиваем: каждый запрос к API-Football — из дневного лимита
-  const season = competition ? await getLeagueSeason(leagueId) : null
-  if (!competition || season == null) return { season: null, rounds: [], current: null, matchDays: [] }
+  const league = await getCompetitionSeason(getQuery(event).leagueId)
+  if (!league) return { season: null, rounds: [], current: null, matchDays: [] }
 
-  const schedule = await getSeasonMatches(leagueId, season)
-  const { rounds, roundByMatch } = getSeasonRounds(schedule, competition)
+  const schedule = await getSeasonMatches(league.competition.id, league.season)
+  const { rounds, roundByMatch } = getSeasonRounds(schedule, league.competition)
 
   return {
-    season: String(season),
+    season: String(league.season),
     rounds,
     current: getCurrentRound(schedule, roundByMatch, new Date()),
     matchDays: getMatchDays(schedule),

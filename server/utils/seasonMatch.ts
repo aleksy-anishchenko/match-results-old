@@ -1,4 +1,4 @@
-import type { SeasonMatch, SeasonTeam } from '~/types'
+import type { Match, SeasonMatch, SeasonTeam } from '~/types'
 import { getTeamName } from './teamNames'
 
 /** Команда в ответе. Без номера и названия в данных пока не встречалась, но разбор от неё падать не должен */
@@ -34,5 +34,25 @@ export function toSeasonMatch({ fixture, league, teams, goals, score }: ApiFootb
     awayScore: goals.away,
     homePenalties: score.penalty.home,
     awayPenalties: score.penalty.away,
+  }
+}
+
+/** Матч расписания для списка матчей на главной. round — тур матча из getSeasonRounds; null — матч вне туров */
+export function toMatch(match: SeasonMatch, round: string | null): Match {
+  return {
+    idEvent: match.id,
+    homeTeam: match.home.name,
+    awayTeam: match.away.name,
+    homeBadge: match.home.badge,
+    awayBadge: match.away.badge,
+    homeScore: toScoreText(match.homeScore),
+    awayScore: toScoreText(match.awayScore),
+    homePenScore: match.homePenalties,
+    awayPenScore: match.awayPenalties,
+    status: match.status,
+    // Минуту и свежий счёт идущего матча подставляет страница из /api/live (useLiveScores)
+    progress: null,
+    timestamp: match.timestamp,
+    round,
   }
 }

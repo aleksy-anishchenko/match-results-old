@@ -15,7 +15,7 @@
 ## Данные API-Football
 
 - Тариф Pro — 7 500 запросов в день, счётчик обнуляется в 00:00 UTC. Без подписки сайт пуст: на бесплатном тарифе (100 в день) текущий сезон закрыт целиком — расписание и таблицы отвечают «try from 2022 to 2024». Запрос `/status` лимит не тратит, но счётчик в нём обновляется с задержкой в пару минут.
-- Клиент — `server/utils/apiFootball.ts`, заголовок ключа — `x-apisports-key`. Кончился лимит — до полуночи UTC не спрашиваем (помнится в памяти процесса). Для турниров не из списка и номеров не из цифр маршруты API не спрашивают: каждый запрос — из лимита. Когда до конца дня осталось меньше 1 000 запросов (заголовок `x-ratelimit-requests-remaining`), матчи по номеру и живой счёт (`spare`) не запрашиваем: перебор номеров извне не оставит сайт без расписаний и таблиц.
+- Клиент — `server/utils/apiFootball.ts`, заголовок ключа — `x-apisports-key`. Кончился лимит — до полуночи UTC не спрашиваем (помнится в памяти процесса). Для турниров не из списка (`getCompetitionSeason`) и номеров не из цифр маршруты API не спрашивают: каждый запрос — из лимита. Когда до конца дня осталось меньше 1 000 запросов (заголовок `x-ratelimit-requests-remaining`), матчи по номеру и живой счёт (`spare`) не запрашиваем: перебор номеров извне не оставит сайт без расписаний и таблиц.
 - Сезон — год начала (`leagues?id=…&current=true`): и 2026/27, и МЛС 2026 — это 2026.
 - Время — `fixture.timestamp` (секунды Unix): `toUtcTimestamp` делает из него UTC без смещения, как ждут `getMoscowDate` и `formatMoscowTime`.
 - Статусы: завершённые — `FT`, `AET`, `PEN` (`FINISHED_MATCH_STATUSES`); `P` — серия пенальти идёт, `PEN` — матч завершён по пенальти (у TheSportsDB было наоборот). Счёт серии — `score.penalty`, в `goals` — голы с дополнительным временем.
@@ -33,7 +33,7 @@
 ## Где что в коде
 
 - `shared/utils/` — общее для сервера и браузера: `bracket.ts` (сетка плей-офф), `rounds.ts` (туры главной и их даты), `matchEvents.ts` (хроника матча), `matchStats.ts`, `lineups.ts`, `standings.ts` (таблицы, зоны), `matches.ts` (статусы, даты по Москве), `competitions.ts` (список турниров: номера API-Football, `leaguePhase`).
-- `server/utils/`: `apiFootball.ts` (клиент и кэшируемые загрузки: сезон, расписание, таблица, матч, живой счёт), переводчики ответов в типы страниц — `seasonMatch.ts`, `matchDetails.ts`, `leagueTable.ts`, `liveScores.ts`, словарь `teamNames.ts`.
+- `server/utils/`: `apiFootball.ts` (клиент и кэшируемые загрузки: сезон, расписание, таблица, матч, живой счёт; турнир из адреса с сезоном — `getCompetitionSeason`), переводчики ответов в типы страниц — `seasonMatch.ts`, `matchDetails.ts`, `leagueTable.ts`, `liveScores.ts`, словарь `teamNames.ts`.
 - `server/api/`: `bracket`, `rounds` (туры, текущий тур, дни с матчами), `matches` (тур, даты или, без них, текущий тур), `match/[id]` (шапка, хроника, статистика, составы — один запрос к API-Football), `live` (счёт и минута матчей по номерам), `standings`, `image` (прокси эмблем). Эмблема лиги — по номеру (`getCompetitionBadge`), без запроса.
 - `app/`: страницы `index`, `standings` (таблица и сетка), `match/[id]`, `about`. Над матчами и таблицей — `CompetitionBar` (`LeagueSelect` и разделы). Поля «Тур» и «Дата» — `RoundSelect`, `DateSelect` на общем `FilterDropdown`: на компьютере PrimeVue `Popover`, на телефоне `Drawer`. Выбор главной хранится в адресе (`utils/homeQuery.ts`). Лига — `useCompetition`, «сегодня» по Москве — `useMoscowToday`, живой счёт поверх расписания — `useLiveScores`.
 
