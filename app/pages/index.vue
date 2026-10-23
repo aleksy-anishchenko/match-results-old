@@ -115,19 +115,19 @@ watch(leagueId, async (id) => {
 
     <p
       v-if="pending"
-      class="status"
+      class="page-status"
     >
       Загрузка...
     </p>
     <p
       v-else-if="error"
-      class="status"
+      class="page-status"
     >
       Не удалось загрузить матчи. Попробуйте обновить страницу.
     </p>
     <p
       v-else-if="!Object.keys(groupedMatches).length"
-      class="status"
+      class="page-status"
     >
       Матчей нет
     </p>
@@ -177,11 +177,5 @@ watch(leagueId, async (id) => {
   @media (min-width: $breakpoint-desktop) {
     flex: 0 0 auto;
   }
-}
-
-.status {
-  padding: 24px 0;
-  font-size: 14px;
-  color: $color-text-3;
 }
 </style>

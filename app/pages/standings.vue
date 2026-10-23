@@ -105,13 +105,13 @@ const legend = computed(() => collectLegend(tables.value.flatMap(table => table.
       <template v-if="isTournament && activeTab === 'playoff'">
         <p
           v-if="bracketError"
-          class="status"
+          class="page-status"
         >
           Не удалось загрузить сетку плей-офф. Попробуйте обновить страницу.
         </p>
         <p
           v-else-if="!rounds.length"
-          class="status"
+          class="page-status"
         >
           Плей-офф ещё не начался
         </p>
@@ -125,13 +125,13 @@ const legend = computed(() => collectLegend(tables.value.flatMap(table => table.
       <template v-else>
         <p
           v-if="standingsError"
-          class="status"
+          class="page-status"
         >
           Не удалось загрузить таблицу. Попробуйте обновить страницу.
         </p>
         <p
           v-else-if="!tables.length"
-          class="status"
+          class="page-status"
         >
           Таблицы пока нет
         </p>
@@ -197,12 +197,6 @@ const legend = computed(() => collectLegend(tables.value.flatMap(table => table.
   display: flex;
   flex-direction: column;
   gap: inherit;
-}
-
-.status {
-  padding: 24px 0;
-  font-size: 14px;
-  color: $color-text-3;
 }
 
 .groups {

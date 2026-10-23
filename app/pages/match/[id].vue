@@ -96,14 +96,14 @@ useHead({
 
     <p
       v-if="pending"
-      class="status"
+      class="page-status"
     >
       Загрузка...
     </p>
 
     <p
       v-else-if="error"
-      class="status"
+      class="page-status"
     >
       {{ error.statusCode === 404 ? 'Матч не найден' : 'Не удалось загрузить матч. Попробуйте обновить страницу.' }}
     </p>
@@ -153,11 +153,5 @@ useHead({
   &:hover {
     color: $color-accent;
   }
-}
-
-.status {
-  padding: 24px 0;
-  font-size: 14px;
-  color: $color-text-3;
 }
 </style>

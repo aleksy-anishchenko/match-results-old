@@ -150,7 +150,7 @@ describe('страница матча: идущий матч', () => {
     vi.advanceTimersByTime(60_000)
     await vi.waitFor(() => expect(matchRequests['3']).toBe(before + 1))
     // Обновление тихое: «Загрузка...» не появляется, счёт остаётся из livescore
-    expect(page.find('.status').exists()).toBe(false)
+    expect(page.find('.page-status').exists()).toBe(false)
     expect(page.get('.header__status').text()).toBe('52′')
   })
 
