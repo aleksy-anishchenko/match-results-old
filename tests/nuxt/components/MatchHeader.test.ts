@@ -2,32 +2,22 @@ import { describe, it, expect } from 'vitest'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import MatchHeader from '~/components/MatchHeader.vue'
 import type { MatchDetails } from '~/types'
+import { makeMatchDetails } from '../../helpers/matches'
 
-function makeMatch(overrides: Partial<MatchDetails> = {}): MatchDetails {
-  return {
-    idEvent: '1',
-    homeTeam: 'Ливерпуль',
-    awayTeam: 'Манчестер Сити',
-    homeBadge: '',
-    awayBadge: '',
-    homeScore: '2',
-    awayScore: '1',
-    homePenScore: null,
-    awayPenScore: null,
-    status: 'FT',
-    progress: null,
-    timestamp: '2026-10-11T15:30:00',
-    leagueId: '39',
-    league: 'English Premier League',
-    round: '6',
-    venue: 'Anfield',
-    city: null,
-    lineups: null,
-    events: [],
-    stats: [],
-    ...overrides,
-  }
-}
+// Сыгранный матч 6 тура АПЛ: Ливерпуль – Манчестер Сити 2:1
+const makeMatch = (overrides: Partial<MatchDetails> = {}) => makeMatchDetails({
+  homeTeam: 'Ливерпуль',
+  awayTeam: 'Манчестер Сити',
+  homeScore: '2',
+  awayScore: '1',
+  status: 'FT',
+  timestamp: '2026-10-11T15:30:00',
+  leagueId: '39',
+  league: 'English Premier League',
+  round: '6',
+  venue: 'Anfield',
+  ...overrides,
+})
 
 describe('MatchHeader', () => {
   it('показывает лигу по-русски, тур и статус', async () => {

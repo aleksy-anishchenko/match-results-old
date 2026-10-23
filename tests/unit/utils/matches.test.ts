@@ -10,23 +10,7 @@ import {
   getDueMatchIds,
 } from '#shared/utils/matches'
 import type { Match } from '~/types'
-
-const makeMatch = (overrides: Partial<Match>): Match => ({
-  idEvent: '1',
-  homeTeam: 'Brazil',
-  awayTeam: 'Germany',
-  homeBadge: '',
-  awayBadge: '',
-  homeScore: null,
-  awayScore: null,
-  homePenScore: null,
-  awayPenScore: null,
-  status: 'NS',
-  progress: null,
-  timestamp: '2026-06-23T10:00:00',
-  round: null,
-  ...overrides,
-})
+import { makeMatch } from '../../helpers/matches'
 
 describe('groupMatchesByDate', () => {
   it('группирует матчи по московской дате', () => {
@@ -168,9 +152,10 @@ describe('applyLiveScore', () => {
 
 describe('getDueMatchIds', () => {
   // Матч начинается 23 июня в 10:00 UTC
-  const kickoff = Date.parse('2026-06-23T10:00:00Z')
+  const timestamp = '2026-06-23T10:00:00'
+  const kickoff = Date.parse(`${timestamp}Z`)
   const minutes = (n: number) => n * 60 * 1000
-  const due = (match: Partial<Match>, now: number) => getDueMatchIds([makeMatch(match)], now).length > 0
+  const due = (match: Partial<Match>, now: number) => getDueMatchIds([makeMatch({ timestamp, ...match })], now).length > 0
 
   it('идущий по расписанию матч — обновляем, но не дольше 3 часов от начала', () => {
     expect(due({ status: '2H' }, kickoff + minutes(60))).toBe(true)
@@ -193,11 +178,11 @@ describe('getDueMatchIds', () => {
   it('из списка — номера только тех, кого пора обновлять', () => {
     const now = kickoff + minutes(30)
     const matches = [
-      makeMatch({ idEvent: '1', status: '1H' }),
-      makeMatch({ idEvent: '2', status: 'FT' }),
-      makeMatch({ idEvent: '3', status: 'PST' }),
+      makeMatch({ idEvent: '1', status: '1H', timestamp }),
+      makeMatch({ idEvent: '2', status: 'FT', timestamp }),
+      makeMatch({ idEvent: '3', status: 'PST', timestamp }),
       makeMatch({ idEvent: '4', status: 'NS', timestamp: '2026-06-24T10:00:00' }),
-      makeMatch({ idEvent: '5', status: 'NS' }),
+      makeMatch({ idEvent: '5', status: 'NS', timestamp }),
     ]
     expect(getDueMatchIds(matches, now)).toEqual(['1', '5'])
     expect(getDueMatchIds([], now)).toEqual([])

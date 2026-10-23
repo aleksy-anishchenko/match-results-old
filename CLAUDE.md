@@ -49,6 +49,7 @@
 ## Тесты
 
 - `tests/unit/` — чистые функции, окружение node, импорты явные (`#shared/...`, `~/utils/...`, серверные — относительным путём). Настоящие ответы API-Football, урезанные до нужных полей, — `tests/fixtures/api-football/`: сезоны (`seasons/`), таблицы (`standings/`) и три матча. Тесты сервера подменяют функции Nitro (`useRuntimeConfig`, `$fetch`, `useStorage`) через `vi.stubGlobal`, а `defineCachedFunction` — через `vi.hoisted`: она вызывается при загрузке модуля.
+- Матч для тестов — `makeMatch` и `makeMatchDetails` из `tests/helpers/matches.ts`: «ещё не начался», без счёта. От чего зависит проверка (статус, время, лига), тест передаёт сам.
 - `tests/nuxt/` — компоненты и страницы в настоящем приложении Nuxt (`mountSuspended`, подмена API через `registerEndpoint`, авто-импорты и `useFetch` работают). `.nuxtrc` — служебная пометка test-utils, хранится в git.
 - Панели PrimeVue (`Popover`) сообщают об открытии и закрытии и ловят Esc в хуках анимации, а Test Utils подменяет `<transition>` заглушкой — нужен `global: { stubs: { transition: false } }`.
 - `mountSuspended` сам не размонтирует страницы прошлых тестов: с общим состоянием (лига) они тоже реагируют — размонтировать в `afterEach`.

@@ -3,6 +3,7 @@ import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
 import type { VueWrapper } from '@vue/test-utils'
 import MatchPage from '~/pages/match/[id].vue'
 import type { MatchDetails, RoundsResponse } from '~/types'
+import { makeMatchDetails } from '../../helpers/matches'
 
 // Туры выбранной лиги (АПЛ): по ним подписана ссылка назад, когда пришли с главной
 const ROUNDS: RoundsResponse = {
@@ -16,24 +17,15 @@ const ROUNDS: RoundsResponse = {
 }
 
 // Матч РПЛ, хотя выбрана АПЛ
-const MATCH: MatchDetails = {
-  idEvent: '1',
+const MATCH = makeMatchDetails({
   homeTeam: 'Спартак',
   awayTeam: 'Рубин',
-  homeBadge: '',
-  awayBadge: '',
   homeScore: '1',
   awayScore: '0',
-  homePenScore: null,
-  awayPenScore: null,
   status: 'FT',
-  progress: null,
   timestamp: '2026-10-18T15:45:00',
   leagueId: '235',
-  league: 'Premier League',
   round: '12',
-  venue: null,
-  city: null,
   lineups: {
     home: { formation: '4-1-4-1', lines: [[{ number: 1, name: 'I. Pomazun' }]], substitutes: [], coach: null },
     away: { formation: '5-4-1', lines: [[{ number: 38, name: 'E. Staver' }]], substitutes: [], coach: null },
@@ -44,7 +36,7 @@ const MATCH: MatchDetails = {
   stats: [
     { label: 'Владение мячом', home: 66, away: 34, format: 'percent' },
   ],
-}
+})
 
 registerEndpoint('/api/rounds', () => ROUNDS)
 registerEndpoint('/api/match/1', () => MATCH)

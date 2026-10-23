@@ -5,6 +5,7 @@ import { getMoscowDate } from '#shared/utils/matches'
 import { shiftDate } from '~/utils/matches'
 import IndexPage from '~/pages/index.vue'
 import type { Match, RoundsResponse } from '~/types'
+import { makeMatch } from '../../helpers/matches'
 
 const today = getMoscowDate(new Date())
 const yesterday = shiftDate(today, -1)
@@ -22,21 +23,7 @@ const ROUNDS: RoundsResponse = {
 }
 
 function match(idEvent: string, homeTeam: string, awayTeam: string, round: string): Match {
-  return {
-    idEvent,
-    homeTeam,
-    awayTeam,
-    homeBadge: '',
-    awayBadge: '',
-    homeScore: null,
-    awayScore: null,
-    homePenScore: null,
-    awayPenScore: null,
-    status: 'NS',
-    progress: null,
-    timestamp: '2026-10-17T14:00:00',
-    round,
-  }
+  return makeMatch({ idEvent, homeTeam, awayTeam, round, timestamp: '2026-10-17T14:00:00' })
 }
 
 // Сервер подменён: в 6 туре «Челси – Арсенал», в 7 «Эвертон – Ливерпуль», по датам — «Фулхэм – Брентфорд» из 7 тура.
